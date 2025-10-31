@@ -1,6 +1,30 @@
 # TechModa Serverless Capstone
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=master&repo=gabanox/techmoda-serverless-capstone-starter)
+
 Fashion E-commerce Product Catalog API built with AWS Serverless Technologies
+
+## Quick Start with GitHub Codespaces
+
+**Recommended**: Use GitHub Codespaces for a pre-configured development environment with AWS CLI, SAM CLI, and Node.js 18.x already installed.
+
+1. Click the **"Open in GitHub Codespaces"** badge above
+2. Wait for the environment to build (2-3 minutes)
+3. **Configure AWS credentials** - See [AWS_CREDENTIALS_SETUP.md](AWS_CREDENTIALS_SETUP.md) for detailed instructions
+4. Follow the [Implementation Guide](#implementation-guide) below
+
+### AWS Credentials Configuration
+
+Before deploying, you must configure AWS credentials in GitHub:
+
+1. Go to your repository **Settings** → **Secrets and variables** → **Codespaces**
+2. Add three secrets:
+   - `AWS_ACCESS_KEY_ID` - Your AWS access key
+   - `AWS_SECRET_ACCESS_KEY` - Your AWS secret key
+   - `AWS_DEFAULT_REGION` - Your AWS region (e.g., `us-east-1`)
+3. Rebuild your Codespace to load the credentials
+
+For detailed step-by-step instructions with screenshots, see **[AWS_CREDENTIALS_SETUP.md](AWS_CREDENTIALS_SETUP.md)**.
 
 ## Overview
 
@@ -57,9 +81,11 @@ Before starting, ensure you have:
 - **Git** for version control
 - **Basic knowledge** of JavaScript, REST APIs, and AWS services
 
-## Quick Start
+## Implementation Guide
 
 ### 1. Clone the Repository
+
+**Note**: If using Codespaces, skip this step - the repository is already cloned.
 
 ```bash
 git clone <repository-url>
