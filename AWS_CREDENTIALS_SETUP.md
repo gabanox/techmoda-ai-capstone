@@ -2,15 +2,6 @@
 
 This guide explains how to configure AWS credentials for the TechModa Serverless Capstone project when using GitHub Codespaces.
 
-## Overview
-
-To deploy your serverless application to AWS from Codespaces, you need to configure AWS credentials. GitHub Codespaces supports two methods:
-
-1. **Repository Secrets** (Recommended for students) - Credentials automatically available in all Codespaces
-2. **User Secrets** (Recommended for personal projects) - Credentials available across all your Codespaces
-
-This guide covers **Repository Secrets**, which is the recommended approach for bootcamp students.
-
 ## Prerequisites
 
 Before starting, you need:
@@ -22,7 +13,7 @@ If you don't have these credentials, ask your bootcamp instructor or AWS account
 
 ---
 
-## Method 1: Configure Repository Secrets (Recommended for Students)
+## Method 1: Configure Repository Secrets (Recommended)
 
 ### Step 1: Navigate to Repository Settings
 
@@ -56,56 +47,31 @@ Add the following three secrets:
 3. **Value**: Your preferred AWS region (e.g., `us-east-1`)
 4. Click **Add secret**
 
-### Step 3: Verify Secrets Configuration
+### Step 3: Apply Changes to Your Codespace
 
-After adding all three secrets, your Codespaces secrets page should show:
+**IMPORTANT**: After adding or modifying secrets, you must restart your Codespace:
 
-```
-AWS_ACCESS_KEY_ID          Updated X seconds ago
-AWS_SECRET_ACCESS_KEY      Updated X seconds ago
-AWS_DEFAULT_REGION         Updated X seconds ago
-```
+1. **If Codespace is running**:
+   - Click on the Codespace name at the bottom left of VS Code
+   - Select **Stop Current Codespace**
+   - Wait for it to stop completely
+   - Reopen the Codespace from GitHub
 
-**Important**: Secret values are hidden and cannot be viewed after creation. If you need to change them, delete and recreate the secret.
+2. **If creating a new Codespace**:
+   - The secrets will be available automatically
 
----
+**Note**: Simply reloading the window is NOT sufficient. You must fully stop and restart the Codespace for the new secrets to be loaded.
 
-## Method 2: Configure User Secrets (Alternative)
+### Step 4: Verify Secrets Configuration
 
-If you want credentials available across all your Codespaces (not just this repository):
-
-### Step 1: Navigate to User Settings
-
-1. Go to your GitHub profile settings: `https://github.com/settings/profile`
-2. In the left sidebar, click **Codespaces**
-3. Scroll down to **Codespaces secrets**
-
-### Step 2: Add Secrets
-
-Follow the same steps as Method 1, but add secrets to your user account instead of the repository.
-
-### Step 3: Grant Repository Access
-
-For each secret:
-1. Click on the secret name
-2. Under **Repository access**, select repositories that should have access
-3. Choose **Selected repositories** and add `techmoda-serverless-capstone-starter`
-
----
-
-## Using AWS Credentials in Codespaces
-
-### Automatic Configuration
-
-When you open a Codespace with configured secrets, AWS CLI will automatically use them. The environment variables are available immediately.
-
-### Verify Configuration
-
-1. Open a new Codespace or rebuild an existing one
-2. Open the terminal
-3. Run the following command to verify AWS credentials are configured:
+After restarting your Codespace, verify the secrets were loaded:
 
 ```bash
+# Check if environment variables are set
+echo $AWS_ACCESS_KEY_ID
+echo $AWS_DEFAULT_REGION
+
+# Verify AWS credentials work
 aws sts get-caller-identity
 ```
 
@@ -119,28 +85,13 @@ aws sts get-caller-identity
 }
 ```
 
-If you see an error like "Unable to locate credentials", the secrets are not configured correctly.
-
-### Test AWS Access
-
-Test that you can interact with AWS services:
-
-```bash
-# List S3 buckets (if you have permission)
-aws s3 ls
-
-# List DynamoDB tables
-aws dynamodb list-tables
-
-# Get current region
-aws configure get region
-```
+If you see an error like "Unable to locate credentials", the secrets were not loaded. Make sure you **stopped and restarted** the Codespace (not just reloaded).
 
 ---
 
-## Configuring AWS CLI Manually (Fallback)
+## Method 2: Manual Configuration with AWS CLI (Alternative)
 
-If secrets are not working or you prefer manual configuration:
+If you prefer not to use GitHub secrets or need temporary credentials:
 
 ### Step 1: Open Codespace Terminal
 
@@ -157,7 +108,35 @@ Default region name [None]: us-east-1
 Default output format [None]: json
 ```
 
-**Note**: Manually configured credentials are stored in `~/.aws/credentials` and will be lost when the Codespace is rebuilt.
+### Step 3: Verify Configuration
+
+```bash
+aws sts get-caller-identity
+```
+
+**Note**: Manually configured credentials are stored in `~/.aws/credentials`. These will persist while your Codespace exists but will be lost if the Codespace is deleted or rebuilt.
+
+---
+
+## Test AWS Access
+
+After configuring credentials with either method, test your AWS access:
+
+```bash
+# Verify identity
+aws sts get-caller-identity
+
+# Test DynamoDB access
+aws dynamodb list-tables
+
+# Check current region
+aws configure get region
+
+# List S3 buckets (if you have permission)
+aws s3 ls
+```
+
+If all commands work without errors, your AWS credentials are configured correctly!
 
 ---
 
@@ -165,19 +144,21 @@ Default output format [None]: json
 
 ### ✅ DO
 
-- Use IAM user credentials with limited permissions (not root account)
-- Rotate access keys regularly (every 90 days)
-- Delete secrets immediately after the bootcamp if using temporary credentials
-- Use repository secrets for shared projects
-- Use user secrets for personal projects
+- **Use IAM user credentials** with limited permissions (not root account)
+- **Rotate access keys regularly** (every 90 days recommended)
+- **Delete secrets** after the bootcamp if using temporary credentials
+- **Keep credentials private** - never share with anyone
+- **Use repository secrets** for bootcamp projects
+- **Delete your CloudFormation stack** after testing to avoid charges
 
 ### ❌ DON'T
 
-- Never commit AWS credentials to Git (already protected by .gitignore)
-- Never share your access keys with others
-- Never use root account credentials
-- Never post credentials in Slack, Discord, or public forums
-- Never leave credentials in code comments
+- **Never commit AWS credentials to Git** (already protected by .gitignore)
+- **Never share your access keys** with other students
+- **Never use root account credentials** for development
+- **Never post credentials** in Slack, Discord, or public forums
+- **Never leave credentials** in code comments or documentation
+- **Never screenshot** or share your AWS_SECRET_ACCESS_KEY
 
 ### Recommended IAM Permissions
 
@@ -213,104 +194,40 @@ Your AWS user should have the following permissions for this capstone:
 
 ---
 
-## Troubleshooting
+## Common Issues
 
 ### Problem: "Unable to locate credentials"
 
-**Solution**:
-1. Verify secrets are created in GitHub Settings → Codespaces
-2. Rebuild your Codespace (Codespaces menu → Rebuild Container)
-3. Check secret names match exactly (case-sensitive):
-   - `AWS_ACCESS_KEY_ID`
-   - `AWS_SECRET_ACCESS_KEY`
-   - `AWS_DEFAULT_REGION`
+**Solution**: You didn't restart your Codespace after adding secrets
+1. Stop your Codespace completely
+2. Reopen it from GitHub
+3. Verify with `aws sts get-caller-identity`
 
 ### Problem: "An error occurred (UnauthorizedOperation)"
 
-**Solution**:
-- Your IAM user doesn't have sufficient permissions
-- Contact your bootcamp instructor for permission updates
+**Solution**: Insufficient IAM permissions
+- Contact your bootcamp instructor
 - Verify you're using the correct AWS account
 
-### Problem: "The security token included in the request is expired"
+### Problem: Secrets not working after restart
 
-**Solution**:
-- Your access key has expired (common with temporary credentials)
-- Request new credentials from your instructor
-- Update the secrets in GitHub Settings
-
-### Problem: Secrets not showing in environment
-
-**Solution**:
-1. Verify secrets are created at repository level (not user level)
-2. Rebuild the Codespace completely
-3. Check that you have admin access to the repository
-
----
-
-## Alternative: AWS Vault (Advanced)
-
-For advanced users who want to use temporary credentials with MFA:
-
-```bash
-# Install AWS Vault (already available in Codespaces)
-aws-vault exec your-profile -- sam deploy
-```
-
-Refer to `aws_course_manager.py` in the main bootcamp repository for AWS Vault configuration.
-
----
-
-## Quick Reference
-
-### Environment Variables Used
-
-| Variable | Purpose | Example Value |
-|----------|---------|---------------|
-| `AWS_ACCESS_KEY_ID` | AWS Access Key | `AKIAIOSFODNN7EXAMPLE` |
-| `AWS_SECRET_ACCESS_KEY` | AWS Secret Key | `wJalrXUtnFEMI/K7MDENG/...` |
-| `AWS_DEFAULT_REGION` | Default AWS Region | `us-east-1` |
-
-### Verification Commands
-
-```bash
-# Check if credentials are configured
-aws sts get-caller-identity
-
-# Check current region
-echo $AWS_DEFAULT_REGION
-
-# List environment variables (be careful not to expose secrets)
-env | grep AWS_
-```
-
----
-
-## Support
-
-If you encounter issues with AWS credentials:
-
-1. Review this documentation
-2. Check the [Troubleshooting](#troubleshooting) section
-3. Verify with `aws sts get-caller-identity`
-4. Contact your bootcamp instructor
-5. Check AWS IAM console for user permissions
+**Solution**: Check secret names (case-sensitive)
+- Must be exactly: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`
+- Delete and recreate if needed
 
 ---
 
 ## Next Steps
 
-Once credentials are configured:
+Once credentials are configured and verified:
 
-1. ✅ Verify with `aws sts get-caller-identity`
-2. ✅ Review the [README.md](README.md) for project overview
+1. ✅ Test with `aws sts get-caller-identity`
+2. ✅ Review the [README.md](README.md) for implementation guide
 3. ✅ Start implementing Lambda functions
 4. ✅ Deploy with `./scripts/deploy.sh`
 5. ✅ Test your API with curl commands
 
----
-
-**Security Note**: Remember to delete your CloudFormation stack after completing the capstone to avoid AWS charges:
+**Remember**: Delete your CloudFormation stack after completing the capstone to avoid AWS charges:
 
 ```bash
 ./scripts/delete.sh
