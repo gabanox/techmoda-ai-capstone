@@ -185,6 +185,65 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref ProductsTable
 
+  # S3 Bucket for Static Website Hosting
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-frontend
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Statement:
+          - Action: s3:GetObject
+            Effect: Allow
+            Resource: !Sub ${FrontendBucket.Arn}/*
+            Principal: '*'
+
+  # CloudFront Distribution
+  FrontendDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt FrontendBucket.RegionalDomainName
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+        CustomErrorResponses:
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+
 Outputs:
   ApiUrl:
     Description: URL of the Products API
@@ -195,6 +254,12 @@ Outputs:
   Region:
     Description: AWS Region
     Value: !Ref AWS::Region
+  FrontendUrl:
+    Description: CloudFront URL for the frontend
+    Value: !Sub 'https://${FrontendDistribution.DomainName}'
+  FrontendBucketName:
+    Description: S3 Bucket name for frontend
+    Value: !Ref FrontendBucket
 
 Metadata:
   AWS::Composer::Groups:

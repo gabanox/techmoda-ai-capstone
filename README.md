@@ -103,13 +103,16 @@ techmoda-serverless-capstone-starter/
 │   ├── get-item/             # GET /products/{id}
 │   ├── update-item/          # PUT /products/{id}
 │   └── delete-item/          # DELETE /products/{id}
+├── frontend/                  # React frontend (optional)
 ├── docs/                      # Documentation
 │   ├── specs/                # Detailed function specifications
 │   └── prompts/              # Claude Code prompt templates
 ├── scripts/                   # Deployment helper scripts
 │   ├── build.sh              # Build the SAM application
 │   ├── deploy.sh             # Deploy to AWS
-│   └── delete.sh             # Clean up resources
+│   ├── delete.sh             # Clean up resources
+│   ├── build-frontend.sh     # Build the frontend
+│   └── deploy-frontend.sh    # Deploy frontend to S3
 └── README.md                  # This file
 ```
 
@@ -219,7 +222,65 @@ curl -X POST $API_URL/products \
 curl $API_URL/products
 ```
 
-### 7. Clean Up Resources
+### 7. Build and Deploy Frontend (Optional)
+
+The capstone includes a React frontend for visualizing and managing products.
+
+#### Build the Frontend
+
+```bash
+./scripts/build-frontend.sh
+```
+
+This will:
+- Install frontend dependencies
+- Build the production bundle
+- Output static files to `frontend/dist/`
+
+#### Deploy Frontend to S3
+
+After deploying the backend (step 5), deploy the frontend:
+
+```bash
+./scripts/deploy-frontend.sh
+```
+
+This will:
+- Get the API URL from CloudFormation outputs
+- Replace the API URL placeholder in the built files
+- Upload the frontend to S3
+- Display the CloudFront URL
+
+**Access your frontend**: Use the CloudFront URL from the output.
+
+**Note**: CloudFront distribution deployment can take 15-20 minutes. If you get a "Not Found" error immediately after deployment, wait a few minutes and try again.
+
+#### Local Frontend Development
+
+To run the frontend locally:
+
+1. Create a `.env` file in the `frontend/` directory:
+   ```bash
+   cd frontend
+   cp .env.example .env
+   ```
+
+2. Update `.env` with your API URL:
+   ```
+   VITE_API_URL=https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/Prod
+   ```
+
+3. Install dependencies and run:
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+4. Open your browser to the URL shown (typically http://localhost:5173)
+
+See [frontend/README.md](frontend/README.md) for more details.
+
+### 8. Clean Up Resources
 
 **IMPORTANT**: To avoid AWS charges, delete your stack after testing:
 
@@ -230,6 +291,8 @@ curl $API_URL/products
 # Or directly with SAM CLI
 sam delete --stack-name techmoda-capstone
 ```
+
+**Note**: This will delete the API, Lambda functions, DynamoDB table, S3 bucket, and CloudFront distribution.
 
 See [docs/COST_AND_CLEANUP.md](docs/COST_AND_CLEANUP.md) for cost estimates and cleanup best practices.
 
