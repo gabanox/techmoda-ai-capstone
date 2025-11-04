@@ -3,23 +3,53 @@
  *
  * Purpose: Return all products in the catalog
  * API Endpoint: GET /products
- *
- * TODO: Implement this function following the specification in docs/specs/LIST_ITEMS_SPEC.md
- * Use the prompt templates in docs/prompts/02_LAMBDA_IMPLEMENTATION.md to generate the implementation
  */
 
-exports.handler = async (event) => {
-    // TODO: Implement ListItems function
-    // See docs/specs/LIST_ITEMS_SPEC.md for detailed requirements
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient, ScanCommand } = require('@aws-sdk/lib-dynamodb');
 
-    return {
-        statusCode: 501,
-        headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({
-            message: 'ListItems function not yet implemented. See docs/specs/LIST_ITEMS_SPEC.md'
-        })
-    };
+// Create DynamoDB client
+const client = new DynamoDBClient({});
+const dynamodb = DynamoDBDocumentClient.from(client);
+
+const TABLE_NAME = process.env.PRODUCTS_TABLE;
+
+exports.handler = async (event) => {
+    console.log('Event:', JSON.stringify(event, null, 2));
+
+    try {
+        // Scan the DynamoDB table to get all products
+        const command = new ScanCommand({
+            TableName: TABLE_NAME
+        });
+
+        const result = await dynamodb.send(command);
+
+        console.log(`Retrieved ${result.Items.length} products`);
+
+        return {
+            statusCode: 200,
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            body: JSON.stringify({
+                products: result.Items || []
+            })
+        };
+    } catch (error) {
+        console.error('Error listing products:', error);
+
+        return {
+            statusCode: 500,
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            body: JSON.stringify({
+                error: 'Error al listar productos',
+                message: error.message
+            })
+        };
+    }
 };
