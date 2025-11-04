@@ -151,13 +151,31 @@ This command:
 sam deploy --guided
 ```
 
-Follow the prompts:
-- **Stack Name**: `techmoda-capstone` (or your preferred name)
-- **AWS Region**: `us-east-1` (or your preferred region)
-- **Confirm changes**: Yes
-- **Allow SAM CLI IAM role creation**: Yes
-- **Disable rollback**: No
-- **Save arguments to configuration**: Yes
+**IMPORTANT**: You will be prompted with several questions. Use these values:
+
+```
+Stack Name [techmoda-capstone]: tu-nombre-con-guiones-medios
+AWS Region [us-east-1]:
+#Shows you resources changes to be deployed and require a 'Y' to initiate deploy
+Confirm changes before deploy [Y/n]: y
+#SAM needs permission to be able to create roles to connect to the resources in your template
+Allow SAM CLI IAM role creation [Y/n]: y
+#Preserves the state of previously provisioned resources when an operation fails
+Disable rollback [y/N]: y
+ListItemsFunction has no authentication. Is this okay? [y/N]: y
+CreateItemFunction has no authentication. Is this okay? [y/N]: y
+GetItemFunction has no authentication. Is this okay? [y/N]: y
+UpdateItemFunction has no authentication. Is this okay? [y/N]: y
+DeleteItemFunction has no authentication. Is this okay? [y/N]: y
+Save arguments to configuration file [Y/n]: y
+SAM configuration file [samconfig.toml]:
+SAM configuration environment [default]:
+```
+
+**Notes**:
+- **Stack Name**: Replace `tu-nombre-con-guiones-medios` with your actual name using hyphens (e.g., `juan-perez`, `maria-garcia`)
+- **AWS Region**: Press Enter to use default `us-east-1` (or enter your preferred region)
+- **No authentication warnings**: These are expected for this educational project (we're not using API keys or Cognito)
 
 #### Subsequent Deployments
 
