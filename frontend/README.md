@@ -80,6 +80,60 @@ frontend/
 
 ## Integración con API
 
-El frontend se comunica con el API TechModa desplegado en AWS. La URL del API se configura vía la variable de entorno `VITE_API_URL`.
+El frontend se comunica con el API TechModa desplegado en AWS. La configuración de la URL del API soporta dos métodos:
+
+### 🔧 Runtime Configuration (Producción - Recomendado)
+
+En producción, la URL del API se inyecta en **tiempo de despliegue** sin necesidad de reconstruir el bundle. Esto permite:
+- ✅ Desplegar una sola vez y cambiar la URL según el entorno
+- ✅ Evitar rebuilds innecesarios
+- ✅ Mayor flexibilidad en CI/CD
+
+**Cómo funciona:**
+1. El archivo `public/env-config.js.template` contiene un token `%%VITE_API_URL%%`
+2. Durante el despliegue, `scripts/inject-env.sh` reemplaza el token con la URL real
+3. El archivo `env-config.js` se genera en `dist/` con la configuración real
+4. `index.html` carga `env-config.js` antes del bundle principal
+5. `src/lib/api.ts` lee `window.__ENV.VITE_API_URL` (prioridad sobre build-time)
+
+**Prioridad de configuración:**
+```
+window.__ENV.VITE_API_URL (runtime) > import.meta.env.VITE_API_URL (build-time) > fallback
+```
+
+**Verificar en el navegador:**
+```javascript
+// Abrir DevTools > Console
+console.log(window.__ENV);
+// Debería mostrar: { VITE_API_URL: "https://..." }
+```
+
+### 📦 Build-time Configuration (Desarrollo)
+
+En desarrollo local, usa el archivo `.env`:
+
+```bash
+cp .env.example .env
+# Editar .env con tu URL de API
+```
+
+El servidor de desarrollo de Vite leerá esta variable automáticamente.
+
+### 🔍 Debugging
+
+Si ves errores de red como `net::ERR_NAME_NOT_RESOLVED`:
+
+1. Verifica que `window.__ENV.VITE_API_URL` esté definido (DevTools > Console)
+2. Revisa que el archivo `env-config.js` exista en el sitio desplegado
+3. Limpia el cache del navegador o invalida CloudFront
+4. Verifica que el script `inject-env.sh` se ejecutó correctamente durante el despliegue
 
 Ver `src/lib/api.ts` para la implementación del cliente API.
+
+## Archivos de Configuración
+
+- `public/env-config.js` - Versión de desarrollo (incluido en git)
+- `public/env-config.js.template` - Template para producción
+- `dist/env-config.js` - Generado durante despliegue (NO en git)
+- `.env` - Variables de entorno locales (NO en git)
+- `.env.example` - Ejemplo de configuración

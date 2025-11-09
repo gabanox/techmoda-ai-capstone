@@ -28,18 +28,12 @@ API_URL=$(aws cloudformation describe-stacks \
 
 echo "Bucket: $BUCKET_NAME"
 echo "API URL: $API_URL"
+echo ""
 
-# Replace API URL placeholder in built files
-cd frontend/dist
-# Detect OS for sed compatibility
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS
-    find . -type f -name "*.js" -exec sed -i '' "s|PLACEHOLDER_API_URL|$API_URL|g" {} \;
-else
-    # Linux
-    find . -type f -name "*.js" -exec sed -i "s|PLACEHOLDER_API_URL|$API_URL|g" {} \;
-fi
-cd ../..
+# Inject runtime environment configuration
+echo "🔧 Injecting runtime configuration..."
+./scripts/inject-env.sh --api-url "$API_URL" --dist-dir frontend/dist
+echo ""
 
 # Sync to S3
 aws s3 sync frontend/dist/ s3://$BUCKET_NAME/ --delete

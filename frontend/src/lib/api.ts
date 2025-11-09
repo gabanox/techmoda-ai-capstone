@@ -1,7 +1,27 @@
 import type { Product } from './types';
 
-// Get API URL from environment variable or use placeholder during development
-const API_URL = import.meta.env.VITE_API_URL || 'https://your-api-id.execute-api.us-east-1.amazonaws.com/Prod';
+// Runtime environment configuration (injected at deployment time)
+declare global {
+  interface Window {
+    __ENV?: {
+      VITE_API_URL?: string;
+    };
+  }
+}
+
+// Get API URL from runtime config (priority) or build-time env variable
+// Priority: window.__ENV (runtime) > import.meta.env (build-time) > fallback
+const API_URL =
+  window.__ENV?.VITE_API_URL ||
+  import.meta.env.VITE_API_URL ||
+  'https://your-api-id.execute-api.us-east-1.amazonaws.com/Prod';
+
+// Log the API URL for debugging (only in development)
+if (import.meta.env.DEV) {
+  console.log('API URL:', API_URL);
+  console.log('Runtime config:', window.__ENV);
+  console.log('Build-time config:', import.meta.env.VITE_API_URL);
+}
 
 export const api = {
   // List all products
