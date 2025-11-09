@@ -1,8 +1,8 @@
-# Prompt Templates: Environment Setup
+# Plantillas de Prompts: Configuración del Entorno
 
-These prompts help you install and configure the required tools for deploying your TechModa serverless API.
+Estos prompts le ayudan a instalar y configurar las herramientas necesarias para desplegar su API serverless de TechModa.
 
-## Prompt 1.1: AWS CLI Installation (macOS)
+## Prompt 1.1: Instalación de AWS CLI (macOS)
 
 ```
 I need to install AWS CLI v2 on macOS to deploy serverless applications.
@@ -19,7 +19,7 @@ Please provide:
 4. Basic configuration command for AWS credentials
 ```
 
-## Prompt 1.2: AWS CLI Installation (Windows)
+## Prompt 1.2: Instalación de AWS CLI (Windows)
 
 ```
 I need to install AWS CLI v2 on Windows 10/11 to deploy serverless applications.
@@ -36,7 +36,7 @@ Please provide:
 4. Configuration command for AWS credentials
 ```
 
-## Prompt 1.3: AWS CLI Installation (Linux)
+## Prompt 1.3: Instalación de AWS CLI (Linux)
 
 ```
 I need to install AWS CLI v2 on Linux to deploy serverless applications.
@@ -55,7 +55,7 @@ Please provide:
 4. Configuration command for AWS credentials
 ```
 
-## Prompt 1.4: AWS SAM CLI Installation
+## Prompt 1.4: Instalación de AWS SAM CLI
 
 ```
 I have AWS CLI v2 installed and need to install AWS SAM CLI to deploy serverless applications.
@@ -73,7 +73,7 @@ Please provide:
 3. Quick test command to validate SAM is working
 ```
 
-## Prompt 1.5: Configure AWS Credentials
+## Prompt 1.5: Configurar Credenciales de AWS
 
 ```
 I need to configure AWS credentials for the AAD Bootcamp to deploy serverless applications in us-east-1.
@@ -89,19 +89,19 @@ Please provide:
 4. Recommended default region (us-east-1) and output format (json)
 ```
 
-## Expected Outcomes
+## Resultados Esperados
 
-After completing environment setup:
+Después de completar la configuración del entorno:
 
-✅ AWS CLI v2 installed and accessible via `aws --version`
-✅ SAM CLI installed and accessible via `sam --version`
-✅ AWS credentials configured in `~/.aws/credentials`
-✅ Default region set to `us-east-1`
-✅ Can successfully run `aws sts get-caller-identity` to verify credentials
+✅ AWS CLI v2 instalado y accesible mediante `aws --version`
+✅ SAM CLI instalado y accesible mediante `sam --version`
+✅ Credenciales de AWS configuradas en `~/.aws/credentials`
+✅ Región predeterminada configurada en `us-east-1`
+✅ Puede ejecutar exitosamente `aws sts get-caller-identity` para verificar las credenciales
 
-## Troubleshooting Prompts
+## Prompts de Solución de Problemas
 
-### If AWS CLI Not Found
+### Si AWS CLI No Se Encuentra
 
 ```
 I installed AWS CLI but the command 'aws' is not found in my terminal.
@@ -118,7 +118,7 @@ Please help me:
 3. Verify the installation worked
 ```
 
-### If SAM CLI Not Found
+### Si SAM CLI No Se Encuentra
 
 ```
 I installed SAM CLI but the command 'sam' is not found in my terminal.
@@ -135,7 +135,7 @@ Please help me:
 3. Verify SAM CLI can find AWS credentials
 ```
 
-### If Credentials Invalid
+### Si las Credenciales son Inválidas
 
 ```
 I configured AWS credentials but I'm getting authentication errors.
@@ -150,8 +150,8 @@ Please help me:
 4. Test connectivity to AWS
 ```
 
-## Next Steps
+## Próximos Pasos
 
-Once environment setup is complete, proceed to:
-- [Lambda Implementation Prompts](02_LAMBDA_IMPLEMENTATION.md)
-- [Function Specifications](../specs/)
+Una vez completada la configuración del entorno, proceda a:
+- [Prompts de Implementación de Lambda](02_LAMBDA_IMPLEMENTATION.md)
+- [Especificaciones de Funciones](../specs/)

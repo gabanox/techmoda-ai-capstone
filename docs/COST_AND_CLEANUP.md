@@ -1,349 +1,349 @@
-# AWS Cost Estimation and Cleanup Guide
+# Guía de Estimación de Costos y Limpieza de AWS
 
-## Cost Breakdown
+## Desglose de Costos
 
-This capstone project is designed to stay **under $1 USD** for the entire development, testing, and demonstration period. Here's the detailed cost breakdown by service.
+Este proyecto capstone está diseñado para mantenerse **bajo $1 USD** durante todo el período de desarrollo, pruebas y demostración. Aquí está el desglose detallado de costos por servicio.
 
 ### DynamoDB
 
-**Pricing Model**: PAY_PER_REQUEST (On-Demand)
+**Modelo de Precios**: PAY_PER_REQUEST (Bajo Demanda)
 
-**Cost Components**:
-- **Write requests**: $1.25 per million write request units
-- **Read requests**: $0.25 per million read request units
-- **Storage**: $0.25 per GB-month
+**Componentes de Costo**:
+- **Solicitudes de escritura**: $1.25 por millón de unidades de solicitud de escritura
+- **Solicitudes de lectura**: $0.25 por millón de unidades de solicitud de lectura
+- **Almacenamiento**: $0.25 por GB-mes
 
-**Estimated Usage**:
-- 10 CreateItem operations (writes)
-- 20 GetItem operations (reads)
-- 10 UpdateItem operations (writes)
-- 5 DeleteItem operations (writes)
-- 20 ListItems operations (Scan reads ~10 items each = 200 read units)
-- Storage: <1 MB for ~10 products
+**Uso Estimado**:
+- 10 operaciones CreateItem (escrituras)
+- 20 operaciones GetItem (lecturas)
+- 10 operaciones UpdateItem (escrituras)
+- 5 operaciones DeleteItem (escrituras)
+- 20 operaciones ListItems (Scan lee ~10 items cada uno = 200 unidades de lectura)
+- Almacenamiento: <1 MB para ~10 productos
 
-**Calculation**:
-- Write requests: 25 writes × $1.25 / 1,000,000 = $0.00003
-- Read requests: 220 reads × $0.25 / 1,000,000 = $0.00006
-- Storage: 0.001 GB × $0.25 = $0.00025
+**Cálculo**:
+- Solicitudes de escritura: 25 escrituras × $1.25 / 1,000,000 = $0.00003
+- Solicitudes de lectura: 220 lecturas × $0.25 / 1,000,000 = $0.00006
+- Almacenamiento: 0.001 GB × $0.25 = $0.00025
 
-**DynamoDB Total**: **~$0.00034** (effectively $0.00)
+**Total DynamoDB**: **~$0.00034** (efectivamente $0.00)
 
-**AWS Free Tier Coverage**:
-- 25 GB storage (free)
-- 2.5 million read requests per month (free)
-- 1 million write requests per month (free)
+**Cobertura de AWS Free Tier**:
+- 25 GB de almacenamiento (gratis)
+- 2.5 millones de solicitudes de lectura por mes (gratis)
+- 1 millón de solicitudes de escritura por mes (gratis)
 
-Your usage is **100% covered by Free Tier**.
+Tu uso está **100% cubierto por Free Tier**.
 
 ### AWS Lambda
 
-**Pricing Model**: Pay per invocation + compute time
+**Modelo de Precios**: Pago por invocación + tiempo de cómputo
 
-**Cost Components**:
-- **Invocations**: $0.20 per million requests
-- **Compute time**: $0.0000166667 per GB-second
-- **Free Tier**: First 1 million requests + 400,000 GB-seconds per month
+**Componentes de Costo**:
+- **Invocaciones**: $0.20 por millón de solicitudes
+- **Tiempo de cómputo**: $0.0000166667 por GB-segundo
+- **Free Tier**: Primer 1 millón de solicitudes + 400,000 GB-segundos por mes
 
-**Estimated Usage**:
-- 100 total Lambda invocations across all 5 functions
-- Average execution time: 200ms per invocation
-- Memory: 1024 MB (1 GB) per function
+**Uso Estimado**:
+- 100 invocaciones totales de Lambda entre las 5 funciones
+- Tiempo de ejecución promedio: 200ms por invocación
+- Memoria: 1024 MB (1 GB) por función
 
-**Calculation**:
-- Invocations: 100 × $0.20 / 1,000,000 = $0.00002
-- Compute time: 100 invocations × 0.2 seconds × 1 GB × $0.0000166667 = $0.00033
+**Cálculo**:
+- Invocaciones: 100 × $0.20 / 1,000,000 = $0.00002
+- Tiempo de cómputo: 100 invocaciones × 0.2 segundos × 1 GB × $0.0000166667 = $0.00033
 
-**Lambda Total**: **~$0.00035** (effectively $0.00)
+**Total Lambda**: **~$0.00035** (efectivamente $0.00)
 
-**AWS Free Tier Coverage**:
-- 1 million requests (free)
-- 400,000 GB-seconds (free)
-- Your usage: 100 requests + 20 GB-seconds
+**Cobertura de AWS Free Tier**:
+- 1 millón de solicitudes (gratis)
+- 400,000 GB-segundos (gratis)
+- Tu uso: 100 solicitudes + 20 GB-segundos
 
-Your usage is **100% covered by Free Tier**.
+Tu uso está **100% cubierto por Free Tier**.
 
 ### API Gateway
 
-**Pricing Model**: Pay per API call
+**Modelo de Precios**: Pago por llamada API
 
-**Cost Components**:
-- **REST API calls**: $3.50 per million requests (us-east-1)
-- **Data transfer**: $0.09 per GB out (first 1 GB free)
+**Componentes de Costo**:
+- **Llamadas API REST**: $3.50 por millón de solicitudes (us-east-1)
+- **Transferencia de datos**: $0.09 por GB saliente (primer 1 GB gratis)
 
-**Estimated Usage**:
-- 50 API requests during development/testing
-- Average response size: 2 KB per request
+**Uso Estimado**:
+- 50 solicitudes API durante desarrollo/pruebas
+- Tamaño promedio de respuesta: 2 KB por solicitud
 
-**Calculation**:
-- API calls: 50 × $3.50 / 1,000,000 = $0.000175
-- Data transfer: 50 × 2 KB = 100 KB (well under 1 GB free tier)
+**Cálculo**:
+- Llamadas API: 50 × $3.50 / 1,000,000 = $0.000175
+- Transferencia de datos: 50 × 2 KB = 100 KB (muy por debajo de 1 GB de free tier)
 
-**API Gateway Total**: **~$0.00018** (effectively $0.00)
+**Total API Gateway**: **~$0.00018** (efectivamente $0.00)
 
-**AWS Free Tier Coverage**:
-- First 1 million API calls per month for first 12 months (free)
-- First 1 GB data transfer out per month (free)
+**Cobertura de AWS Free Tier**:
+- Primer 1 millón de llamadas API por mes durante los primeros 12 meses (gratis)
+- Primer 1 GB de transferencia de datos saliente por mes (gratis)
 
-Your usage is **100% covered by Free Tier** (if within first 12 months).
+Tu uso está **100% cubierto por Free Tier** (si estás dentro de los primeros 12 meses).
 
 ### CloudWatch Logs
 
-**Pricing Model**: Pay per GB ingested and stored
+**Modelo de Precios**: Pago por GB ingerido y almacenado
 
-**Cost Components**:
-- **Ingestion**: $0.50 per GB
-- **Storage**: $0.03 per GB per month
-- **Free Tier**: First 5 GB ingestion, 5 GB storage per month
+**Componentes de Costo**:
+- **Ingesta**: $0.50 por GB
+- **Almacenamiento**: $0.03 por GB por mes
+- **Free Tier**: Primeros 5 GB de ingesta, 5 GB de almacenamiento por mes
 
-**Estimated Usage**:
-- 100 Lambda invocations × 5 log lines per invocation × 200 bytes per line = 0.1 MB
-- Retention: 7 days (default)
+**Uso Estimado**:
+- 100 invocaciones Lambda × 5 líneas de log por invocación × 200 bytes por línea = 0.1 MB
+- Retención: 7 días (predeterminado)
 
-**Calculation**:
-- Ingestion: 0.0001 GB × $0.50 = $0.00005
-- Storage: 0.0001 GB × $0.03 × (7/30) = $0.0000007
+**Cálculo**:
+- Ingesta: 0.0001 GB × $0.50 = $0.00005
+- Almacenamiento: 0.0001 GB × $0.03 × (7/30) = $0.0000007
 
-**CloudWatch Logs Total**: **~$0.00006** (effectively $0.00)
+**Total CloudWatch Logs**: **~$0.00006** (efectivamente $0.00)
 
-**AWS Free Tier Coverage**:
-- 5 GB ingestion per month (free)
-- 5 GB storage per month (free)
+**Cobertura de AWS Free Tier**:
+- 5 GB de ingesta por mes (gratis)
+- 5 GB de almacenamiento por mes (gratis)
 
-Your usage is **100% covered by Free Tier**.
+Tu uso está **100% cubierto por Free Tier**.
 
 ### AWS X-Ray
 
-**Pricing Model**: Pay per trace recorded and retrieved
+**Modelo de Precios**: Pago por traza grabada y recuperada
 
-**Cost Components**:
-- **Traces recorded**: $5.00 per million traces
-- **Traces retrieved**: $0.50 per million traces
-- **Free Tier**: First 100,000 traces recorded per month (free)
+**Componentes de Costo**:
+- **Trazas grabadas**: $5.00 por millón de trazas
+- **Trazas recuperadas**: $0.50 por millón de trazas
+- **Free Tier**: Primeras 100,000 trazas grabadas por mes (gratis)
 
-**Estimated Usage**:
-- 50 API requests = 50 traces recorded
-- 10 trace retrievals (viewing in console)
+**Uso Estimado**:
+- 50 solicitudes API = 50 trazas grabadas
+- 10 recuperaciones de trazas (viendo en la consola)
 
-**Calculation**:
-- Traces recorded: 50 × $5.00 / 1,000,000 = $0.00025
-- Traces retrieved: 10 × $0.50 / 1,000,000 = $0.000005
+**Cálculo**:
+- Trazas grabadas: 50 × $5.00 / 1,000,000 = $0.00025
+- Trazas recuperadas: 10 × $0.50 / 1,000,000 = $0.000005
 
-**X-Ray Total**: **~$0.00026** (effectively $0.00)
+**Total X-Ray**: **~$0.00026** (efectivamente $0.00)
 
-**AWS Free Tier Coverage**:
-- 100,000 traces per month (free)
-- 1 million traces retrieved per month (free)
+**Cobertura de AWS Free Tier**:
+- 100,000 trazas por mes (gratis)
+- 1 millón de trazas recuperadas por mes (gratis)
 
-Your usage is **100% covered by Free Tier**.
+Tu uso está **100% cubierto por Free Tier**.
 
 ### CloudFormation
 
-**Cost**: **$0.00** - CloudFormation service itself is free. You only pay for resources it creates (Lambda, DynamoDB, etc.).
+**Costo**: **$0.00** - El servicio CloudFormation en sí es gratis. Solo pagas por los recursos que crea (Lambda, DynamoDB, etc.).
 
 ### IAM
 
-**Cost**: **$0.00** - IAM is always free. No charges for users, groups, roles, or policies.
+**Costo**: **$0.00** - IAM siempre es gratis. No hay cargos por usuarios, grupos, roles o políticas.
 
-## Total Estimated Cost
+## Costo Total Estimado
 
-| Service | Estimated Cost | Free Tier Coverage |
+| Servicio | Costo Estimado | Cobertura Free Tier |
 |---------|----------------|-------------------|
-| DynamoDB | $0.00034 | ✅ Fully covered |
-| Lambda | $0.00035 | ✅ Fully covered |
-| API Gateway | $0.00018 | ✅ Fully covered (first 12 months) |
-| CloudWatch Logs | $0.00006 | ✅ Fully covered |
-| X-Ray | $0.00026 | ✅ Fully covered |
-| CloudFormation | $0.00 | ✅ Always free |
-| IAM | $0.00 | ✅ Always free |
+| DynamoDB | $0.00034 | ✅ Totalmente cubierto |
+| Lambda | $0.00035 | ✅ Totalmente cubierto |
+| API Gateway | $0.00018 | ✅ Totalmente cubierto (primeros 12 meses) |
+| CloudWatch Logs | $0.00006 | ✅ Totalmente cubierto |
+| X-Ray | $0.00026 | ✅ Totalmente cubierto |
+| CloudFormation | $0.00 | ✅ Siempre gratis |
+| IAM | $0.00 | ✅ Siempre gratis |
 
-**Total**: **~$0.0012** (less than **$0.01**)
+**Total**: **~$0.0012** (menos de **$0.01**)
 
-**Actual charge**: **$0.00** if within Free Tier limits
+**Cargo real**: **$0.00** si estás dentro de los límites de Free Tier
 
-## Usage Assumptions
+## Supuestos de Uso
 
-The above estimates assume:
+Las estimaciones anteriores asumen:
 
-- **Development period**: 1-2 days
-- **Testing intensity**: 50 API requests total
-- **Database size**: ~10 products (< 1 MB)
-- **Active monitoring**: Minimal CloudWatch/X-Ray console usage
-- **Lambda invocations**: ~100 total across all functions
-- **No production traffic**: Only manual testing with curl
+- **Período de desarrollo**: 1-2 días
+- **Intensidad de pruebas**: 50 solicitudes API en total
+- **Tamaño de base de datos**: ~10 productos (< 1 MB)
+- **Monitoreo activo**: Uso mínimo de consola CloudWatch/X-Ray
+- **Invocaciones Lambda**: ~100 en total entre todas las funciones
+- **Sin tráfico de producción**: Solo pruebas manuales con curl
 
-## Cost Optimization Best Practices
+## Mejores Prácticas de Optimización de Costos
 
-### 1. Delete Resources Immediately After Testing
+### 1. Eliminar Recursos Inmediatamente Después de Probar
 
-Run cleanup as soon as you've demonstrated your working API:
+Ejecuta la limpieza tan pronto hayas demostrado tu API funcionando:
 
 ```bash
 sam delete --stack-name techmoda-capstone
 ```
 
-This prevents any ongoing charges, even though they'd be minimal.
+Esto previene cualquier cargo continuo, aunque serían mínimos.
 
-### 2. Use PAY_PER_REQUEST for DynamoDB
+### 2. Usar PAY_PER_REQUEST para DynamoDB
 
-✅ **Already configured in template.yaml**
+✅ **Ya configurado en template.yaml**
 
-PAY_PER_REQUEST is more cost-effective than provisioned capacity for:
-- Low traffic volumes
-- Unpredictable usage patterns
-- Development/testing workloads
+PAY_PER_REQUEST es más rentable que la capacidad provisionada para:
+- Volúmenes de tráfico bajos
+- Patrones de uso impredecibles
+- Cargas de trabajo de desarrollo/pruebas
 
-**Alternative (provisioned)**: Would require paying for minimum capacity even when idle.
+**Alternativa (provisionada)**: Requeriría pagar por capacidad mínima incluso cuando esté inactivo.
 
-### 3. Set CloudWatch Logs Retention
+### 3. Configurar Retención de CloudWatch Logs
 
-✅ **Already configured in template.yaml (7 days)**
+✅ **Ya configurado en template.yaml (7 días)**
 
-Prevents indefinite log accumulation. After 7 days, logs are automatically deleted.
+Previene la acumulación indefinida de logs. Después de 7 días, los logs se eliminan automáticamente.
 
-### 4. Avoid Unnecessary Testing
+### 4. Evitar Pruebas Innecesarias
 
-- Test each function 2-3 times, not 100+ times
-- Don't leave automated test scripts running in loops
-- Delete test products after verification
+- Prueba cada función 2-3 veces, no 100+ veces
+- No dejes scripts de prueba automatizados ejecutándose en bucles
+- Elimina productos de prueba después de la verificación
 
-### 5. Monitor AWS Billing Dashboard
+### 5. Monitorear el Panel de Facturación de AWS
 
-Check your actual costs:
+Revisa tus costos reales:
 1. AWS Console → Billing Dashboard
-2. View "Month-to-Date Costs by Service"
-3. Verify charges align with expectations (should be $0.00)
+2. Ver "Month-to-Date Costs by Service"
+3. Verificar que los cargos se alineen con las expectativas (debe ser $0.00)
 
-## Cleanup Instructions
+## Instrucciones de Limpieza
 
-### Why Cleanup Matters
+### Por Qué Importa la Limpieza
 
-Even though this project costs nearly $0 during active use, AWS resources can accumulate charges if left running indefinitely:
+Aunque este proyecto cuesta casi $0 durante el uso activo, los recursos de AWS pueden acumular cargos si se dejan ejecutándose indefinidamente:
 
-- DynamoDB table continues to exist (minimal storage costs)
-- CloudWatch Logs continue to store data (minimal storage costs)
-- Lambda functions remain deployed (no cost unless invoked)
-- API Gateway endpoint remains active (no cost unless called)
+- La tabla DynamoDB continúa existiendo (costos mínimos de almacenamiento)
+- Los CloudWatch Logs continúan almacenando datos (costos mínimos de almacenamiento)
+- Las funciones Lambda permanecen desplegadas (sin costo a menos que se invoquen)
+- El endpoint API Gateway permanece activo (sin costo a menos que se llame)
 
-**Best Practice**: Delete all resources immediately after completing your capstone to maintain clean AWS hygiene.
+**Mejor Práctica**: Elimina todos los recursos inmediatamente después de completar tu capstone para mantener una higiene limpia de AWS.
 
-### Method 1: SAM Delete Command (Recommended)
+### Método 1: Comando SAM Delete (Recomendado)
 
-The fastest and safest way to remove all resources:
+La forma más rápida y segura de eliminar todos los recursos:
 
 ```bash
 sam delete --stack-name techmoda-capstone
 ```
 
-**Interactive prompts**:
+**Prompts interactivos**:
 ```
 Are you sure you want to delete the stack techmoda-capstone in the region us-east-1 ? [y/N]: y
 Are you sure you want to delete the folder techmoda-capstone in S3 which contains the artifacts? [y/N]: y
 ```
 
-**What gets deleted**:
-- All 5 Lambda functions
+**Qué se elimina**:
+- Todas las 5 funciones Lambda
 - API Gateway REST API
-- DynamoDB table (including all data)
-- CloudWatch Log Groups
-- IAM execution roles
-- CloudFormation stack metadata
-- S3 deployment bucket (artifacts)
+- Tabla DynamoDB (incluyendo todos los datos)
+- Grupos de Log de CloudWatch
+- Roles de ejecución IAM
+- Metadatos del stack CloudFormation
+- Bucket S3 de despliegue (artefactos)
 
-**Duration**: 2-5 minutes
+**Duración**: 2-5 minutos
 
-### Method 2: Delete Script (Alternative)
+### Método 2: Script de Eliminación (Alternativa)
 
-Use the provided convenience script:
+Usa el script de conveniencia proporcionado:
 
 ```bash
 ./scripts/delete.sh
 ```
 
-This script runs the same `sam delete` command with confirmation prompts.
+Este script ejecuta el mismo comando `sam delete` con prompts de confirmación.
 
-### Method 3: AWS Console (Manual Fallback)
+### Método 3: Consola de AWS (Respaldo Manual)
 
-If `sam delete` fails, manually delete via CloudFormation console:
+Si `sam delete` falla, elimina manualmente vía consola CloudFormation:
 
-1. Go to AWS CloudFormation console
-2. Select your stack (e.g., `techmoda-capstone`)
-3. Click "Delete" button
-4. Confirm deletion
-5. Wait for status to show `DELETE_COMPLETE`
+1. Ve a la consola de AWS CloudFormation
+2. Selecciona tu stack (ej., `techmoda-capstone`)
+3. Haz clic en el botón "Delete"
+4. Confirma la eliminación
+5. Espera a que el estado muestre `DELETE_COMPLETE`
 
-**Note**: Manual deletion via console is less reliable because it requires you to understand resource dependencies.
+**Nota**: La eliminación manual vía consola es menos confiable porque requiere que entiendas las dependencias de recursos.
 
-## Verification Steps
+## Pasos de Verificación
 
-After running `sam delete`, verify all resources are gone:
+Después de ejecutar `sam delete`, verifica que todos los recursos se hayan eliminado:
 
-### 1. Check CloudFormation
+### 1. Verificar CloudFormation
 
 ```bash
 aws cloudformation describe-stacks --stack-name techmoda-capstone
 ```
 
-**Expected output**: Error message indicating stack doesn't exist:
+**Salida esperada**: Mensaje de error indicando que el stack no existe:
 ```
 An error occurred (ValidationError) when calling the DescribeStacks operation:
 Stack with id techmoda-capstone does not exist
 ```
 
-### 2. Verify Lambda Functions Deleted
+### 2. Verificar Funciones Lambda Eliminadas
 
 ```bash
 aws lambda list-functions --query "Functions[?contains(FunctionName, 'techmoda-capstone')]"
 ```
 
-**Expected output**: Empty array `[]`
+**Salida esperada**: Array vacío `[]`
 
-### 3. Verify DynamoDB Table Deleted
+### 3. Verificar Tabla DynamoDB Eliminada
 
 ```bash
 aws dynamodb list-tables --query "TableNames[?contains(@, 'techmoda-capstone')]"
 ```
 
-**Expected output**: Empty array `[]`
+**Salida esperada**: Array vacío `[]`
 
-### 4. Verify API Gateway Deleted
+### 4. Verificar API Gateway Eliminada
 
 ```bash
 aws apigateway get-rest-apis --query "items[?contains(name, 'techmoda-capstone')]"
 ```
 
-**Expected output**: Empty array `[]`
+**Salida esperada**: Array vacío `[]`
 
-### 5. Check Billing Dashboard
+### 5. Revisar Panel de Facturación
 
-1. Go to AWS Console → Billing Dashboard
-2. View "Month-to-Date Costs by Service"
-3. Verify no new charges appearing after deletion
-4. Check "Free Tier" usage tracking
+1. Ve a AWS Console → Billing Dashboard
+2. Ver "Month-to-Date Costs by Service"
+3. Verificar que no aparezcan nuevos cargos después de la eliminación
+4. Revisar el seguimiento de uso de "Free Tier"
 
-## Troubleshooting Deletion Failures
+## Resolución de Problemas de Fallas de Eliminación
 
-### Issue: Stack stuck in DELETE_IN_PROGRESS
+### Problema: Stack atascado en DELETE_IN_PROGRESS
 
-**Cause**: CloudFormation waiting for resource dependencies
+**Causa**: CloudFormation esperando dependencias de recursos
 
-**Solution**: Wait 5-10 minutes. Some resources (like API Gateway) take time to delete.
+**Solución**: Espera 5-10 minutos. Algunos recursos (como API Gateway) tardan en eliminarse.
 
-### Issue: DELETE_FAILED status
+### Problema: Estado DELETE_FAILED
 
-**Cause**: Some resources failed to delete (e.g., DynamoDB table with DeletionProtection enabled)
+**Causa**: Algunos recursos fallaron al eliminarse (ej., tabla DynamoDB con DeletionProtection habilitado)
 
-**Solution**:
+**Solución**:
 
-1. Check CloudFormation Events tab for specific error
-2. Manually delete the problematic resource in AWS Console
-3. Retry deletion:
+1. Revisa la pestaña Events de CloudFormation para el error específico
+2. Elimina manualmente el recurso problemático en la Consola de AWS
+3. Reintenta la eliminación:
    ```bash
    sam delete --stack-name techmoda-capstone --no-prompts
    ```
 
-### Issue: "Stack cannot be deleted while in status DELETE_FAILED"
+### Problema: "Stack cannot be deleted while in status DELETE_FAILED"
 
-**Solution**: Force delete by skipping failed resources
+**Solución**: Forzar eliminación saltando recursos fallidos
 
 ```bash
 aws cloudformation delete-stack \
@@ -351,139 +351,139 @@ aws cloudformation delete-stack \
   --retain-resources [ResourceLogicalId]
 ```
 
-Replace `[ResourceLogicalId]` with the resource that failed to delete (from Events tab).
+Reemplaza `[ResourceLogicalId]` con el recurso que falló al eliminarse (de la pestaña Events).
 
-### Issue: S3 bucket not empty
+### Problema: Bucket S3 no está vacío
 
-**Cause**: SAM deployment artifacts remain in S3
+**Causa**: Los artefactos de despliegue SAM permanecen en S3
 
-**Solution**: Empty the bucket first
+**Solución**: Vaciar el bucket primero
 
 ```bash
-# Find the bucket name
+# Encontrar el nombre del bucket
 aws cloudformation describe-stacks \
   --stack-name techmoda-capstone \
   --query "Stacks[0].Parameters[?ParameterKey=='SAMDeploymentBucket'].ParameterValue" \
   --output text
 
-# Empty the bucket (replace YOUR_BUCKET_NAME)
+# Vaciar el bucket (reemplaza YOUR_BUCKET_NAME)
 aws s3 rm s3://YOUR_BUCKET_NAME --recursive
 
-# Retry deletion
+# Reintentar eliminación
 sam delete --stack-name techmoda-capstone
 ```
 
-### Issue: Permissions error during deletion
+### Problema: Error de permisos durante la eliminación
 
-**Cause**: IAM user lacks necessary permissions
+**Causa**: El usuario IAM carece de permisos necesarios
 
-**Solution**: Ensure your IAM user has these permissions:
+**Solución**: Asegura que tu usuario IAM tenga estos permisos:
 - `cloudformation:DeleteStack`
 - `lambda:DeleteFunction`
 - `dynamodb:DeleteTable`
 - `apigateway:DELETE`
 - `iam:DeleteRole`
 
-Ask your bootcamp instructor to verify IAM policy.
+Pide a tu instructor del bootcamp que verifique la política IAM.
 
-## Post-Cleanup Checklist
+## Lista de Verificación Post-Limpieza
 
-After successfully deleting your stack:
+Después de eliminar exitosamente tu stack:
 
-✅ Verify CloudFormation stack is gone
-✅ Confirm no Lambda functions remain
-✅ Check DynamoDB tables list is empty
-✅ Verify API Gateway endpoints deleted
-✅ Review Billing Dashboard (should show $0.00 new charges)
-✅ Save GitHub repository URL for submission
-✅ Keep screenshots of working API (if required)
+✅ Verificar que el stack CloudFormation se haya eliminado
+✅ Confirmar que no quedan funciones Lambda
+✅ Revisar que la lista de tablas DynamoDB esté vacía
+✅ Verificar que los endpoints API Gateway se eliminaron
+✅ Revisar el Panel de Facturación (debe mostrar $0.00 en nuevos cargos)
+✅ Guardar URL del repositorio GitHub para la entrega
+✅ Conservar capturas de pantalla del API funcionando (si es requerido)
 
-## Cost Monitoring During Development
+## Monitoreo de Costos Durante el Desarrollo
 
-### Set Up Billing Alerts (Optional)
+### Configurar Alertas de Facturación (Opcional)
 
-Receive email notifications if costs exceed thresholds:
+Recibe notificaciones por email si los costos exceden umbrales:
 
 1. AWS Console → Billing → Billing Preferences
-2. Enable "Receive Billing Alerts"
-3. Go to CloudWatch → Alarms → Billing
-4. Create alarm:
-   - Metric: Estimated Charges
-   - Threshold: $1.00 USD
-   - Notification: Your email
+2. Habilitar "Receive Billing Alerts"
+3. Ir a CloudWatch → Alarms → Billing
+4. Crear alarma:
+   - Métrica: Estimated Charges
+   - Umbral: $1.00 USD
+   - Notificación: Tu email
 
-This ensures you're notified if costs unexpectedly exceed capstone budget.
+Esto asegura que seas notificado si los costos exceden inesperadamente el presupuesto del capstone.
 
-### Check Free Tier Usage
+### Revisar Uso de Free Tier
 
-Monitor how much Free Tier you've consumed:
+Monitorea cuánto Free Tier has consumido:
 
 1. AWS Console → Billing → Free Tier
-2. Review usage for:
-   - Lambda (invocations and compute time)
-   - DynamoDB (read/write capacity)
-   - API Gateway (API calls)
-   - CloudWatch Logs (ingestion)
+2. Revisar uso para:
+   - Lambda (invocaciones y tiempo de cómputo)
+   - DynamoDB (capacidad de lectura/escritura)
+   - API Gateway (llamadas API)
+   - CloudWatch Logs (ingesta)
 
-**Alarm signs**:
-- Lambda invocations > 900,000/month (approaching limit)
-- DynamoDB writes > 900,000/month (approaching limit)
-- Any service showing >80% Free Tier consumption
+**Señales de alarma**:
+- Invocaciones Lambda > 900,000/mes (acercándose al límite)
+- Escrituras DynamoDB > 900,000/mes (acercándose al límite)
+- Cualquier servicio mostrando >80% de consumo de Free Tier
 
-For this capstone, you should see <0.01% Free Tier usage.
+Para este capstone, deberías ver <0.01% de uso de Free Tier.
 
-## Estimated Costs Beyond Free Tier
+## Costos Estimados Más Allá de Free Tier
 
-If you exceed AWS Free Tier limits (unlikely for this capstone), here are the charges:
+Si excedes los límites de AWS Free Tier (improbable para este capstone), aquí están los cargos:
 
-### Scenario: 10,000 API Requests (Heavy Testing)
+### Escenario: 10,000 Solicitudes API (Pruebas Intensivas)
 
-| Service | Cost |
+| Servicio | Costo |
 |---------|------|
 | API Gateway | 10,000 × $3.50/1M = $0.035 |
 | Lambda | 10,000 × $0.20/1M = $0.002 |
-| DynamoDB | Writes: $0.003, Reads: $0.001 |
+| DynamoDB | Escrituras: $0.003, Lecturas: $0.001 |
 | CloudWatch | $0.001 |
 | X-Ray | $0.05 |
 
-**Total**: **~$0.09** (still under $0.10)
+**Total**: **~$0.09** (aún bajo $0.10)
 
-### Scenario: 1 Week of Active Use
+### Escenario: 1 Semana de Uso Activo
 
-| Service | Cost |
+| Servicio | Costo |
 |---------|------|
-| DynamoDB Storage | 0.001 GB × $0.25 = $0.00025 |
-| CloudWatch Storage | 0.01 GB × $0.03 = $0.0003 |
-| Lambda (idle) | $0.00 |
-| API Gateway (idle) | $0.00 |
+| Almacenamiento DynamoDB | 0.001 GB × $0.25 = $0.00025 |
+| Almacenamiento CloudWatch | 0.01 GB × $0.03 = $0.0003 |
+| Lambda (inactivo) | $0.00 |
+| API Gateway (inactivo) | $0.00 |
 
-**Total**: **~$0.0006** (less than $0.001)
+**Total**: **~$0.0006** (menos de $0.001)
 
-Even with extended use, costs remain negligible.
+Incluso con uso extendido, los costos permanecen insignificantes.
 
-## Summary
+## Resumen
 
-- **Expected cost**: **$0.00** (fully covered by AWS Free Tier)
-- **Worst-case cost**: **Under $0.10** (if Free Tier exhausted)
-- **Capstone budget**: **Under $1.00 USD** ✅ Achieved
-- **Cleanup time**: **2-5 minutes**
-- **Cost after cleanup**: **$0.00** (no ongoing charges)
+- **Costo esperado**: **$0.00** (totalmente cubierto por AWS Free Tier)
+- **Costo en el peor caso**: **Bajo $0.10** (si se agota Free Tier)
+- **Presupuesto capstone**: **Bajo $1.00 USD** ✅ Logrado
+- **Tiempo de limpieza**: **2-5 minutos**
+- **Costo después de limpieza**: **$0.00** (sin cargos continuos)
 
-## Additional Resources
+## Recursos Adicionales
 
-- [AWS Pricing Calculator](https://calculator.aws/) - Estimate costs for other architectures
-- [AWS Free Tier Details](https://aws.amazon.com/free/) - Full list of Free Tier services
-- [DynamoDB Pricing](https://aws.amazon.com/dynamodb/pricing/) - Detailed PAY_PER_REQUEST costs
-- [Lambda Pricing](https://aws.amazon.com/lambda/pricing/) - Request and compute pricing
-- [API Gateway Pricing](https://aws.amazon.com/api-gateway/pricing/) - REST API costs
+- [AWS Pricing Calculator](https://calculator.aws/) - Estimar costos para otras arquitecturas
+- [Detalles de AWS Free Tier](https://aws.amazon.com/free/) - Lista completa de servicios Free Tier
+- [Precios de DynamoDB](https://aws.amazon.com/dynamodb/pricing/) - Costos detallados de PAY_PER_REQUEST
+- [Precios de Lambda](https://aws.amazon.com/lambda/pricing/) - Precios de solicitudes y cómputo
+- [Precios de API Gateway](https://aws.amazon.com/api-gateway/pricing/) - Costos de API REST
 
-## Questions?
+## ¿Preguntas?
 
-If you see unexpected charges or have billing questions:
+Si ves cargos inesperados o tienes preguntas de facturación:
 
-1. Check AWS Billing Dashboard for detailed breakdown
-2. Review CloudWatch Logs for unusual activity
-3. Ask your bootcamp instructor for assistance
-4. Contact AWS Support (if available in your account tier)
+1. Revisa el Panel de Facturación de AWS para un desglose detallado
+2. Revisa CloudWatch Logs para actividad inusual
+3. Pregunta a tu instructor del bootcamp para asistencia
+4. Contacta AWS Support (si está disponible en tu nivel de cuenta)
 
-**Remember**: Delete your stack immediately after demonstration to avoid any charges beyond capstone scope.
+**Recuerda**: Elimina tu stack inmediatamente después de la demostración para evitar cualquier cargo más allá del alcance del capstone.

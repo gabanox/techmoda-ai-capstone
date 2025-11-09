@@ -1,8 +1,8 @@
-# Prompt Templates: Debugging
+# Plantillas de Prompts: Depuración
 
-These prompts help you troubleshoot Lambda execution errors, DynamoDB permission issues, and common serverless problems.
+Estos prompts le ayudan a solucionar problemas de ejecución de Lambda, problemas de permisos de DynamoDB y problemas comunes de serverless.
 
-## Prompt 5.1: Analyze CloudWatch Logs
+## Prompt 5.1: Analizar CloudWatch Logs
 
 ```
 My Lambda function is failing and I need to analyze CloudWatch Logs.
@@ -19,7 +19,7 @@ Please provide:
 4. How to interpret stack traces
 ```
 
-## Prompt 5.2: Fix DynamoDB Permission Error
+## Prompt 5.2: Corregir Error de Permisos de DynamoDB
 
 ```
 My Lambda function is failing with a DynamoDB permission error:
@@ -39,7 +39,7 @@ Please help:
 4. How to fix permission issue
 ```
 
-## Prompt 5.3: Debug Lambda Timeout
+## Prompt 5.3: Depurar Timeout de Lambda
 
 ```
 My Lambda function is timing out after 30 seconds.
@@ -55,7 +55,7 @@ Please help:
 5. Redeploy steps after changing timeout
 ```
 
-## Prompt 5.4: Fix JSON Parse Error
+## Prompt 5.4: Corregir Error de Análisis JSON
 
 ```
 My Lambda function is failing to parse JSON body from API Gateway.
@@ -72,16 +72,16 @@ Please help:
 5. Sample code for safe JSON parsing
 ```
 
-## Detailed Debugging Workflows
+## Flujos de Trabajo de Depuración Detallados
 
-### Workflow 1: Lambda Function Crashes
+### Flujo de Trabajo 1: La Función Lambda se Bloquea
 
-**Symptoms**:
-- 500 Internal Server Error from API
-- No response or timeout
-- CloudWatch Logs show error
+**Síntomas**:
+- 500 Internal Server Error desde la API
+- Sin respuesta o timeout
+- CloudWatch Logs muestra error
 
-**Debugging Prompt**:
+**Prompt de Depuración**:
 ```
 My Lambda function is crashing with this error in CloudWatch Logs:
 
@@ -97,14 +97,14 @@ Please help me:
 4. Explain how to prevent similar errors
 ```
 
-### Workflow 2: DynamoDB Operation Fails
+### Flujo de Trabajo 2: La Operación de DynamoDB Falla
 
-**Symptoms**:
-- 500 error mentioning DynamoDB
-- AccessDeniedException or ValidationException
-- Function executes but can't access database
+**Síntomas**:
+- Error 500 mencionando DynamoDB
+- AccessDeniedException o ValidationException
+- La función se ejecuta pero no puede acceder a la base de datos
 
-**Debugging Prompt**:
+**Prompt de Depuración**:
 ```
 My Lambda function can execute but DynamoDB operations are failing.
 
@@ -122,14 +122,14 @@ Please help me:
 5. Fix the issue
 ```
 
-### Workflow 3: Wrong Response Format
+### Flujo de Trabajo 3: Formato de Respuesta Incorrecto
 
-**Symptoms**:
-- 502 Bad Gateway from API Gateway
-- Lambda executes successfully
-- CloudWatch shows no errors
+**Síntomas**:
+- 502 Bad Gateway desde API Gateway
+- Lambda se ejecuta exitosamente
+- CloudWatch no muestra errores
 
-**Debugging Prompt**:
+**Prompt de Depuración**:
 ```
 My Lambda function completes successfully but API Gateway returns 502 Bad Gateway.
 
@@ -144,14 +144,14 @@ Please help me:
 5. Fix the response format
 ```
 
-### Workflow 4: Path Parameter Not Found
+### Flujo de Trabajo 4: Parámetro de Ruta No Encontrado
 
-**Symptoms**:
-- GetItem/UpdateItem/DeleteItem return errors
+**Síntomas**:
+- GetItem/UpdateItem/DeleteItem devuelven errores
 - "Cannot read property 'id' of undefined"
-- Functions work in ListItems but not others
+- Las funciones funcionan en ListItems pero no en otras
 
-**Debugging Prompt**:
+**Prompt de Depuración**:
 ```
 My Lambda function is failing to read path parameters.
 
@@ -169,13 +169,13 @@ Please help me:
 4. Add safety checks for missing parameters
 ```
 
-## Common Error Patterns
+## Patrones de Errores Comunes
 
-### Pattern 1: AWS SDK Import Errors
+### Patrón 1: Errores de Importación de AWS SDK
 
 **Error**: `Cannot find module '@aws-sdk/client-dynamodb'`
 
-**Debugging Prompt**:
+**Prompt de Depuración**:
 ```
 I'm getting module not found errors for AWS SDK.
 
@@ -190,11 +190,11 @@ Please help:
 4. Show correct import statements
 ```
 
-### Pattern 2: Environment Variable Undefined
+### Patrón 2: Variable de Entorno Indefinida
 
-**Error**: Table name is undefined
+**Error**: El nombre de la tabla es indefinido
 
-**Debugging Prompt**:
+**Prompt de Depuración**:
 ```
 My Lambda function can't access environment variables.
 
@@ -211,11 +211,11 @@ Please help:
 4. Debug why variable isn't available
 ```
 
-### Pattern 3: DynamoDB SDK v2 vs v3
+### Patrón 3: DynamoDB SDK v2 vs v3
 
 **Error**: `docClient.scan is not a function`
 
-**Debugging Prompt**:
+**Prompt de Depuración**:
 ```
 I'm getting errors with DynamoDB SDK methods.
 
@@ -230,11 +230,11 @@ Please help:
 4. Fix my code
 ```
 
-### Pattern 4: Async/Await Issues
+### Patrón 4: Problemas con Async/Await
 
-**Error**: Lambda returns undefined or doesn't wait for DynamoDB
+**Error**: Lambda devuelve undefined o no espera a DynamoDB
 
-**Debugging Prompt**:
+**Prompt de Depuración**:
 ```
 My Lambda function is returning undefined or not waiting for DynamoDB operations.
 
@@ -248,9 +248,9 @@ Please help:
 4. Fix async flow
 ```
 
-## CloudWatch Logs Analysis
+## Análisis de CloudWatch Logs
 
-### View Recent Logs
+### Ver Logs Recientes
 
 **Prompt**:
 ```
@@ -265,7 +265,7 @@ Please provide:
 4. How to search logs for specific text
 ```
 
-### Interpret Log Entries
+### Interpretar Entradas de Log
 
 **Prompt**:
 ```
@@ -281,9 +281,9 @@ Please explain:
 4. How to identify errors in the logs
 ```
 
-## Performance Debugging
+## Depuración de Rendimiento
 
-### Slow Function Execution
+### Ejecución Lenta de Función
 
 **Prompt**:
 ```
@@ -303,7 +303,7 @@ Please help:
 4. Add timing logs to isolate slow sections
 ```
 
-### Memory Issues
+### Problemas de Memoria
 
 **Prompt**:
 ```
@@ -322,9 +322,9 @@ Please help:
 4. Determine if I need more memory
 ```
 
-## Validation and Testing
+## Validación y Pruebas
 
-### Validate Lambda Code Locally
+### Validar Código Lambda Localmente
 
 **Prompt**:
 ```
@@ -339,7 +339,7 @@ Please show me:
 4. How to test with local DynamoDB
 ```
 
-### Validate API Gateway Integration
+### Validar Integración de API Gateway
 
 **Prompt**:
 ```
@@ -352,7 +352,7 @@ Please help:
 4. Debug integration issues
 ```
 
-## Fix and Redeploy
+## Corregir y Re-desplegar
 
 **Prompt**:
 ```
@@ -368,7 +368,7 @@ Please provide:
 4. What to check in CloudWatch Logs after redeployment
 ```
 
-## Prevention Best Practices
+## Mejores Prácticas de Prevención
 
 **Prompt**:
 ```
@@ -382,7 +382,7 @@ Please show me:
 5. Input validation techniques
 ```
 
-## Emergency Rollback
+## Rollback de Emergencia
 
 **Prompt**:
 ```
@@ -397,12 +397,12 @@ Please help:
 4. Steps to quickly restore service
 ```
 
-## Next Steps
+## Próximos Pasos
 
-After debugging and fixing issues:
+Después de depurar y corregir problemas:
 
-1. Redeploy with fixes
-2. Verify all tests pass
-3. Document issues and solutions
-4. Add preventive measures (better error handling, logging)
-5. Proceed to [Operations Prompts](06_OPERATIONS.md)
+1. Re-despliegue con las correcciones
+2. Verifique que todas las pruebas pasen
+3. Documente los problemas y soluciones
+4. Agregue medidas preventivas (mejor manejo de errores, logging)
+5. Proceda a [Prompts de Operaciones](06_OPERATIONS.md)

@@ -1,35 +1,35 @@
-# Lambda Function Specification: GetItem
+# Especificación de Función Lambda: GetItem
 
-## Purpose
+## Propósito
 
-Retrieve a single product by its productId from the TechModa fashion catalog using DynamoDB GetItem operation.
+Recuperar un único producto por su productId del catálogo de moda TechModa usando la operación GetItem de DynamoDB.
 
-## API Endpoint
+## Endpoint API
 
-**Method**: `GET`
+**Método**: `GET`
 
-**Path**: `/products/{id}`
+**Ruta**: `/products/{id}`
 
-**Trigger**: API Gateway REST API event with path parameter
+**Trigger**: Evento de API Gateway REST API con parámetro de ruta
 
-## Input Schema
+## Esquema de Entrada
 
-### Path Parameters
+### Parámetros de Ruta
 
-**Required**: `id` (productId)
+**Requerido**: `id` (productId)
 
-**Example**: `/products/123e4567-e89b-12d3-a456-426614174000`
+**Ejemplo**: `/products/123e4567-e89b-12d3-a456-426614174000`
 
-### Query Parameters
-None
+### Parámetros de Consulta
+Ninguno
 
-### Request Headers
-None required
+### Encabezados de Solicitud
+Ninguno requerido
 
-### Request Body
-None
+### Cuerpo de Solicitud
+Ninguno
 
-### API Gateway Event Structure
+### Estructura de Evento API Gateway
 ```javascript
 {
   "httpMethod": "GET",
@@ -42,15 +42,15 @@ None
 }
 ```
 
-**Access Path Parameter**: `event.pathParameters.id`
+**Acceso al Parámetro de Ruta**: `event.pathParameters.id`
 
-## Output Schema
+## Esquema de Salida
 
-### Success Response (200 OK)
+### Respuesta Exitosa (200 OK)
 
-**HTTP Status Code**: 200
+**Código de Estado HTTP**: 200
 
-**Headers**:
+**Encabezados**:
 ```javascript
 {
   "Content-Type": "application/json",
@@ -58,7 +58,7 @@ None
 }
 ```
 
-**Body**:
+**Cuerpo**:
 ```json
 {
   "productId": "123e4567-e89b-12d3-a456-426614174000",
@@ -72,13 +72,13 @@ None
 }
 ```
 
-### Error Responses
+### Respuestas de Error
 
 #### 404 Not Found
 
-**HTTP Status Code**: 404
+**Código de Estado HTTP**: 404
 
-**Body**:
+**Cuerpo**:
 ```json
 {
   "error": "Not Found",
@@ -88,9 +88,9 @@ None
 
 #### 500 Internal Server Error
 
-**HTTP Status Code**: 500
+**Código de Estado HTTP**: 500
 
-**Body**:
+**Cuerpo**:
 ```json
 {
   "error": "Internal server error",
@@ -98,15 +98,15 @@ None
 }
 ```
 
-## DynamoDB Operations
+## Operaciones DynamoDB
 
-### Operation: GetItem
+### Operación: GetItem
 
-**Purpose**: Retrieve single item by primary key
+**Propósito**: Recuperar un único item por clave primaria
 
-**AWS SDK v3 Command**: `GetCommand`
+**Comando AWS SDK v3**: `GetCommand`
 
-**Parameters**:
+**Parámetros**:
 ```javascript
 {
   TableName: process.env.PRODUCTS_TABLE,
@@ -116,102 +116,102 @@ None
 }
 ```
 
-**Response**:
+**Respuesta**:
 ```javascript
 {
   Item: {
     productId: "123e4567-e89b-12d3-a456-426614174000",
     name: "Classic Denim Jacket",
-    // ... other attributes
+    // ... otros atributos
   }
 }
 ```
 
-**If Not Found**:
+**Si No Se Encuentra**:
 ```javascript
 {
-  // Item property is undefined
+  // La propiedad Item es undefined
 }
 ```
 
-## Implementation Steps (Pseudocode)
+## Pasos de Implementación (Pseudocódigo)
 
 ```
-1. Initialize DynamoDB client
-   - Import DynamoDBClient from @aws-sdk/client-dynamodb
-   - Import DynamoDBDocumentClient and GetCommand from @aws-sdk/lib-dynamodb
-   - Create and wrap client
+1. Inicializar cliente DynamoDB
+   - Importar DynamoDBClient desde @aws-sdk/client-dynamodb
+   - Importar DynamoDBDocumentClient y GetCommand desde @aws-sdk/lib-dynamodb
+   - Crear y envolver cliente
 
-2. Define Lambda handler function
-   - Async function: exports.handler = async (event)
+2. Definir función handler de Lambda
+   - Función async: exports.handler = async (event)
 
-3. Extract productId from path parameters
+3. Extraer productId de parámetros de ruta
    - const productId = event.pathParameters.id
 
-4. Prepare DynamoDB GetItem parameters
+4. Preparar parámetros GetItem de DynamoDB
    - TableName: process.env.PRODUCTS_TABLE
    - Key: { productId }
 
-5. Execute GetItem operation
-   - Use try/catch for error handling
-   - Send GetCommand to DynamoDB
-   - Extract Item from response
+5. Ejecutar operación GetItem
+   - Usar try/catch para manejo de errores
+   - Enviar GetCommand a DynamoDB
+   - Extraer Item de la respuesta
 
-6. Check if item exists
-   - If Item is undefined/null: return 404 Not Found
-   - If Item exists: return 200 OK with product
+6. Verificar si el item existe
+   - Si Item es undefined/null: retornar 404 Not Found
+   - Si Item existe: retornar 200 OK con producto
 
-7. Handle success case (item found)
-   - Return API Gateway response:
+7. Manejar caso exitoso (item encontrado)
+   - Retornar respuesta API Gateway:
      * statusCode: 200
-     * headers: Content-Type and CORS
+     * headers: Content-Type y CORS
      * body: JSON.stringify(Item)
 
-8. Handle not found case
-   - Return API Gateway response:
+8. Manejar caso no encontrado
+   - Retornar respuesta API Gateway:
      * statusCode: 404
-     * headers: Content-Type and CORS
+     * headers: Content-Type y CORS
      * body: JSON.stringify({ error: "Not Found", message: "Product not found" })
 
-9. Handle error case
-   - Log error to CloudWatch (console.error)
-   - Return 500 response
+9. Manejar caso de error
+   - Registrar error en CloudWatch (console.error)
+   - Retornar respuesta 500
 ```
 
-## Testing Curl Command
+## Comando Curl de Prueba
 
-### Get Existing Product
+### Obtener Producto Existente
 
-First, create a product and save its ID:
+Primero, crea un producto y guarda su ID:
 
 ```bash
-# Create product and save response
+# Crear producto y guardar respuesta
 RESPONSE=$(curl -s -X POST $API_URL/products \
   -H "Content-Type: application/json" \
   -d '{"name": "Test Product", "price": 99.99}')
 
-# Extract productId (requires jq)
+# Extraer productId (requiere jq)
 PRODUCT_ID=$(echo $RESPONSE | jq -r '.productId')
 
-# Get the product
+# Obtener el producto
 curl -X GET $API_URL/products/$PRODUCT_ID
 ```
 
-### Direct Test (with known ID)
+### Prueba Directa (con ID conocido)
 
 ```bash
 curl -X GET https://{api-id}.execute-api.us-east-1.amazonaws.com/Prod/products/123e4567-e89b-12d3-a456-426614174000
 ```
 
-### Test 404 Not Found
+### Probar 404 Not Found
 
 ```bash
 curl -X GET $API_URL/products/nonexistent-id-12345
 ```
 
-**Expected**: 404 Not Found
+**Esperado**: 404 Not Found
 
-### Expected Success Response
+### Respuesta Exitosa Esperada
 
 ```json
 {
@@ -226,50 +226,50 @@ curl -X GET $API_URL/products/nonexistent-id-12345
 }
 ```
 
-### Verify in CloudWatch Logs
+### Verificar en CloudWatch Logs
 
 ```bash
 aws logs tail /aws/lambda/techmoda-capstone-GetItem --follow
 ```
 
-## Claude Code Prompt
+## Prompt para Claude Code
 
 ```
-I need to implement a Lambda function in Node.js 18.x that retrieves a single product by ID from DynamoDB.
+Necesito implementar una función Lambda en Node.js 18.x que recupere un único producto por ID desde DynamoDB.
 
-Requirements:
-- Function name: GetItem
+Requisitos:
+- Nombre de función: GetItem
 - Runtime: Node.js 18.x
 - Trigger: API Gateway (GET /products/{id})
-- Path parameter: id (productId)
-- Database: DynamoDB table (name from environment variable PRODUCTS_TABLE)
-- Operation: GetItem by productId
-- Response: Product object with HTTP 200 if found
-- Response: Error message with HTTP 404 if not found
-- Error handling: 500 for DynamoDB errors
-- CORS: Include Access-Control-Allow-Origin: * header
+- Parámetro de ruta: id (productId)
+- Base de datos: Tabla DynamoDB (nombre de variable de entorno PRODUCTS_TABLE)
+- Operación: GetItem por productId
+- Respuesta: Objeto de producto con HTTP 200 si se encuentra
+- Respuesta: Mensaje de error con HTTP 404 si no se encuentra
+- Manejo de errores: 500 para errores de DynamoDB
+- CORS: Incluir encabezado Access-Control-Allow-Origin: *
 
-Please generate:
-1. Complete index.js with exports.handler
-2. Extract productId from event.pathParameters.id
-3. AWS SDK v3 DynamoDB GetItem
-4. Check if item exists
-5. Return 404 if not found, 200 if found
-6. Error handling with try/catch
-7. API Gateway response format
+Por favor genera:
+1. Archivo index.js completo con exports.handler
+2. Extraer productId desde event.pathParameters.id
+3. GetItem de DynamoDB con AWS SDK v3
+4. Verificar si el item existe
+5. Retornar 404 si no se encuentra, 200 si se encuentra
+6. Manejo de errores con try/catch
+7. Formato de respuesta API Gateway
 ```
 
-## Implementation Notes
+## Notas de Implementación
 
-### Extracting Path Parameters
+### Extracción de Parámetros de Ruta
 
-API Gateway passes path parameters in `event.pathParameters`:
+API Gateway pasa los parámetros de ruta en `event.pathParameters`:
 
 ```javascript
 const productId = event.pathParameters.id;
 ```
 
-**Safety Check** (optional):
+**Verificación de Seguridad** (opcional):
 ```javascript
 if (!event.pathParameters || !event.pathParameters.id) {
   return {
@@ -283,15 +283,15 @@ if (!event.pathParameters || !event.pathParameters.id) {
 }
 ```
 
-### Checking Item Existence
+### Verificación de Existencia del Item
 
-DynamoDB GetItem returns `undefined` for Item if not found:
+DynamoDB GetItem retorna `undefined` para Item si no se encuentra:
 
 ```javascript
 const result = await docClient.send(new GetCommand({...}));
 
 if (!result.Item) {
-  // Item not found, return 404
+  // Item no encontrado, retornar 404
   return {
     statusCode: 404,
     headers: {...},
@@ -302,7 +302,7 @@ if (!result.Item) {
   };
 }
 
-// Item found, return 200
+// Item encontrado, retornar 200
 return {
   statusCode: 200,
   headers: {...},
@@ -310,16 +310,16 @@ return {
 };
 ```
 
-### Performance
+### Rendimiento
 
-GetItem is the fastest DynamoDB operation:
-- Direct key lookup
-- Single-digit millisecond latency
-- Strongly consistent by default
+GetItem es la operación DynamoDB más rápida:
+- Búsqueda directa por clave
+- Latencia de un dígito en milisegundos
+- Fuertemente consistente por defecto
 
-### CORS Headers
+### Encabezados CORS
 
-Include in all responses (200, 404, 500):
+Incluir en todas las respuestas (200, 404, 500):
 
 ```javascript
 const headers = {
@@ -328,60 +328,60 @@ const headers = {
 };
 ```
 
-## Common Errors and Solutions
+## Errores Comunes y Soluciones
 
 ### Error: "Cannot read property 'id' of undefined"
 
-**Cause**: Path parameter not passed correctly
+**Causa**: Parámetro de ruta no pasado correctamente
 
-**Solution**: Verify API Gateway route includes `{id}` parameter in template.yaml:
+**Solución**: Verifica que la ruta de API Gateway incluya parámetro `{id}` en template.yaml:
 ```yaml
 Path: /products/{id}
 Method: get
 ```
 
-### Error: "Product not found" (but product exists)
+### Error: "Product not found" (pero el producto existe)
 
-**Cause**: Wrong productId or case sensitivity issue
+**Causa**: productId incorrecto o problema de sensibilidad a mayúsculas
 
-**Solution**:
-- Copy exact productId from CreateItem response
-- DynamoDB keys are case-sensitive
-- Verify table has item with `aws dynamodb get-item`
+**Solución**:
+- Copia el productId exacto de la respuesta de CreateItem
+- Las claves de DynamoDB son sensibles a mayúsculas
+- Verifica que la tabla tiene el item con `aws dynamodb get-item`
 
 ### Error: "ValidationException: One or more parameter values were invalid"
 
-**Cause**: Missing or invalid Key in GetItem parameters
+**Causa**: Key faltante o inválido en parámetros GetItem
 
-**Solution**: Ensure Key object matches table schema:
+**Solución**: Asegura que el objeto Key coincida con el esquema de la tabla:
 ```javascript
 Key: {
   productId: "the-actual-uuid"
 }
 ```
 
-## Validation Criteria
+## Criterios de Validación
 
-Your GetItem function is correctly implemented when:
+Tu función GetItem está correctamente implementada cuando:
 
-✅ GET /products/{id} with valid ID returns 200 OK
-✅ Response contains complete product object
-✅ GET /products/{invalid-id} returns 404 Not Found
-✅ 404 response includes error message
-✅ CORS headers present in all responses
-✅ CloudWatch Logs show GetItem operation
-✅ X-Ray trace displays DynamoDB GetItem segment (fast, <50ms)
-✅ Function works for products created via CreateItem
+✅ GET /products/{id} con ID válido retorna 200 OK
+✅ La respuesta contiene objeto de producto completo
+✅ GET /products/{invalid-id} retorna 404 Not Found
+✅ La respuesta 404 incluye mensaje de error
+✅ Los encabezados CORS están presentes en todas las respuestas
+✅ CloudWatch Logs muestra operación GetItem
+✅ La traza X-Ray muestra segmento GetItem de DynamoDB (rápido, <50ms)
+✅ La función funciona para productos creados vía CreateItem
 
-## Next Steps
+## Próximos Pasos
 
-After implementing GetItem:
+Después de implementar GetItem:
 
-1. Deploy with `sam build && sam deploy`
-2. Create a product with POST /products
-3. Copy the returned productId
-4. Test GET /products/{id} with that ID
-5. Verify 200 response with product details
-6. Test with non-existent ID to verify 404
-7. Check CloudWatch Logs
-8. Proceed to implement UpdateItem function
+1. Desplegar con `sam build && sam deploy`
+2. Crear un producto con POST /products
+3. Copiar el productId retornado
+4. Probar GET /products/{id} con ese ID
+5. Verificar respuesta 200 con detalles del producto
+6. Probar con ID no existente para verificar 404
+7. Revisar CloudWatch Logs
+8. Proceder a implementar la función UpdateItem

@@ -1,8 +1,8 @@
 # TechModa Serverless Capstone
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=master&repo=gabanox/techmoda-serverless-capstone-starter)
+[![Abrir en GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=master&repo=gabanox/techmoda-serverless-capstone-starter)
 
-Fashion E-commerce Product Catalog API built with AWS Serverless Technologies
+API de Catálogo de Productos de E-commerce de Moda construida con Tecnologías Serverless de AWS
 
 ---
 
@@ -14,53 +14,53 @@ Fashion E-commerce Product Catalog API built with AWS Serverless Technologies
 
 ---
 
-## Quick Start with GitHub Codespaces
+## Inicio Rápido con GitHub Codespaces
 
-**Recommended**: Use GitHub Codespaces for a pre-configured development environment with AWS CLI, SAM CLI, and Node.js 18.x already installed.
+**Recomendado**: Usa GitHub Codespaces para un entorno de desarrollo preconfigurado con AWS CLI, SAM CLI y Node.js 18.x ya instalados.
 
-1. Click the **"Open in GitHub Codespaces"** badge above
-2. Wait for the environment to build (2-3 minutes)
-3. **Configure AWS credentials** - See [AWS_CREDENTIALS_SETUP.md](AWS_CREDENTIALS_SETUP.md) for detailed instructions
-4. Follow the [Implementation Guide](#implementation-guide) below
+1. Haz clic en el botón **"Abrir en GitHub Codespaces"** arriba
+2. Espera a que el entorno se construya (2-3 minutos)
+3. **Configura las credenciales de AWS** - Consulta [AWS_CREDENTIALS_SETUP.md](AWS_CREDENTIALS_SETUP.md) para instrucciones detalladas
+4. Sigue la [Guía de Implementación](#guía-de-implementación) a continuación
 
-### AWS Credentials Configuration
+### Configuración de Credenciales de AWS
 
-Before deploying, you must configure AWS credentials in GitHub:
+Antes de desplegar, debes configurar las credenciales de AWS en GitHub:
 
-1. Go to your repository **Settings** → **Secrets and variables** → **Codespaces**
-2. Add three secrets:
-   - `AWS_ACCESS_KEY_ID` - Your AWS access key
-   - `AWS_SECRET_ACCESS_KEY` - Your AWS secret key
-   - `AWS_DEFAULT_REGION` - Your AWS region (e.g., `us-east-1`)
-3. Rebuild your Codespace to load the credentials
+1. Ve a la **Configuración** de tu repositorio → **Secrets and variables** → **Codespaces**
+2. Agrega tres secretos:
+   - `AWS_ACCESS_KEY_ID` - Tu clave de acceso de AWS
+   - `AWS_SECRET_ACCESS_KEY` - Tu clave secreta de AWS
+   - `AWS_DEFAULT_REGION` - Tu región de AWS (ej., `us-east-1`)
+3. Reconstruye tu Codespace para cargar las credenciales
 
-For detailed step-by-step instructions with screenshots, see **[AWS_CREDENTIALS_SETUP.md](AWS_CREDENTIALS_SETUP.md)**.
+Para instrucciones detalladas paso a paso con capturas de pantalla, consulta **[AWS_CREDENTIALS_SETUP.md](AWS_CREDENTIALS_SETUP.md)**.
 
-## Overview
+## Descripción General
 
-TechModa is a serverless REST API for managing a fashion e-commerce product catalog. This capstone project demonstrates mastery of AWS serverless architecture patterns using Lambda, API Gateway, and DynamoDB.
+TechModa es una API REST serverless para gestionar un catálogo de productos de e-commerce de moda. Este proyecto capstone demuestra dominio de patrones de arquitectura serverless de AWS utilizando Lambda, API Gateway y DynamoDB.
 
-### Learning Objectives
+### Objetivos de Aprendizaje
 
-By completing this project, you will:
+Al completar este proyecto, podrás:
 
-- Design serverless architectures using Lambda, API Gateway, and DynamoDB
-- Implement RESTful APIs with proper HTTP methods and status codes
-- Deploy infrastructure as code using AWS SAM
-- Test APIs manually using curl and interpret responses
-- Debug serverless applications using CloudWatch Logs and X-Ray
-- Estimate and manage AWS costs for serverless applications
-- Use AI tools effectively (Claude Code) to accelerate development
-- Document technical projects for portfolio purposes
-- Follow AWS best practices for security and observability
+- Diseñar arquitecturas serverless usando Lambda, API Gateway y DynamoDB
+- Implementar APIs RESTful con métodos HTTP apropiados y códigos de estado
+- Desplegar infraestructura como código usando AWS SAM
+- Probar APIs manualmente usando curl e interpretar respuestas
+- Depurar aplicaciones serverless usando CloudWatch Logs y X-Ray
+- Estimar y gestionar costos de AWS para aplicaciones serverless
+- Usar herramientas de IA efectivamente (Claude Code) para acelerar el desarrollo
+- Documentar proyectos técnicos para propósitos de portafolio
+- Seguir las mejores prácticas de AWS para seguridad y observabilidad
 
-## Architecture
+## Arquitectura
 
 ```
 ┌─────────────┐      ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
-│   Client    │─────▶│ API Gateway │─────▶│   Lambda    │─────▶│  DynamoDB   │
+│   Cliente   │─────▶│ API Gateway │─────▶│   Lambda    │─────▶│  DynamoDB   │
 │  (curl/     │◀─────│   (REST)    │◀─────│ (Node.js)   │◀─────│   (NoSQL)   │
-│  browser)   │      └─────────────┘      └─────────────┘      └─────────────┘
+│  navegador) │      └─────────────┘      └─────────────┘      └─────────────┘
 └─────────────┘              │                     │
                              │                     │
                              ▼                     ▼
@@ -70,101 +70,101 @@ By completing this project, you will:
                       └─────────────┘      └─────────────┘
 ```
 
-### Components
+### Componentes
 
-- **API Gateway**: REST API with 5 endpoints for CRUD operations
-- **Lambda Functions**: 5 Node.js 18.x functions (ListItems, CreateItem, GetItem, UpdateItem, DeleteItem)
-- **DynamoDB**: NoSQL database with PAY_PER_REQUEST billing
-- **CloudWatch**: Centralized logging for Lambda execution
-- **X-Ray**: Distributed tracing for performance observability
+- **API Gateway**: API REST con 5 endpoints para operaciones CRUD
+- **Lambda Functions**: 5 funciones Node.js 18.x (ListItems, CreateItem, GetItem, UpdateItem, DeleteItem)
+- **DynamoDB**: Base de datos NoSQL con facturación PAY_PER_REQUEST
+- **CloudWatch**: Registro centralizado para ejecución de Lambda
+- **X-Ray**: Rastreo distribuido para observabilidad de rendimiento
 
-For detailed architecture documentation, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+Para documentación detallada de arquitectura, consulta [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
-## Prerequisites
+## Prerequisitos
 
-Before starting, ensure you have:
+Antes de comenzar, asegúrate de tener:
 
-- **AWS Account** with appropriate permissions
-- **AWS CLI v2** installed and configured ([Installation Guide](docs/prompts/01_ENVIRONMENT_SETUP.md))
-- **AWS SAM CLI** installed ([Installation Guide](docs/prompts/01_ENVIRONMENT_SETUP.md))
-- **Node.js 18.x** or later
-- **Git** for version control
-- **Basic knowledge** of JavaScript, REST APIs, and AWS services
+- **Cuenta de AWS** con permisos apropiados
+- **AWS CLI v2** instalado y configurado ([Guía de Instalación](docs/prompts/01_ENVIRONMENT_SETUP.md))
+- **AWS SAM CLI** instalado ([Guía de Instalación](docs/prompts/01_ENVIRONMENT_SETUP.md))
+- **Node.js 18.x** o posterior
+- **Git** para control de versiones
+- **Conocimiento básico** de JavaScript, APIs REST y servicios de AWS
 
-## Implementation Guide
+## Guía de Implementación
 
-### 1. Clone the Repository
+### 1. Clonar el Repositorio
 
-**Note**: If using Codespaces, skip this step - the repository is already cloned.
+**Nota**: Si usas Codespaces, omite este paso - el repositorio ya está clonado.
 
 ```bash
 git clone <repository-url>
 cd techmoda-serverless-capstone-starter
 ```
 
-### 2. Review the Project Structure
+### 2. Revisar la Estructura del Proyecto
 
 ```
 techmoda-serverless-capstone-starter/
-├── template.yaml              # SAM template (infrastructure as code)
-├── functions/                 # Lambda function source code
+├── template.yaml              # Plantilla SAM (infraestructura como código)
+├── functions/                 # Código fuente de funciones Lambda
 │   ├── list-items/           # GET /products
 │   ├── create-item/          # POST /products
 │   ├── get-item/             # GET /products/{id}
 │   ├── update-item/          # PUT /products/{id}
 │   └── delete-item/          # DELETE /products/{id}
-├── frontend/                  # React frontend (optional)
-├── docs/                      # Documentation
-│   ├── specs/                # Detailed function specifications
-│   └── prompts/              # Claude Code prompt templates
-├── scripts/                   # Deployment helper scripts
-│   ├── build.sh              # Build the SAM application
-│   ├── deploy.sh             # Deploy to AWS
-│   ├── delete.sh             # Clean up resources
-│   ├── build-frontend.sh     # Build the frontend
-│   └── deploy-frontend.sh    # Deploy frontend to S3
-└── README.md                  # This file
+├── frontend/                  # Frontend React (opcional)
+├── docs/                      # Documentación
+│   ├── specs/                # Especificaciones detalladas de funciones
+│   └── prompts/              # Plantillas de prompts para Claude Code
+├── scripts/                   # Scripts auxiliares de despliegue
+│   ├── build.sh              # Construir la aplicación SAM
+│   ├── deploy.sh             # Desplegar a AWS
+│   ├── delete.sh             # Limpiar recursos
+│   ├── build-frontend.sh     # Construir el frontend
+│   └── deploy-frontend.sh    # Desplegar frontend a S3
+└── README.md                  # Este archivo
 ```
 
-### 3. Implement Lambda Functions
+### 3. Implementar las Funciones Lambda
 
-Each Lambda function in the `functions/` directory contains placeholder code with TODO comments. Follow these steps:
+Cada función Lambda en el directorio `functions/` contiene código de marcador con comentarios TODO. Sigue estos pasos:
 
-1. **Read the specification** for each function in `docs/specs/`
-2. **Use the prompt templates** in `docs/prompts/02_LAMBDA_IMPLEMENTATION.md` with Claude Code
-3. **Implement the business logic** following the spec-driven development approach
-4. **Test locally** (optional) or deploy and test in AWS
+1. **Lee la especificación** de cada función en `docs/specs/`
+2. **Usa las plantillas de prompts** en `docs/prompts/02_LAMBDA_IMPLEMENTATION.md` con Claude Code
+3. **Implementa la lógica de negocio** siguiendo el enfoque de desarrollo guiado por especificaciones
+4. **Prueba localmente** (opcional) o despliega y prueba en AWS
 
-See [CAPSTONE_OVERVIEW.md](CAPSTONE_OVERVIEW.md) for detailed implementation guidance.
+Consulta [CAPSTONE_OVERVIEW.md](CAPSTONE_OVERVIEW.md) para orientación detallada de implementación.
 
-### 4. Build the Application
+### 4. Construir la Aplicación
 
 ```bash
-# Using the helper script
+# Usando el script auxiliar
 ./scripts/build.sh
 
-# Or directly with SAM CLI
+# O directamente con SAM CLI
 sam build
 ```
 
-This command:
-- Installs Node.js dependencies for each function
-- Prepares the deployment package
-- Creates `.aws-sam/build/` directory
+Este comando:
+- Instala las dependencias de Node.js para cada función
+- Prepara el paquete de despliegue
+- Crea el directorio `.aws-sam/build/`
 
-### 5. Deploy to AWS
+### 5. Desplegar a AWS
 
-#### First Deployment (Guided)
+#### Primer Despliegue (Guiado)
 
 ```bash
-# Using the helper script
+# Usando el script auxiliar
 ./scripts/deploy.sh
 
-# Or directly with SAM CLI
+# O directamente con SAM CLI
 sam deploy --guided
 ```
 
-**IMPORTANT**: You will be prompted with several questions. Use these values:
+**IMPORTANTE**: Se te harán varias preguntas. Usa estos valores:
 
 ```
 Stack Name [techmoda-capstone]: tu-nombre-con-guiones-medios
@@ -185,39 +185,39 @@ SAM configuration file [samconfig.toml]:
 SAM configuration environment [default]:
 ```
 
-**Notes**:
-- **Stack Name**: Replace `tu-nombre-con-guiones-medios` with your actual name using hyphens (e.g., `juan-perez`, `maria-garcia`)
-- **AWS Region**: Press Enter to use default `us-east-1` (or enter your preferred region)
-- **No authentication warnings**: These are expected for this educational project (we're not using API keys or Cognito)
+**Notas**:
+- **Stack Name**: Reemplaza `tu-nombre-con-guiones-medios` con tu nombre real usando guiones (ej., `juan-perez`, `maria-garcia`)
+- **AWS Region**: Presiona Enter para usar el valor predeterminado `us-east-1` (o ingresa tu región preferida)
+- **Advertencias de no autenticación**: Esto es esperado para este proyecto educativo (no estamos usando API keys o Cognito)
 
-#### Subsequent Deployments
+#### Despliegues Subsiguientes
 
 ```bash
-# Using the helper script
+# Usando el script auxiliar
 ./scripts/deploy.sh
 
-# Or directly with SAM CLI
+# O directamente con SAM CLI
 sam deploy
 ```
 
-### 6. Test Your API
+### 6. Probar tu API
 
-After deployment, you'll receive an API URL in the outputs:
+Después del despliegue, recibirás una URL de API en las salidas:
 
 ```
 Outputs:
   ApiUrl: https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/Prod
 ```
 
-Copy this URL and test your endpoints using curl. See [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md) for complete testing instructions.
+Copia esta URL y prueba tus endpoints usando curl. Consulta [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md) para instrucciones completas de prueba.
 
-**Quick test example:**
+**Ejemplo de prueba rápida:**
 
 ```bash
-# Set your API URL
+# Configura tu URL de API
 export API_URL="https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/Prod"
 
-# Create a product
+# Crea un producto
 curl -X POST $API_URL/products \
   -H "Content-Type: application/json" \
   -d '{
@@ -228,209 +228,209 @@ curl -X POST $API_URL/products \
     "imageUrl": "https://example.com/jacket.jpg"
   }'
 
-# List all products
+# Lista todos los productos
 curl $API_URL/products
 ```
 
-### 7. Build and Deploy Frontend (Optional)
+### 7. Construir y Desplegar el Frontend (Opcional)
 
-The capstone includes a React frontend for visualizing and managing products.
+El capstone incluye un frontend React para visualizar y gestionar productos.
 
-#### Build the Frontend
+#### Construir el Frontend
 
 ```bash
 ./scripts/build-frontend.sh
 ```
 
-This will:
-- Install frontend dependencies
-- Build the production bundle
-- Output static files to `frontend/dist/`
+Esto:
+- Instalará las dependencias del frontend
+- Construirá el bundle de producción
+- Generará archivos estáticos en `frontend/dist/`
 
-#### Deploy Frontend to S3
+#### Desplegar Frontend a S3
 
-After deploying the backend (step 5), deploy the frontend:
+Después de desplegar el backend (paso 5), despliega el frontend:
 
 ```bash
 ./scripts/deploy-frontend.sh
 ```
 
-This will:
-- Get the API URL from CloudFormation outputs
-- Replace the API URL placeholder in the built files
-- Upload the frontend to S3
-- Display the CloudFront URL
+Esto:
+- Obtendrá la URL de API de las salidas de CloudFormation
+- Reemplazará el marcador de URL de API en los archivos construidos
+- Subirá el frontend a S3
+- Mostrará la URL de CloudFront
 
-**Access your frontend**: Use the CloudFront URL from the output.
+**Accede a tu frontend**: Usa la URL de CloudFront de la salida.
 
-**Note**: CloudFront distribution deployment can take 15-20 minutes. If you get a "Not Found" error immediately after deployment, wait a few minutes and try again.
+**Nota**: El despliegue de la distribución de CloudFront puede tardar 15-20 minutos. Si obtienes un error "Not Found" inmediatamente después del despliegue, espera unos minutos e intenta de nuevo.
 
-#### Local Frontend Development
+#### Desarrollo Local del Frontend
 
-To run the frontend locally:
+Para ejecutar el frontend localmente:
 
-1. Create a `.env` file in the `frontend/` directory:
+1. Crea un archivo `.env` en el directorio `frontend/`:
    ```bash
    cd frontend
    cp .env.example .env
    ```
 
-2. Update `.env` with your API URL:
+2. Actualiza `.env` con tu URL de API:
    ```
    VITE_API_URL=https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/Prod
    ```
 
-3. Install dependencies and run:
+3. Instala las dependencias y ejecuta:
    ```bash
    npm install
    npm run dev
    ```
 
-4. Open your browser to the URL shown (typically http://localhost:5173)
+4. Abre tu navegador en la URL mostrada (típicamente http://localhost:5173)
 
-See [frontend/README.md](frontend/README.md) for more details.
+Consulta [frontend/README.md](frontend/README.md) para más detalles.
 
-### 8. Clean Up Resources
+### 8. Limpiar Recursos
 
-**IMPORTANT**: To avoid AWS charges, delete your stack after testing:
+**IMPORTANTE**: Para evitar cargos de AWS, elimina tu stack después de probar:
 
 ```bash
-# Using the helper script
+# Usando el script auxiliar
 ./scripts/delete.sh
 
-# Or directly with SAM CLI
+# O directamente con SAM CLI
 sam delete --stack-name techmoda-capstone
 ```
 
-**Note**: This will delete the API, Lambda functions, DynamoDB table, S3 bucket, and CloudFront distribution.
+**Nota**: Esto eliminará la API, funciones Lambda, tabla DynamoDB, bucket S3 y distribución CloudFront.
 
-See [docs/COST_AND_CLEANUP.md](docs/COST_AND_CLEANUP.md) for cost estimates and cleanup best practices.
+Consulta [docs/COST_AND_CLEANUP.md](docs/COST_AND_CLEANUP.md) para estimaciones de costos y mejores prácticas de limpieza.
 
-## Documentation
+## Documentación
 
-### Core Documentation
-- [CAPSTONE_OVERVIEW.md](CAPSTONE_OVERVIEW.md) - Project description and submission requirements
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - Detailed architecture and component descriptions
-- [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md) - Complete testing instructions with curl examples
-- [docs/COST_AND_CLEANUP.md](docs/COST_AND_CLEANUP.md) - Cost estimation and cleanup procedures
+### Documentación Principal
+- [CAPSTONE_OVERVIEW.md](CAPSTONE_OVERVIEW.md) - Descripción del proyecto y requisitos de entrega
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - Arquitectura detallada y descripciones de componentes
+- [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md) - Instrucciones completas de prueba con ejemplos curl
+- [docs/COST_AND_CLEANUP.md](docs/COST_AND_CLEANUP.md) - Estimación de costos y procedimientos de limpieza
 
-### Lambda Function Specifications
-- [docs/specs/LIST_ITEMS_SPEC.md](docs/specs/LIST_ITEMS_SPEC.md) - List all products
-- [docs/specs/CREATE_ITEM_SPEC.md](docs/specs/CREATE_ITEM_SPEC.md) - Create a new product
-- [docs/specs/GET_ITEM_SPEC.md](docs/specs/GET_ITEM_SPEC.md) - Get a product by ID
-- [docs/specs/UPDATE_ITEM_SPEC.md](docs/specs/UPDATE_ITEM_SPEC.md) - Update an existing product
-- [docs/specs/DELETE_ITEM_SPEC.md](docs/specs/DELETE_ITEM_SPEC.md) - Delete a product
+### Especificaciones de Funciones Lambda
+- [docs/specs/LIST_ITEMS_SPEC.md](docs/specs/LIST_ITEMS_SPEC.md) - Listar todos los productos
+- [docs/specs/CREATE_ITEM_SPEC.md](docs/specs/CREATE_ITEM_SPEC.md) - Crear un nuevo producto
+- [docs/specs/GET_ITEM_SPEC.md](docs/specs/GET_ITEM_SPEC.md) - Obtener un producto por ID
+- [docs/specs/UPDATE_ITEM_SPEC.md](docs/specs/UPDATE_ITEM_SPEC.md) - Actualizar un producto existente
+- [docs/specs/DELETE_ITEM_SPEC.md](docs/specs/DELETE_ITEM_SPEC.md) - Eliminar un producto
 
-### Prompt Templates (For Claude Code)
-- [docs/prompts/01_ENVIRONMENT_SETUP.md](docs/prompts/01_ENVIRONMENT_SETUP.md) - AWS CLI and SAM installation
-- [docs/prompts/02_LAMBDA_IMPLEMENTATION.md](docs/prompts/02_LAMBDA_IMPLEMENTATION.md) - Lambda function implementations
-- [docs/prompts/03_DEPLOYMENT.md](docs/prompts/03_DEPLOYMENT.md) - Build and deployment
-- [docs/prompts/04_TESTING.md](docs/prompts/04_TESTING.md) - API testing with curl
-- [docs/prompts/05_DEBUGGING.md](docs/prompts/05_DEBUGGING.md) - Troubleshooting common issues
-- [docs/prompts/06_OPERATIONS.md](docs/prompts/06_OPERATIONS.md) - Cost estimation and cleanup
+### Plantillas de Prompts (Para Claude Code)
+- [docs/prompts/01_ENVIRONMENT_SETUP.md](docs/prompts/01_ENVIRONMENT_SETUP.md) - Instalación de AWS CLI y SAM
+- [docs/prompts/02_LAMBDA_IMPLEMENTATION.md](docs/prompts/02_LAMBDA_IMPLEMENTATION.md) - Implementaciones de funciones Lambda
+- [docs/prompts/03_DEPLOYMENT.md](docs/prompts/03_DEPLOYMENT.md) - Construcción y despliegue
+- [docs/prompts/04_TESTING.md](docs/prompts/04_TESTING.md) - Pruebas de API con curl
+- [docs/prompts/05_DEBUGGING.md](docs/prompts/05_DEBUGGING.md) - Solución de problemas comunes
+- [docs/prompts/06_OPERATIONS.md](docs/prompts/06_OPERATIONS.md) - Gestión de costos y limpieza
 
-## Troubleshooting
+## Solución de Problemas
 
-### Common Issues
+### Problemas Comunes
 
-**Build Failures**
-- Ensure Node.js 18.x is installed: `node --version`
-- Check that package.json exists in each function directory
-- Delete `.aws-sam` folder and rebuild: `rm -rf .aws-sam && sam build`
+**Fallos de Construcción**
+- Asegúrate de que Node.js 18.x esté instalado: `node --version`
+- Verifica que package.json exista en cada directorio de función
+- Elimina la carpeta `.aws-sam` y reconstruye: `rm -rf .aws-sam && sam build`
 
-**Deployment Failures**
-- Verify AWS credentials: `aws sts get-caller-identity`
-- Check IAM permissions for CloudFormation, Lambda, API Gateway, DynamoDB
-- Review CloudFormation events in AWS Console for specific errors
+**Fallos de Despliegue**
+- Verifica las credenciales de AWS: `aws sts get-caller-identity`
+- Verifica los permisos IAM para CloudFormation, Lambda, API Gateway, DynamoDB
+- Revisa los eventos de CloudFormation en la Consola de AWS para errores específicos
 
-**API Errors (404, 500)**
-- Check CloudWatch Logs for Lambda function errors
-- Verify environment variable `PRODUCTS_TABLE` is set correctly
-- Ensure DynamoDB table exists: `aws dynamodb list-tables`
-- Review X-Ray traces in AWS Console
+**Errores de API (404, 500)**
+- Verifica los CloudWatch Logs para errores de función Lambda
+- Verifica que la variable de entorno `PRODUCTS_TABLE` esté configurada correctamente
+- Asegúrate de que la tabla DynamoDB exista: `aws dynamodb list-tables`
+- Revisa los rastros de X-Ray en la Consola de AWS
 
-**Permission Errors**
-- Verify SAM template IAM policies match function requirements
-- Check Lambda execution role has DynamoDB permissions
-- Ensure CloudFormation has CAPABILITY_IAM
+**Errores de Permisos**
+- Verifica que las políticas IAM de la plantilla SAM coincidan con los requisitos de la función
+- Verifica que el rol de ejecución de Lambda tenga permisos de DynamoDB
+- Asegúrate de que CloudFormation tenga CAPABILITY_IAM
 
-For detailed debugging guidance, see [docs/prompts/05_DEBUGGING.md](docs/prompts/05_DEBUGGING.md)
+Para guía detallada de depuración, consulta [docs/prompts/05_DEBUGGING.md](docs/prompts/05_DEBUGGING.md)
 
-## API Endpoints
+## Endpoints de API
 
-| Method | Path | Description |
+| Método | Ruta | Descripción |
 |--------|------|-------------|
-| GET | /products | List all products |
-| POST | /products | Create a new product |
-| GET | /products/{id} | Get a product by ID |
-| PUT | /products/{id} | Update an existing product |
-| DELETE | /products/{id} | Delete a product |
+| GET | /products | Listar todos los productos |
+| POST | /products | Crear un nuevo producto |
+| GET | /products/{id} | Obtener un producto por ID |
+| PUT | /products/{id} | Actualizar un producto existente |
+| DELETE | /products/{id} | Eliminar un producto |
 
-## Data Schema
+## Esquema de Datos
 
-### Product Object
+### Objeto Producto
 
 ```json
 {
   "productId": "string (UUID)",
-  "name": "string (required)",
+  "name": "string (requerido)",
   "description": "string",
-  "price": "number (required)",
+  "price": "number (requerido)",
   "category": "string",
   "imageUrl": "string (URL)",
-  "createdAt": "string (ISO 8601 timestamp)",
-  "updatedAt": "string (ISO 8601 timestamp)"
+  "createdAt": "string (marca de tiempo ISO 8601)",
+  "updatedAt": "string (marca de tiempo ISO 8601)"
 }
 ```
 
-## Submission Requirements
+## Requisitos de Entrega
 
-For this capstone project, submit:
+Para este proyecto capstone, debes entregar:
 
-1. **GitHub Repository URL** with:
-   - Complete SAM template (template.yaml)
-   - All 5 Lambda functions implemented
-   - README with architecture diagram and deployment instructions
-   - Working curl test examples
+1. **URL del Repositorio GitHub** con:
+   - Plantilla SAM completa (template.yaml)
+   - Las 5 funciones Lambda implementadas
+   - README con diagrama de arquitectura e instrucciones de despliegue
+   - Ejemplos de prueba curl funcionales
 
-2. **Architecture Diagram** (in README or separate file)
+2. **Diagrama de Arquitectura** (en README o archivo separado)
 
-3. **Evidence of Working Implementation** (optional screenshots or curl output)
+3. **Evidencia de Implementación Funcional** (capturas de pantalla opcionales o salida de curl)
 
-See [CAPSTONE_OVERVIEW.md](CAPSTONE_OVERVIEW.md) for complete submission and evaluation criteria.
+Consulta [CAPSTONE_OVERVIEW.md](CAPSTONE_OVERVIEW.md) para criterios completos de entrega y evaluación.
 
-## Cost Estimation
+## Estimación de Costos
 
-Expected AWS costs for this capstone project: **Under $1 USD**
+Costos esperados de AWS para este proyecto capstone: **Menos de $1 USD**
 
-This assumes:
-- Development and testing over 1-2 days
-- Approximately 50-100 API requests
-- All services within AWS Free Tier limits
+Esto asume:
+- Desarrollo y pruebas durante 1-2 días
+- Aproximadamente 50-100 solicitudes de API
+- Todos los servicios dentro de los límites de AWS Free Tier
 
-**IMPORTANT**: Delete your stack immediately after testing to avoid ongoing charges.
+**IMPORTANTE**: Elimina tu stack inmediatamente después de probar para evitar cargos continuos.
 
-For detailed cost breakdown, see [docs/COST_AND_CLEANUP.md](docs/COST_AND_CLEANUP.md)
+Para desglose detallado de costos, consulta [docs/COST_AND_CLEANUP.md](docs/COST_AND_CLEANUP.md)
 
-## Resources
+## Recursos
 
-- [AWS SAM Documentation](https://docs.aws.amazon.com/serverless-application-model/)
-- [AWS Lambda Developer Guide](https://docs.aws.amazon.com/lambda/)
-- [DynamoDB Developer Guide](https://docs.aws.amazon.com/dynamodb/)
-- [API Gateway REST API Documentation](https://docs.aws.amazon.com/apigateway/)
+- [Documentación de AWS SAM](https://docs.aws.amazon.com/serverless-application-model/)
+- [Guía del Desarrollador de AWS Lambda](https://docs.aws.amazon.com/lambda/)
+- [Guía del Desarrollador de DynamoDB](https://docs.aws.amazon.com/dynamodb/)
+- [Documentación de API Gateway REST API](https://docs.aws.amazon.com/apigateway/)
 
-## License
+## Licencia
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Este proyecto está licenciado bajo la Licencia MIT - consulta el archivo [LICENSE](LICENSE) para más detalles.
 
-## Support
+## Soporte
 
-For questions or issues:
-1. Review the documentation in `docs/`
-2. Check the prompt templates in `docs/prompts/`
-3. Consult your bootcamp instructor
-4. Review CloudWatch Logs for error details
+Para preguntas o problemas:
+1. Revisa la documentación en `docs/`
+2. Consulta las plantillas de prompts en `docs/prompts/`
+3. Consulta a tu instructor de bootcamp
+4. Revisa los CloudWatch Logs para detalles de errores
 
 ---
 
-**Good luck with your capstone project!** 🚀
+**¡Buena suerte con tu proyecto capstone!** 🚀

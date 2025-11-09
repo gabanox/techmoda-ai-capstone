@@ -1,113 +1,113 @@
-# TechModa Serverless Capstone - Overview
+# TechModa Serverless Capstone - Descripción General
 
-## Project Description
+## Descripción del Proyecto
 
-The TechModa Serverless Capstone is a hands-on project where you'll build a production-ready REST API for a fashion e-commerce product catalog using AWS serverless technologies. This project serves as the culmination of your AWS Serverless Architecture bootcamp, demonstrating your ability to design, implement, deploy, and operate serverless applications.
+El TechModa Serverless Capstone es un proyecto práctico donde construirás una API REST lista para producción para un catálogo de productos de e-commerce de moda utilizando tecnologías serverless de AWS. Este proyecto sirve como la culminación de tu bootcamp de Arquitectura Serverless de AWS, demostrando tu capacidad para diseñar, implementar, desplegar y operar aplicaciones serverless.
 
-### Business Context
+### Contexto de Negocio
 
-**TechModa** is a fashion e-commerce platform that needs a scalable, cost-effective product catalog management system. Your task is to build a serverless REST API that enables:
+**TechModa** es una plataforma de e-commerce de moda que necesita un sistema de gestión de catálogo de productos escalable y rentable. Tu tarea es construir una API REST serverless que permita:
 
-- Listing all fashion products in the catalog
-- Adding new products (dresses, jackets, accessories, etc.)
-- Retrieving individual product details
-- Updating product information (prices, descriptions, inventory)
-- Removing discontinued products
+- Listar todos los productos de moda en el catálogo
+- Agregar nuevos productos (vestidos, chaquetas, accesorios, etc.)
+- Recuperar detalles de productos individuales
+- Actualizar información de productos (precios, descripciones, inventario)
+- Eliminar productos descontinuados
 
-This architecture must be:
-- **Scalable**: Handle varying traffic without manual intervention
-- **Cost-effective**: Pay only for actual usage (no idle server costs)
-- **Reliable**: Built on AWS managed services with high availability
-- **Observable**: Provide logging and tracing for troubleshooting
+Esta arquitectura debe ser:
+- **Escalable**: Manejar tráfico variable sin intervención manual
+- **Rentable**: Pagar solo por el uso real (sin costos de servidores inactivos)
+- **Confiable**: Construida sobre servicios administrados de AWS con alta disponibilidad
+- **Observable**: Proporcionar registro y rastreo para solución de problemas
 
-## Learning Objectives
+## Objetivos de Aprendizaje
 
-By completing this capstone project, you will demonstrate mastery of:
+Al completar este proyecto capstone, demostrarás dominio de:
 
-1. **Serverless Architecture Design**
-   - Design event-driven systems using Lambda, API Gateway, and DynamoDB
-   - Understand when to use serverless vs. traditional architectures
-   - Apply the AWS Well-Architected Framework principles
+1. **Diseño de Arquitectura Serverless**
+   - Diseñar sistemas orientados a eventos usando Lambda, API Gateway y DynamoDB
+   - Entender cuándo usar arquitecturas serverless vs. tradicionales
+   - Aplicar los principios del AWS Well-Architected Framework
 
-2. **RESTful API Implementation**
-   - Implement proper HTTP methods (GET, POST, PUT, DELETE)
-   - Return appropriate status codes (200, 201, 404, 500)
-   - Structure JSON request/response payloads
-   - Handle CORS for web client compatibility
+2. **Implementación de API RESTful**
+   - Implementar métodos HTTP apropiados (GET, POST, PUT, DELETE)
+   - Devolver códigos de estado apropiados (200, 201, 404, 500)
+   - Estructurar cargas JSON de solicitud/respuesta
+   - Manejar CORS para compatibilidad con clientes web
 
-3. **Infrastructure as Code (IaC)**
-   - Write AWS SAM templates for serverless applications
-   - Define resources declaratively (Lambda, API Gateway, DynamoDB)
-   - Manage IAM roles and permissions with least-privilege principle
-   - Version control infrastructure alongside application code
+3. **Infraestructura como Código (IaC)**
+   - Escribir plantillas de AWS SAM para aplicaciones serverless
+   - Definir recursos de forma declarativa (Lambda, API Gateway, DynamoDB)
+   - Gestionar roles y permisos IAM con principio de mínimo privilegio
+   - Versionar la infraestructura junto con el código de la aplicación
 
-4. **Manual API Testing**
-   - Test endpoints using curl commands
-   - Interpret HTTP responses and troubleshoot failures
-   - Verify CRUD operations work correctly
-   - Validate error handling scenarios
+4. **Pruebas Manuales de API**
+   - Probar endpoints usando comandos curl
+   - Interpretar respuestas HTTP y solucionar fallos
+   - Verificar que las operaciones CRUD funcionen correctamente
+   - Validar escenarios de manejo de errores
 
-5. **Serverless Application Debugging**
-   - Analyze CloudWatch Logs for Lambda execution errors
-   - Interpret X-Ray traces for performance insights
-   - Diagnose permission issues (IAM roles, DynamoDB access)
-   - Troubleshoot API Gateway configuration problems
+5. **Depuración de Aplicaciones Serverless**
+   - Analizar CloudWatch Logs para errores de ejecución de Lambda
+   - Interpretar rastros de X-Ray para obtener información sobre el rendimiento
+   - Diagnosticar problemas de permisos (roles IAM, acceso a DynamoDB)
+   - Solucionar problemas de configuración de API Gateway
 
-6. **AWS Cost Management**
-   - Estimate costs for serverless workloads
-   - Understand AWS Free Tier limits
-   - Use PAY_PER_REQUEST billing for DynamoDB
-   - Clean up resources to prevent unnecessary charges
+6. **Gestión de Costos de AWS**
+   - Estimar costos para cargas de trabajo serverless
+   - Entender los límites de AWS Free Tier
+   - Usar facturación PAY_PER_REQUEST para DynamoDB
+   - Limpiar recursos para evitar cargos innecesarios
 
-7. **AI-Accelerated Development**
-   - Use Claude Code to generate Lambda function implementations
-   - Write effective prompts for code generation
-   - Debug with AI assistance
-   - Accelerate development while maintaining code quality
+7. **Desarrollo Acelerado por IA**
+   - Usar Claude Code para generar implementaciones de funciones Lambda
+   - Escribir prompts efectivos para generación de código
+   - Depurar con asistencia de IA
+   - Acelerar el desarrollo manteniendo la calidad del código
 
-8. **Technical Documentation**
-   - Create architecture diagrams
-   - Write clear deployment instructions
-   - Document API endpoints with examples
-   - Produce portfolio-quality GitHub repositories
+8. **Documentación Técnica**
+   - Crear diagramas de arquitectura
+   - Escribir instrucciones claras de despliegue
+   - Documentar endpoints de API con ejemplos
+   - Producir repositorios de GitHub con calidad de portafolio
 
-9. **AWS Best Practices**
-   - Follow security best practices (IAM least-privilege)
-   - Enable observability (CloudWatch Logs, X-Ray tracing)
-   - Use managed services to reduce operational overhead
-   - Design for cost optimization
+9. **Mejores Prácticas de AWS**
+   - Seguir mejores prácticas de seguridad (IAM mínimo privilegio)
+   - Habilitar observabilidad (CloudWatch Logs, rastreo X-Ray)
+   - Usar servicios administrados para reducir sobrecarga operacional
+   - Diseñar para optimización de costos
 
-## Technology Stack
+## Stack Tecnológico
 
-### AWS Services
+### Servicios de AWS
 
-| Service | Purpose | Configuration |
+| Servicio | Propósito | Configuración |
 |---------|---------|---------------|
-| **AWS Lambda** | Compute layer for business logic | Node.js 18.x runtime, 1024 MB memory, 30s timeout |
-| **API Gateway** | REST API frontend | Regional endpoint, CORS enabled, Prod stage |
-| **DynamoDB** | NoSQL database | PAY_PER_REQUEST billing, single table design |
-| **CloudWatch** | Centralized logging | Automatic log groups for each Lambda function |
-| **X-Ray** | Distributed tracing | Enabled for API Gateway and all Lambda functions |
-| **IAM** | Security and permissions | Least-privilege roles managed by SAM |
-| **CloudFormation** | Infrastructure deployment | Via AWS SAM abstraction |
+| **AWS Lambda** | Capa de cómputo para lógica de negocio | Runtime Node.js 18.x, 1024 MB memoria, 30s timeout |
+| **API Gateway** | Frontend de API REST | Endpoint regional, CORS habilitado, stage Prod |
+| **DynamoDB** | Base de datos NoSQL | Facturación PAY_PER_REQUEST, diseño de tabla única |
+| **CloudWatch** | Registro centralizado | Grupos de logs automáticos para cada función Lambda |
+| **X-Ray** | Rastreo distribuido | Habilitado para API Gateway y todas las funciones Lambda |
+| **IAM** | Seguridad y permisos | Roles de mínimo privilegio administrados por SAM |
+| **CloudFormation** | Despliegue de infraestructura | Via abstracción de AWS SAM |
 
-### Development Tools
+### Herramientas de Desarrollo
 
-- **AWS SAM CLI**: Build and deploy serverless applications
-- **AWS CLI v2**: Interact with AWS services from command line
-- **Node.js 18.x**: Lambda runtime and local development
-- **Git**: Version control for code and infrastructure
-- **Claude Code**: AI-assisted development and debugging
-- **curl**: Manual API testing
+- **AWS SAM CLI**: Construir y desplegar aplicaciones serverless
+- **AWS CLI v2**: Interactuar con servicios de AWS desde línea de comandos
+- **Node.js 18.x**: Runtime de Lambda y desarrollo local
+- **Git**: Control de versiones para código e infraestructura
+- **Claude Code**: Desarrollo y depuración asistidos por IA
+- **curl**: Pruebas manuales de API
 
-### Programming
+### Programación
 
-- **Language**: JavaScript (Node.js 18.x)
-- **AWS SDK**: @aws-sdk/client-dynamodb and @aws-sdk/lib-dynamodb (v3)
-- **Response Format**: JSON with proper HTTP headers
-- **Error Handling**: Try/catch blocks with graceful error responses
+- **Lenguaje**: JavaScript (Node.js 18.x)
+- **AWS SDK**: @aws-sdk/client-dynamodb y @aws-sdk/lib-dynamodb (v3)
+- **Formato de Respuesta**: JSON con encabezados HTTP apropiados
+- **Manejo de Errores**: Bloques try/catch con respuestas de error elegantes
 
-## Architecture Overview
+## Descripción General de Arquitectura
 
 ```
 Internet
@@ -121,7 +121,7 @@ Internet
                 │
         ┌───────┴───────┐
         │   Lambda      │
-        │  Invocations  │
+        │  Invocaciones │
         └───────┬───────┘
                 │
     ┌───────────┴───────────┐
@@ -136,218 +136,218 @@ Internet
                            ▼
                   ┌────────────────┐
                   │   DynamoDB     │
-                  │ Products Table │
+                  │ Tabla Products │
                   └────────────────┘
 ```
 
-For detailed architecture documentation, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Para documentación detallada de arquitectura, consulta [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## Submission Requirements
+## Requisitos de Entrega
 
-### Required Deliverables
+### Entregables Requeridos
 
-To complete this capstone, you must submit:
+Para completar este capstone, debes entregar:
 
-1. **GitHub Repository URL** containing:
-   - Complete and working SAM template (template.yaml)
-   - All 5 Lambda functions fully implemented
-   - README.md with architecture diagram and deployment instructions
-   - Documentation of curl test examples
+1. **URL del Repositorio GitHub** que contenga:
+   - Plantilla SAM completa y funcional (template.yaml)
+   - Las 5 funciones Lambda completamente implementadas
+   - README.md con diagrama de arquitectura e instrucciones de despliegue
+   - Documentación de ejemplos de prueba curl
 
-### Repository Must Include
+### El Repositorio Debe Incluir
 
-✅ **template.yaml** - Valid SAM template with all resources
-✅ **functions/** - All 5 Lambda functions with working implementations
-✅ **README.md** - Project overview, architecture diagram, deployment steps
-✅ **Curl test examples** - Documented in README or separate test guide
-✅ **Clean git history** - Meaningful commit messages
+✅ **template.yaml** - Plantilla SAM válida con todos los recursos
+✅ **functions/** - Las 5 funciones Lambda con implementaciones funcionales
+✅ **README.md** - Descripción general del proyecto, diagrama de arquitectura, pasos de despliegue
+✅ **Ejemplos de prueba curl** - Documentados en README o guía de pruebas separada
+✅ **Historial git limpio** - Mensajes de commit significativos
 
-### Optional (Recommended)
+### Opcional (Recomendado)
 
-- Screenshots of successful API tests
-- Architecture diagram generated with diagrams.py or draw.io
-- Evidence of using Claude Code (prompts used, commit messages)
-- Cost estimation calculations
-- X-Ray trace screenshots
+- Capturas de pantalla de pruebas de API exitosas
+- Diagrama de arquitectura generado con diagrams.py o draw.io
+- Evidencia del uso de Claude Code (prompts utilizados, mensajes de commit)
+- Cálculos de estimación de costos
+- Capturas de pantalla de rastros de X-Ray
 
-### Submission Deadline
+### Fecha Límite de Entrega
 
-See your bootcamp instructor for the specific deadline. Typically:
-- **In-class time**: Session 10 (2 hours)
-- **Homework time**: Additional 2-4 hours
-- **Final submission**: End of Session 10 evaluation period
+Consulta a tu instructor de bootcamp para la fecha límite específica. Típicamente:
+- **Tiempo en clase**: Sesión 10 (2 horas)
+- **Tiempo de tarea**: 2-4 horas adicionales
+- **Entrega final**: Fin del período de evaluación de Sesión 10
 
-## Evaluation Rubric
+## Rúbrica de Evaluación
 
-Your capstone will be evaluated across three dimensions totaling **60% of your overall bootcamp grade**.
+Tu capstone será evaluado en tres dimensiones que totalizan **60% de tu calificación general del bootcamp**.
 
-### Technical Excellence (30%)
+### Excelencia Técnica (30%)
 
-| Criterion | Points | Description |
+| Criterio | Puntos | Descripción |
 |-----------|--------|-------------|
-| All 5 CRUD operations functional | 10% | List, Create, Get, Update, Delete all work correctly |
-| Proper error handling | 5% | Try/catch blocks, appropriate status codes (404, 500) |
-| Code quality and readability | 5% | Clean code, comments, consistent formatting |
-| SAM template correctness | 5% | Valid YAML, all resources defined, deployable |
-| AWS best practices | 5% | IAM least-privilege, X-Ray enabled, environment variables |
+| Las 5 operaciones CRUD funcionales | 10% | List, Create, Get, Update, Delete funcionan correctamente |
+| Manejo apropiado de errores | 5% | Bloques try/catch, códigos de estado apropiados (404, 500) |
+| Calidad y legibilidad del código | 5% | Código limpio, comentarios, formato consistente |
+| Corrección de plantilla SAM | 5% | YAML válido, todos los recursos definidos, desplegable |
+| Mejores prácticas de AWS | 5% | IAM mínimo privilegio, X-Ray habilitado, variables de entorno |
 
-### Documentation (15%)
+### Documentación (15%)
 
-| Criterion | Points | Description |
+| Criterio | Puntos | Descripción |
 |-----------|--------|-------------|
-| README completeness | 5% | Overview, architecture, deployment steps, testing examples |
-| Architecture diagram | 5% | Clear visual representation of system components |
-| Testing examples | 5% | Documented curl commands for all endpoints |
+| Completitud del README | 5% | Descripción general, arquitectura, pasos de despliegue, ejemplos de prueba |
+| Diagrama de arquitectura | 5% | Representación visual clara de componentes del sistema |
+| Ejemplos de prueba | 5% | Comandos curl documentados para todos los endpoints |
 
-### Business Relevance (15%)
+### Relevancia de Negocio (15%)
 
-| Criterion | Points | Description |
+| Criterio | Puntos | Descripción |
 |-----------|--------|-------------|
-| Solves fashion catalog problem | 7% | Implements product catalog management appropriately |
-| Appropriate technology choices | 5% | Uses serverless architecture effectively |
-| Cost-consciousness | 3% | Demonstrates understanding of AWS pricing, cleanup |
+| Resuelve problema de catálogo de moda | 7% | Implementa gestión de catálogo de productos apropiadamente |
+| Elecciones tecnológicas apropiadas | 5% | Usa arquitectura serverless efectivamente |
+| Conciencia de costos | 3% | Demuestra comprensión de precios de AWS, limpieza |
 
-### Total Capstone Score: 60%
+### Puntuación Total del Capstone: 60%
 
-## Implementation Strategy
+## Estrategia de Implementación
 
-### Spec-Driven Development Approach
+### Enfoque de Desarrollo Guiado por Especificaciones
 
-This capstone uses **spec-driven development** to minimize uncertainty. Each Lambda function has a detailed specification in `docs/specs/` that includes:
+Este capstone utiliza **desarrollo guiado por especificaciones** para minimizar la incertidumbre. Cada función Lambda tiene una especificación detallada en `docs/specs/` que incluye:
 
-- Purpose and API endpoint
-- Input/output schemas with JSON examples
-- Error scenarios and status codes
-- DynamoDB operations required
-- Step-by-step implementation guidance
-- Testing curl commands
-- Claude Code prompt suggestions
+- Propósito y endpoint de API
+- Esquemas de entrada/salida con ejemplos JSON
+- Escenarios de error y códigos de estado
+- Operaciones de DynamoDB requeridas
+- Orientación de implementación paso a paso
+- Comandos curl de prueba
+- Sugerencias de prompts para Claude Code
 
-**Follow this workflow:**
+**Sigue este flujo de trabajo:**
 
-1. **Read the spec** - Understand requirements before coding
-2. **Use AI prompts** - Leverage Claude Code with provided templates
-3. **Implement incrementally** - Build one function at a time
-4. **Test immediately** - Deploy and verify each function works
-5. **Debug with logs** - Use CloudWatch Logs for troubleshooting
+1. **Lee la especificación** - Entiende los requisitos antes de codificar
+2. **Usa prompts de IA** - Aprovecha Claude Code con plantillas proporcionadas
+3. **Implementa incrementalmente** - Construye una función a la vez
+4. **Prueba inmediatamente** - Despliega y verifica que cada función funcione
+5. **Depura con logs** - Usa CloudWatch Logs para solución de problemas
 
-### Recommended Implementation Order
+### Orden de Implementación Recomendado
 
-1. **CreateItem** - Start here to populate the database
-2. **ListItems** - Verify items were created
-3. **GetItem** - Test retrieving individual items
-4. **UpdateItem** - Modify existing items
-5. **DeleteItem** - Clean up test data
+1. **CreateItem** - Comienza aquí para poblar la base de datos
+2. **ListItems** - Verifica que los elementos fueron creados
+3. **GetItem** - Prueba recuperación de elementos individuales
+4. **UpdateItem** - Modifica elementos existentes
+5. **DeleteItem** - Limpia datos de prueba
 
-## Cost Estimation
+## Estimación de Costos
 
-### Expected AWS Costs
+### Costos Esperados de AWS
 
-This capstone project should cost **under $1 USD** for the entire development and testing period.
+Este proyecto capstone debería costar **menos de $1 USD** para todo el período de desarrollo y pruebas.
 
-| Service | Cost Estimate | Notes |
+| Servicio | Estimación de Costo | Notas |
 |---------|---------------|-------|
-| DynamoDB | $0.00 - $0.10 | PAY_PER_REQUEST, minimal operations, Free Tier |
-| Lambda | $0.00 - $0.20 | First 1M requests free, ~100 invocations |
-| API Gateway | $0.00 - $0.50 | First 1M requests $3.50/million, ~50 requests |
-| CloudWatch Logs | $0.00 - $0.10 | Minimal log ingestion, Free Tier |
-| X-Ray | $0.00 - $0.10 | First 100k traces free |
+| DynamoDB | $0.00 - $0.10 | PAY_PER_REQUEST, operaciones mínimas, Free Tier |
+| Lambda | $0.00 - $0.20 | Primeras 1M solicitudes gratis, ~100 invocaciones |
+| API Gateway | $0.00 - $0.50 | Primeras 1M solicitudes $3.50/millón, ~50 solicitudes |
+| CloudWatch Logs | $0.00 - $0.10 | Ingesta mínima de logs, Free Tier |
+| X-Ray | $0.00 - $0.10 | Primeros 100k rastros gratis |
 
-**Total**: Under $1.00 USD
+**Total**: Menos de $1.00 USD
 
-### Cost Mitigation
+### Mitigación de Costos
 
-- ✅ Use AWS Free Tier (all students should stay within limits)
-- ✅ Minimize testing to necessary verification only
-- ✅ Delete stack immediately after demonstration
-- ✅ Monitor AWS Billing Dashboard during development
+- ✅ Usa AWS Free Tier (todos los estudiantes deberían mantenerse dentro de los límites)
+- ✅ Minimiza las pruebas a solo verificación necesaria
+- ✅ Elimina el stack inmediatamente después de la demostración
+- ✅ Monitorea el Panel de Facturación de AWS durante el desarrollo
 
-**IMPORTANT**: Run `./scripts/delete.sh` after submitting to avoid ongoing charges.
+**IMPORTANTE**: Ejecuta `./scripts/delete.sh` después de entregar para evitar cargos continuos.
 
-For detailed cost breakdown, see [docs/COST_AND_CLEANUP.md](docs/COST_AND_CLEANUP.md).
+Para desglose detallado de costos, consulta [docs/COST_AND_CLEANUP.md](docs/COST_AND_CLEANUP.md).
 
-## Timeline Guidance
+## Orientación de Cronograma
 
-### Session 10 (2 hours in-class)
+### Sesión 10 (2 horas en clase)
 
-| Time | Activity |
+| Tiempo | Actividad |
 |------|----------|
-| 0-15 min | Introduction, requirements review, clone repository |
-| 15-30 min | Review SAM template, understand architecture |
-| 30-90 min | Implement Lambda functions using Claude Code prompts |
-| 90-110 min | Deploy and test with curl commands |
-| 110-120 min | Troubleshooting, Q&A, cleanup planning |
+| 0-15 min | Introducción, revisión de requisitos, clonar repositorio |
+| 15-30 min | Revisar plantilla SAM, entender arquitectura |
+| 30-90 min | Implementar funciones Lambda usando prompts de Claude Code |
+| 90-110 min | Desplegar y probar con comandos curl |
+| 110-120 min | Solución de problemas, Q&A, planificación de limpieza |
 
-### Homework (2-4 hours)
+### Tarea (2-4 horas)
 
-- Complete remaining Lambda function implementations
-- Polish documentation (README, architecture diagram)
-- Comprehensive testing of all CRUD operations
-- Screenshot evidence collection (optional)
-- Final deployment verification
-- Submit GitHub repository URL
+- Completar las implementaciones restantes de funciones Lambda
+- Pulir documentación (README, diagrama de arquitectura)
+- Pruebas exhaustivas de todas las operaciones CRUD
+- Recopilación de evidencia de capturas de pantalla (opcional)
+- Verificación final de despliegue
+- Entregar URL del repositorio GitHub
 
-## Success Criteria
+## Criterios de Éxito
 
-Your capstone is successful when:
+Tu capstone es exitoso cuando:
 
-✅ All 5 CRUD operations work correctly
-✅ API returns proper HTTP status codes
-✅ DynamoDB stores and retrieves products accurately
-✅ SAM template deploys without errors
-✅ CloudWatch Logs show function executions
-✅ X-Ray traces display request flows
-✅ Cost stays under $1 USD
-✅ GitHub repository is portfolio-quality
-✅ Documentation is complete and professional
+✅ Las 5 operaciones CRUD funcionan correctamente
+✅ La API devuelve códigos de estado HTTP apropiados
+✅ DynamoDB almacena y recupera productos con precisión
+✅ La plantilla SAM se despliega sin errores
+✅ CloudWatch Logs muestra ejecuciones de funciones
+✅ Los rastros de X-Ray muestran flujos de solicitud
+✅ El costo se mantiene bajo $1 USD
+✅ El repositorio de GitHub tiene calidad de portafolio
+✅ La documentación está completa y profesional
 
-## Getting Help
+## Obtener Ayuda
 
-### Resources Available
+### Recursos Disponibles
 
-1. **Function Specifications** - `docs/specs/` for detailed requirements
-2. **Prompt Templates** - `docs/prompts/` for Claude Code assistance
-3. **Testing Guide** - `docs/TESTING_GUIDE.md` for curl examples
-4. **Debugging Guide** - `docs/prompts/05_DEBUGGING.md` for troubleshooting
-5. **Instructor Support** - Ask questions during Session 10
-6. **CloudWatch Logs** - First place to look for errors
-7. **AWS Documentation** - Official guides for Lambda, DynamoDB, API Gateway
+1. **Especificaciones de Funciones** - `docs/specs/` para requisitos detallados
+2. **Plantillas de Prompts** - `docs/prompts/` para asistencia de Claude Code
+3. **Guía de Pruebas** - `docs/TESTING_GUIDE.md` para ejemplos curl
+4. **Guía de Depuración** - `docs/prompts/05_DEBUGGING.md` para solución de problemas
+5. **Soporte del Instructor** - Haz preguntas durante la Sesión 10
+6. **CloudWatch Logs** - Primer lugar para buscar errores
+7. **Documentación de AWS** - Guías oficiales para Lambda, DynamoDB, API Gateway
 
-### Common Challenges
+### Desafíos Comunes
 
-| Challenge | Solution |
+| Desafío | Solución |
 |-----------|----------|
-| Lambda function errors | Check CloudWatch Logs for stack traces |
-| DynamoDB permission denied | Verify SAM template IAM policies |
-| API Gateway 404 errors | Confirm endpoint paths match template |
-| Deployment failures | Review CloudFormation events in console |
-| Timeout errors | Increase Lambda timeout or optimize code |
+| Errores de función Lambda | Verifica CloudWatch Logs para trazas de pila |
+| Permiso denegado de DynamoDB | Verifica políticas IAM de plantilla SAM |
+| Errores 404 de API Gateway | Confirma que las rutas de endpoint coinciden con la plantilla |
+| Fallos de despliegue | Revisa eventos de CloudFormation en consola |
+| Errores de timeout | Aumenta el timeout de Lambda u optimiza el código |
 
-## Portfolio Value
+## Valor para el Portafolio
 
-This capstone provides tangible evidence of your serverless expertise:
+Este capstone proporciona evidencia tangible de tu experiencia serverless:
 
-- **GitHub repository** demonstrating production-quality code
-- **Architecture diagram** showing system design skills
-- **Working REST API** with complete CRUD operations
-- **Documentation** highlighting communication abilities
-- **AWS experience** valued by employers in Colombia's tech market
+- **Repositorio de GitHub** demostrando código con calidad de producción
+- **Diagrama de arquitectura** mostrando habilidades de diseño de sistemas
+- **API REST funcional** con operaciones CRUD completas
+- **Documentación** destacando habilidades de comunicación
+- **Experiencia con AWS** valorada por empleadores en el mercado tecnológico de Colombia
 
-Add this project to your:
-- LinkedIn profile (project section)
-- Resume (projects or technical skills)
-- Portfolio website (case study)
-- Job interviews (technical discussion)
+Agrega este proyecto a tu:
+- Perfil de LinkedIn (sección de proyectos)
+- Currículum (proyectos o habilidades técnicas)
+- Sitio web de portafolio (estudio de caso)
+- Entrevistas de trabajo (discusión técnica)
 
 ---
 
-## Next Steps
+## Próximos Pasos
 
-1. Read this entire document carefully
-2. Review the [README.md](README.md) quick start guide
-3. Study the function specifications in `docs/specs/`
-4. Begin implementing with `docs/prompts/02_LAMBDA_IMPLEMENTATION.md`
-5. Test frequently using `docs/TESTING_GUIDE.md`
-6. Submit your GitHub repository URL when complete
+1. Lee este documento completo cuidadosamente
+2. Revisa la guía de inicio rápido [README.md](README.md)
+3. Estudia las especificaciones de funciones en `docs/specs/`
+4. Comienza a implementar con `docs/prompts/02_LAMBDA_IMPLEMENTATION.md`
+5. Prueba frecuentemente usando `docs/TESTING_GUIDE.md`
+6. Entrega tu URL de repositorio GitHub cuando esté completo
 
-**Good luck building your TechModa serverless API!** 🚀
+**¡Buena suerte construyendo tu API serverless de TechModa!** 🚀

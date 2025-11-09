@@ -1,8 +1,8 @@
-# Prompt Templates: Operations
+# Plantillas de Prompts: Operaciones
 
-These prompts help you monitor X-Ray traces, estimate AWS costs, clean up resources, and troubleshoot deletion failures.
+Estos prompts le ayudan a monitorear traces de X-Ray, estimar costos de AWS, limpiar recursos y solucionar problemas de fallos de eliminación.
 
-## Prompt 6.1: View X-Ray Traces
+## Prompt 6.1: Ver Traces de X-Ray
 
 ```
 I want to analyze X-Ray traces for my API to understand request flow.
@@ -16,7 +16,7 @@ Please provide:
 4. What to look for in trace details
 ```
 
-## Prompt 6.2: Estimate AWS Costs
+## Prompt 6.2: Estimar Costos de AWS
 
 ```
 I need to estimate costs for my TechModa capstone project.
@@ -41,7 +41,7 @@ Please provide:
 4. Confirmation this is under $1 USD
 ```
 
-## Prompt 6.3: Clean Up Resources
+## Prompt 6.3: Limpiar Recursos
 
 ```
 I have finished testing my TechModa capstone and need to delete all resources to avoid charges.
@@ -57,7 +57,7 @@ Please provide:
 6. Estimated time for full deletion
 ```
 
-## Prompt 6.4: Troubleshoot Stack Deletion Failure
+## Prompt 6.4: Solucionar Problema de Fallo de Eliminación de Stack
 
 ```
 I tried to delete my SAM stack but it failed.
@@ -74,11 +74,11 @@ Please help:
 5. How to force delete if necessary
 ```
 
-## Detailed Operations Workflows
+## Flujos de Trabajo de Operaciones Detallados
 
-### Workflow 1: X-Ray Monitoring
+### Flujo de Trabajo 1: Monitoreo de X-Ray
 
-**Goal**: Understand request flow and performance
+**Objetivo**: Entender el flujo de solicitudes y el rendimiento
 
 **Prompt**:
 ```
@@ -96,7 +96,7 @@ Please show me:
 6. What good vs bad performance looks like
 ```
 
-### Workflow 2: Service Map Analysis
+### Flujo de Trabajo 2: Análisis de Service Map
 
 **Prompt**:
 ```
@@ -110,7 +110,7 @@ Please explain:
 5. What metrics are shown (latency, request count, error rate)
 ```
 
-### Workflow 3: Trace Details
+### Flujo de Trabajo 3: Detalles de Trace
 
 **Prompt**:
 ```
@@ -128,9 +128,9 @@ Please explain:
 5. How to identify performance optimization opportunities
 ```
 
-## Cost Management
+## Gestión de Costos
 
-### Detailed Cost Estimation
+### Estimación Detallada de Costos
 
 **Prompt**:
 ```
@@ -152,7 +152,7 @@ Please provide:
 4. Total estimated bill
 ```
 
-### Monitor Current Costs
+### Monitorear Costos Actuales
 
 **Prompt**:
 ```
@@ -166,7 +166,7 @@ Please show me:
 5. How to track Free Tier usage
 ```
 
-### Cost Optimization
+### Optimización de Costos
 
 **Prompt**:
 ```
@@ -185,9 +185,9 @@ Please suggest:
 4. What should NOT be changed (functionality impact)
 ```
 
-## Resource Cleanup
+## Limpieza de Recursos
 
-### Complete Cleanup
+### Limpieza Completa
 
 **Prompt**:
 ```
@@ -205,7 +205,7 @@ Please provide step-by-step:
 6. Confirmation that I won't incur future charges
 ```
 
-### Verify Deletion
+### Verificar Eliminación
 
 **Prompt**:
 ```
@@ -220,7 +220,7 @@ Please provide commands to check:
 6. IAM roles (should be deleted)
 ```
 
-### Partial Deletion Issues
+### Problemas de Eliminación Parcial
 
 **Prompt**:
 ```
@@ -242,9 +242,9 @@ Please help:
 4. Clean up completely
 ```
 
-## Troubleshooting Deletion
+## Solución de Problemas de Eliminación
 
-### DELETE_FAILED Status
+### Estado DELETE_FAILED
 
 **Prompt**:
 ```
@@ -263,7 +263,7 @@ Please help:
 5. Force deletion if necessary
 ```
 
-### S3 Bucket Not Empty
+### Bucket S3 No Vacío
 
 **Prompt**:
 ```
@@ -278,7 +278,7 @@ Please help:
 4. Automate bucket cleanup
 ```
 
-### DynamoDB Table Protection
+### Protección de Tabla DynamoDB
 
 **Prompt**:
 ```
@@ -292,7 +292,7 @@ Please help:
 3. Verify table is fully deleted
 ```
 
-### CloudFormation Stack Stuck
+### Stack de CloudFormation Atascado
 
 **Prompt**:
 ```
@@ -308,9 +308,9 @@ Please help:
 4. How to manually intervene if needed
 ```
 
-## Monitoring and Alerts
+## Monitoreo y Alertas
 
-### Set Up Billing Alerts
+### Configurar Alertas de Facturación
 
 **Prompt**:
 ```
@@ -324,7 +324,7 @@ Please show me:
 5. Test the alert
 ```
 
-### Monitor Lambda Performance
+### Monitorear Rendimiento de Lambda
 
 **Prompt**:
 ```
@@ -343,7 +343,7 @@ Please show me:
 4. Best practices for Lambda monitoring
 ```
 
-### DynamoDB Monitoring
+### Monitoreo de DynamoDB
 
 **Prompt**:
 ```
@@ -362,9 +362,9 @@ Please show me:
 4. Cost implications of metrics
 ```
 
-## Documentation and Reporting
+## Documentación y Reportes
 
-### Generate Cost Report
+### Generar Reporte de Costos
 
 **Prompt**:
 ```
@@ -377,7 +377,7 @@ Please help me create:
 4. Screenshot recommendations from AWS Console
 ```
 
-### Document X-Ray Analysis
+### Documentar Análisis de X-Ray
 
 **Prompt**:
 ```
@@ -390,7 +390,7 @@ Please suggest:
 4. How to demonstrate observability
 ```
 
-## Best Practices
+## Mejores Prácticas
 
 **Prompt**:
 ```
@@ -405,9 +405,9 @@ Please provide:
 6. Disaster recovery planning
 ```
 
-## Emergency Procedures
+## Procedimientos de Emergencia
 
-### High Unexpected Costs
+### Costos Inesperadamente Altos
 
 **Prompt**:
 ```
@@ -423,7 +423,7 @@ Please help immediately:
 4. Prevent future occurrences
 ```
 
-### Security Incident
+### Incidente de Seguridad
 
 **Prompt**:
 ```
@@ -437,9 +437,9 @@ Please provide immediate steps:
 5. Create new credentials
 ```
 
-## Post-Capstone Operations
+## Operaciones Post-Capstone
 
-### Keep Resources Running
+### Mantener Recursos en Ejecución
 
 **Prompt**:
 ```
@@ -453,7 +453,7 @@ Please advise:
 5. When to eventually shut it down
 ```
 
-### Archive and Document
+### Archivar y Documentar
 
 **Prompt**:
 ```
@@ -468,13 +468,13 @@ Please help me:
 6. Then safely delete everything
 ```
 
-## Next Steps
+## Próximos Pasos
 
-After operations and cleanup:
+Después de las operaciones y limpieza:
 
-✅ Verify all resources deleted
-✅ Confirm $0 future charges
-✅ Document costs and learnings
-✅ Save GitHub repository URL
-✅ Submit capstone project
-✅ Add to portfolio/LinkedIn
+✅ Verificar que todos los recursos estén eliminados
+✅ Confirmar $0 de cargos futuros
+✅ Documentar costos y aprendizajes
+✅ Guardar URL del repositorio GitHub
+✅ Enviar proyecto capstone
+✅ Agregar a portfolio/LinkedIn

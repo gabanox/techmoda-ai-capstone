@@ -1,22 +1,22 @@
-# API Testing Guide
+# Guía de Pruebas del API
 
-## Overview
+## Descripción General
 
-This guide provides complete instructions for manually testing your TechModa Product Catalog API using curl commands. You'll learn how to retrieve your API Gateway URL, execute tests for all 5 CRUD operations, and interpret responses.
+Esta guía proporciona instrucciones completas para probar manualmente tu API de Catálogo de Productos TechModa usando comandos curl. Aprenderás cómo obtener tu URL de API Gateway, ejecutar pruebas para las 5 operaciones CRUD e interpretar las respuestas.
 
-## Prerequisites
+## Prerequisitos
 
-- Deployed SAM stack (run `sam build && sam deploy --guided` first)
-- curl installed (pre-installed on macOS/Linux, available via Git Bash on Windows)
-- Terminal or command prompt access
+- Stack SAM desplegado (ejecuta `sam build && sam deploy --guided` primero)
+- curl instalado (pre-instalado en macOS/Linux, disponible via Git Bash en Windows)
+- Acceso a terminal o línea de comandos
 
-## Step 1: Retrieve Your API Gateway URL
+## Paso 1: Obtener tu URL de API Gateway
 
-After deploying your SAM application, you need the API Gateway endpoint URL.
+Después de desplegar tu aplicación SAM, necesitas la URL del endpoint de API Gateway.
 
-### Method 1: From Deployment Output
+### Método 1: Desde la Salida del Despliegue
 
-When `sam deploy` completes, look for the Outputs section:
+Cuando `sam deploy` termine, busca la sección Outputs:
 
 ```
 CloudFormation outputs from deployed stack
@@ -29,9 +29,9 @@ Value               https://abc123xyz.execute-api.us-east-1.amazonaws.com/Prod
 -------------------------------------------------
 ```
 
-Copy the URL from the `Value` field.
+Copia la URL del campo `Value`.
 
-### Method 2: AWS CLI Command
+### Método 2: Comando AWS CLI
 
 ```bash
 aws cloudformation describe-stacks \
@@ -40,16 +40,16 @@ aws cloudformation describe-stacks \
   --output text
 ```
 
-### Method 3: AWS Console
+### Método 3: Consola de AWS
 
-1. Go to AWS CloudFormation console
-2. Select your stack (e.g., `techmoda-capstone`)
-3. Click the "Outputs" tab
-4. Copy the value for `TechModaApi`
+1. Ve a la consola de AWS CloudFormation
+2. Selecciona tu stack (ej., `techmoda-capstone`)
+3. Haz clic en la pestaña "Outputs"
+4. Copia el valor de `TechModaApi`
 
-### Set Environment Variable (Recommended)
+### Configurar Variable de Entorno (Recomendado)
 
-For easier testing, save your API URL as an environment variable:
+Para facilitar las pruebas, guarda tu URL de API como una variable de entorno:
 
 **macOS/Linux**:
 ```bash
@@ -66,24 +66,24 @@ $env:API_URL = "https://abc123xyz.execute-api.us-east-1.amazonaws.com/Prod"
 set API_URL=https://abc123xyz.execute-api.us-east-1.amazonaws.com/Prod
 ```
 
-Now you can use `$API_URL` (or `%API_URL%` on Windows CMD) in curl commands.
+Ahora puedes usar `$API_URL` (o `%API_URL%` en Windows CMD) en los comandos curl.
 
-## Step 2: Test Workflow
+## Paso 2: Flujo de Pruebas
 
-Follow this recommended testing sequence to verify all CRUD operations:
+Sigue esta secuencia de pruebas recomendada para verificar todas las operaciones CRUD:
 
-1. **Create Product** - Add a product to the database
-2. **List Products** - Verify the product appears in the list
-3. **Get Product** - Retrieve the specific product by ID
-4. **Update Product** - Modify product details
-5. **Delete Product** - Remove the product from the catalog
+1. **Crear Producto** - Agregar un producto a la base de datos
+2. **Listar Productos** - Verificar que el producto aparezca en la lista
+3. **Obtener Producto** - Recuperar el producto específico por ID
+4. **Actualizar Producto** - Modificar detalles del producto
+5. **Eliminar Producto** - Remover el producto del catálogo
 
-## Test 1: Create Product (POST)
+## Prueba 1: Crear Producto (POST)
 
-### Purpose
-Create a new fashion product in the catalog.
+### Propósito
+Crear un nuevo producto de moda en el catálogo.
 
-### Curl Command
+### Comando Curl
 
 ```bash
 curl -X POST $API_URL/products \
@@ -97,7 +97,7 @@ curl -X POST $API_URL/products \
   }'
 ```
 
-### Expected Success Response (201 Created)
+### Respuesta de Éxito Esperada (201 Created)
 
 ```json
 {
@@ -112,26 +112,26 @@ curl -X POST $API_URL/products \
 }
 ```
 
-**Important**: Save the `productId` from the response - you'll need it for Get, Update, and Delete tests.
+**Importante**: Guarda el `productId` de la respuesta - lo necesitarás para las pruebas de Obtener, Actualizar y Eliminar.
 
-### Example: Save productId
+### Ejemplo: Guardar productId
 
 **macOS/Linux/PowerShell**:
 ```bash
-# Save entire response to file
+# Guardar respuesta completa en archivo
 curl -X POST $API_URL/products \
   -H "Content-Type: application/json" \
   -d '{"name": "Classic Denim Jacket", "price": 79.99}' \
   > product.json
 
-# Extract productId (requires jq)
+# Extraer productId (requiere jq)
 PRODUCT_ID=$(jq -r '.productId' product.json)
 echo $PRODUCT_ID
 ```
 
-### Error Responses
+### Respuestas de Error
 
-**400 Bad Request** (missing required fields):
+**400 Bad Request** (campos requeridos faltantes):
 ```json
 {
   "error": "Bad Request",
@@ -139,7 +139,7 @@ echo $PRODUCT_ID
 }
 ```
 
-**500 Internal Server Error** (DynamoDB permissions or other issues):
+**500 Internal Server Error** (permisos de DynamoDB u otros problemas):
 ```json
 {
   "error": "Internal server error",
@@ -147,27 +147,27 @@ echo $PRODUCT_ID
 }
 ```
 
-### Troubleshooting
+### Resolución de Problemas
 
-| Error | Likely Cause | Solution |
+| Error | Causa Probable | Solución |
 |-------|--------------|----------|
-| 400 Bad Request | Missing `name` or `price` | Add required fields to JSON body |
-| 403 Forbidden | IAM permissions issue | Check SAM template DynamoDB policies |
-| 500 Internal Server Error | Lambda execution error | Check CloudWatch Logs |
-| Connection refused | Wrong API URL | Verify API Gateway URL |
+| 400 Bad Request | Falta `name` o `price` | Agregar campos requeridos al cuerpo JSON |
+| 403 Forbidden | Problema de permisos IAM | Verificar políticas de DynamoDB en template SAM |
+| 500 Internal Server Error | Error de ejecución Lambda | Revisar CloudWatch Logs |
+| Connection refused | URL de API incorrecta | Verificar URL de API Gateway |
 
-## Test 2: List Products (GET)
+## Prueba 2: Listar Productos (GET)
 
-### Purpose
-Retrieve all products in the catalog.
+### Propósito
+Recuperar todos los productos en el catálogo.
 
-### Curl Command
+### Comando Curl
 
 ```bash
 curl -X GET $API_URL/products
 ```
 
-### Expected Success Response (200 OK)
+### Respuesta de Éxito Esperada (200 OK)
 
 ```json
 {
@@ -186,14 +186,14 @@ curl -X GET $API_URL/products
 }
 ```
 
-If the database is empty:
+Si la base de datos está vacía:
 ```json
 {
   "products": []
 }
 ```
 
-### Error Responses
+### Respuestas de Error
 
 **500 Internal Server Error**:
 ```json
@@ -203,36 +203,36 @@ If the database is empty:
 }
 ```
 
-### Verification Steps
+### Pasos de Verificación
 
-1. Confirm the product you created appears in the list
-2. Verify all attributes are present (productId, name, price, etc.)
-3. Check that timestamps are in ISO 8601 format
+1. Confirmar que el producto que creaste aparece en la lista
+2. Verificar que todos los atributos estén presentes (productId, name, price, etc.)
+3. Comprobar que los timestamps estén en formato ISO 8601
 
-## Test 3: Get Product by ID (GET)
+## Prueba 3: Obtener Producto por ID (GET)
 
-### Purpose
-Retrieve a single product using its productId.
+### Propósito
+Recuperar un solo producto usando su productId.
 
-### Curl Command
+### Comando Curl
 
-Replace `{PRODUCT_ID}` with the actual UUID from the Create Product response.
+Reemplaza `{PRODUCT_ID}` con el UUID real de la respuesta de Crear Producto.
 
 ```bash
 curl -X GET $API_URL/products/{PRODUCT_ID}
 ```
 
-**Example with saved variable**:
+**Ejemplo con variable guardada**:
 ```bash
 curl -X GET $API_URL/products/$PRODUCT_ID
 ```
 
-**Example with actual UUID**:
+**Ejemplo con UUID real**:
 ```bash
 curl -X GET $API_URL/products/123e4567-e89b-12d3-a456-426614174000
 ```
 
-### Expected Success Response (200 OK)
+### Respuesta de Éxito Esperada (200 OK)
 
 ```json
 {
@@ -247,9 +247,9 @@ curl -X GET $API_URL/products/123e4567-e89b-12d3-a456-426614174000
 }
 ```
 
-### Error Responses
+### Respuestas de Error
 
-**404 Not Found** (product doesn't exist):
+**404 Not Found** (el producto no existe):
 ```json
 {
   "error": "Not Found",
@@ -265,21 +265,21 @@ curl -X GET $API_URL/products/123e4567-e89b-12d3-a456-426614174000
 }
 ```
 
-### Troubleshooting
+### Resolución de Problemas
 
-| Error | Likely Cause | Solution |
+| Error | Causa Probable | Solución |
 |-------|--------------|----------|
-| 404 Not Found | Wrong productId or product deleted | Verify productId from List Products |
-| 500 Internal Server Error | Lambda error | Check CloudWatch Logs |
+| 404 Not Found | productId incorrecto o producto eliminado | Verificar productId desde Listar Productos |
+| 500 Internal Server Error | Error de Lambda | Revisar CloudWatch Logs |
 
-## Test 4: Update Product (PUT)
+## Prueba 4: Actualizar Producto (PUT)
 
-### Purpose
-Update existing product details (partial update).
+### Propósito
+Actualizar detalles de un producto existente (actualización parcial).
 
-### Curl Command
+### Comando Curl
 
-Replace `{PRODUCT_ID}` with the actual UUID.
+Reemplaza `{PRODUCT_ID}` con el UUID real.
 
 ```bash
 curl -X PUT $API_URL/products/{PRODUCT_ID} \
@@ -290,7 +290,7 @@ curl -X PUT $API_URL/products/{PRODUCT_ID} \
   }'
 ```
 
-**Example with saved variable**:
+**Ejemplo con variable guardada**:
 ```bash
 curl -X PUT $API_URL/products/$PRODUCT_ID \
   -H "Content-Type: application/json" \
@@ -300,7 +300,7 @@ curl -X PUT $API_URL/products/$PRODUCT_ID \
   }'
 ```
 
-### Expected Success Response (200 OK)
+### Respuesta de Éxito Esperada (200 OK)
 
 ```json
 {
@@ -315,9 +315,9 @@ curl -X PUT $API_URL/products/$PRODUCT_ID \
 }
 ```
 
-**Note**: `updatedAt` timestamp should change, `createdAt` should remain the same.
+**Nota**: El timestamp `updatedAt` debe cambiar, `createdAt` debe permanecer igual.
 
-### Error Responses
+### Respuestas de Error
 
 **404 Not Found**:
 ```json
@@ -327,7 +327,7 @@ curl -X PUT $API_URL/products/$PRODUCT_ID \
 }
 ```
 
-**400 Bad Request** (invalid data):
+**400 Bad Request** (datos inválidos):
 ```json
 {
   "error": "Bad Request",
@@ -343,32 +343,32 @@ curl -X PUT $API_URL/products/$PRODUCT_ID \
 }
 ```
 
-### Verification Steps
+### Pasos de Verificación
 
-1. Confirm updated fields changed (price, description)
-2. Verify unchanged fields remain the same (name, category)
-3. Check that `updatedAt` timestamp is newer than `createdAt`
-4. Run Get Product again to verify changes persisted
+1. Confirmar que los campos actualizados cambiaron (price, description)
+2. Verificar que los campos no modificados permanecen igual (name, category)
+3. Comprobar que el timestamp `updatedAt` es más reciente que `createdAt`
+4. Ejecutar Obtener Producto nuevamente para verificar que los cambios persistieron
 
-## Test 5: Delete Product (DELETE)
+## Prueba 5: Eliminar Producto (DELETE)
 
-### Purpose
-Remove a product from the catalog.
+### Propósito
+Remover un producto del catálogo.
 
-### Curl Command
+### Comando Curl
 
-Replace `{PRODUCT_ID}` with the actual UUID.
+Reemplaza `{PRODUCT_ID}` con el UUID real.
 
 ```bash
 curl -X DELETE $API_URL/products/{PRODUCT_ID}
 ```
 
-**Example with saved variable**:
+**Ejemplo con variable guardada**:
 ```bash
 curl -X DELETE $API_URL/products/$PRODUCT_ID
 ```
 
-### Expected Success Response (200 OK)
+### Respuesta de Éxito Esperada (200 OK)
 
 ```json
 {
@@ -377,9 +377,9 @@ curl -X DELETE $API_URL/products/$PRODUCT_ID
 }
 ```
 
-### Error Responses
+### Respuestas de Error
 
-**404 Not Found** (if existence check is implemented):
+**404 Not Found** (si se implementa verificación de existencia):
 ```json
 {
   "error": "Not Found",
@@ -395,26 +395,26 @@ curl -X DELETE $API_URL/products/$PRODUCT_ID
 }
 ```
 
-### Verification Steps
+### Pasos de Verificación
 
-1. Run List Products again - deleted product should not appear
-2. Try Get Product with same ID - should return 404 Not Found
-3. Try Delete again - should still return success (DynamoDB DeleteItem is idempotent)
+1. Ejecutar Listar Productos nuevamente - el producto eliminado no debe aparecer
+2. Intentar Obtener Producto con el mismo ID - debe retornar 404 Not Found
+3. Intentar Eliminar nuevamente - debe seguir retornando éxito (DynamoDB DeleteItem es idempotente)
 
-## Complete Test Script
+## Script de Prueba Completo
 
-Here's a complete bash script to test all endpoints in sequence:
+Aquí hay un script bash completo para probar todos los endpoints en secuencia:
 
 ```bash
 #!/bin/bash
 
-# Configuration
+# Configuración
 API_URL="https://your-api-id.execute-api.us-east-1.amazonaws.com/Prod"
 
 echo "=== TechModa API Test Suite ==="
 echo ""
 
-# Test 1: Create Product
+# Prueba 1: Crear Producto
 echo "1. Creating product..."
 CREATE_RESPONSE=$(curl -s -X POST $API_URL/products \
   -H "Content-Type: application/json" \
@@ -431,17 +431,17 @@ PRODUCT_ID=$(echo $CREATE_RESPONSE | jq -r '.productId')
 echo "Product ID: $PRODUCT_ID"
 echo ""
 
-# Test 2: List Products
+# Prueba 2: Listar Productos
 echo "2. Listing all products..."
 curl -s -X GET $API_URL/products | jq .
 echo ""
 
-# Test 3: Get Product
+# Prueba 3: Obtener Producto
 echo "3. Getting product by ID..."
 curl -s -X GET $API_URL/products/$PRODUCT_ID | jq .
 echo ""
 
-# Test 4: Update Product
+# Prueba 4: Actualizar Producto
 echo "4. Updating product..."
 curl -s -X PUT $API_URL/products/$PRODUCT_ID \
   -H "Content-Type: application/json" \
@@ -451,17 +451,17 @@ curl -s -X PUT $API_URL/products/$PRODUCT_ID \
   }' | jq .
 echo ""
 
-# Test 5: Verify Update
+# Prueba 5: Verificar Actualización
 echo "5. Verifying update..."
 curl -s -X GET $API_URL/products/$PRODUCT_ID | jq .
 echo ""
 
-# Test 6: Delete Product
+# Prueba 6: Eliminar Producto
 echo "6. Deleting product..."
 curl -s -X DELETE $API_URL/products/$PRODUCT_ID | jq .
 echo ""
 
-# Test 7: Verify Deletion
+# Prueba 7: Verificar Eliminación
 echo "7. Verifying deletion (should return 404)..."
 curl -s -X GET $API_URL/products/$PRODUCT_ID | jq .
 echo ""
@@ -469,92 +469,92 @@ echo ""
 echo "=== Test Suite Complete ==="
 ```
 
-**Usage**:
-1. Save as `test-api.sh`
-2. Update `API_URL` with your actual endpoint
-3. Make executable: `chmod +x test-api.sh`
-4. Run: `./test-api.sh`
+**Uso**:
+1. Guardar como `test-api.sh`
+2. Actualizar `API_URL` con tu endpoint real
+3. Hacer ejecutable: `chmod +x test-api.sh`
+4. Ejecutar: `./test-api.sh`
 
-**Note**: Requires `jq` for JSON formatting. Install with:
+**Nota**: Requiere `jq` para formateo JSON. Instalar con:
 - macOS: `brew install jq`
 - Ubuntu/Debian: `sudo apt-get install jq`
-- Windows: Download from https://stedolan.github.io/jq/
+- Windows: Descargar desde https://stedolan.github.io/jq/
 
-## Advanced Testing
+## Pruebas Avanzadas
 
-### Pretty Print JSON Responses
+### Formateo Bonito de Respuestas JSON
 
-Add `| jq .` to any curl command:
+Agregar `| jq .` a cualquier comando curl:
 
 ```bash
 curl -X GET $API_URL/products | jq .
 ```
 
-### Include HTTP Headers in Response
+### Incluir Encabezados HTTP en la Respuesta
 
-Add `-i` flag to see status codes and headers:
+Agregar flag `-i` para ver códigos de estado y encabezados:
 
 ```bash
 curl -i -X GET $API_URL/products
 ```
 
-### Verbose Output for Debugging
+### Salida Detallada para Depuración
 
-Add `-v` flag to see full request/response details:
+Agregar flag `-v` para ver detalles completos de solicitud/respuesta:
 
 ```bash
 curl -v -X GET $API_URL/products
 ```
 
-### Test Error Scenarios
+### Probar Escenarios de Error
 
-**Missing required field**:
+**Campo requerido faltante**:
 ```bash
 curl -X POST $API_URL/products \
   -H "Content-Type: application/json" \
   -d '{"description": "No name or price"}'
 ```
 
-**Invalid product ID**:
+**ID de producto inválido**:
 ```bash
 curl -X GET $API_URL/products/invalid-id
 ```
 
-**Malformed JSON**:
+**JSON malformado**:
 ```bash
 curl -X POST $API_URL/products \
   -H "Content-Type: application/json" \
   -d '{invalid json}'
 ```
 
-## CloudWatch Logs Analysis
+## Análisis de CloudWatch Logs
 
-After running tests, check Lambda execution logs for debugging:
+Después de ejecutar las pruebas, revisa los logs de ejecución de Lambda para depuración:
 
-### View Logs (AWS CLI)
+### Ver Logs (AWS CLI)
 
-**List recent log streams**:
+**Listar streams de logs recientes**:
 ```bash
 aws logs tail /aws/lambda/techmoda-capstone-CreateItem --follow
 ```
 
-**Get last 50 log events**:
+**Obtener últimos 50 eventos de log**:
 ```bash
 aws logs tail /aws/lambda/techmoda-capstone-CreateItem --since 5m
 ```
 
-### View Logs (AWS Console)
+### Ver Logs (Consola de AWS)
 
-1. Go to CloudWatch → Log groups
-2. Select `/aws/lambda/{StackName}-{FunctionName}`
-3. Click latest log stream
-4. Look for:
-   - START/END lines (execution boundaries)
-   - Console.log() output
-   - ERROR messages with stack traces
-   - REPORT line (duration, memory usage)
+1. Ve a CloudWatch → Log groups
+2. Selecciona `/aws/lambda/{StackName}-{FunctionName}`
+3. Haz clic en el stream de log más reciente
+4. Busca:
+   - Líneas START/END (límites de ejecución)
+   - Salida de Console.log()
+   - Mensajes ERROR con stack traces
+   - Línea REPORT (duración, uso de memoria)
 
-### Example Log Entry
+### Ejemplo de Entrada de Log
 
 ```
 START RequestId: abc-123-def Version: $LATEST
@@ -564,82 +564,82 @@ END RequestId: abc-123-def
 REPORT RequestId: abc-123-def  Duration: 150.00 ms  Billed Duration: 150 ms  Memory Size: 1024 MB  Max Memory Used: 85 MB
 ```
 
-## X-Ray Traces Analysis
+## Análisis de Trazas X-Ray
 
-### View Traces (AWS Console)
+### Ver Trazas (Consola de AWS)
 
-1. Go to X-Ray → Traces
-2. Filter by time range (last 5 minutes)
-3. Click on a trace to see details:
-   - API Gateway segment (request routing)
-   - Lambda segment (function execution)
-   - DynamoDB segment (database operations)
-4. Check Service Map for visual overview
+1. Ve a X-Ray → Traces
+2. Filtra por rango de tiempo (últimos 5 minutos)
+3. Haz clic en una traza para ver detalles:
+   - Segmento API Gateway (enrutamiento de solicitudes)
+   - Segmento Lambda (ejecución de función)
+   - Segmento DynamoDB (operaciones de base de datos)
+4. Revisa el Service Map para vista general visual
 
-### What to Look For
+### Qué Buscar
 
-- **Cold starts**: First invocation after deployment (slower)
-- **DynamoDB latency**: Should be <50ms for GetItem
-- **Total duration**: Compare to Lambda execution time
-- **Errors**: Red segments indicate failures
+- **Cold starts**: Primera invocación después del despliegue (más lenta)
+- **Latencia de DynamoDB**: Debe ser <50ms para GetItem
+- **Duración total**: Comparar con tiempo de ejecución de Lambda
+- **Errores**: Segmentos rojos indican fallas
 
-## Common Issues and Solutions
+## Problemas Comunes y Soluciones
 
-### Issue: "curl: command not found"
+### Problema: "curl: command not found"
 
-**Solution**: Install curl
-- macOS: Pre-installed
-- Windows: Use Git Bash or install from https://curl.se/
-- Linux: `sudo apt-get install curl` or `sudo yum install curl`
+**Solución**: Instalar curl
+- macOS: Pre-instalado
+- Windows: Usar Git Bash o instalar desde https://curl.se/
+- Linux: `sudo apt-get install curl` o `sudo yum install curl`
 
-### Issue: "Connection refused" or "Could not resolve host"
+### Problema: "Connection refused" o "Could not resolve host"
 
-**Solution**: Verify API Gateway URL
-- Check CloudFormation Outputs
-- Ensure URL includes `https://` and `/Prod` stage
-- No trailing slash in base URL
+**Solución**: Verificar URL de API Gateway
+- Revisar Outputs de CloudFormation
+- Asegurar que la URL incluya `https://` y stage `/Prod`
+- Sin barra final en la URL base
 
-### Issue: 403 Forbidden
+### Problema: 403 Forbidden
 
-**Solution**: IAM permission problem
-- Check SAM template DynamoDB policies
-- Verify Lambda execution role has necessary permissions
-- Redeploy with `sam build && sam deploy`
+**Solución**: Problema de permisos IAM
+- Revisar políticas de DynamoDB en template SAM
+- Verificar que el rol de ejecución de Lambda tenga los permisos necesarios
+- Re-desplegar con `sam build && sam deploy`
 
-### Issue: 500 Internal Server Error
+### Problema: 500 Internal Server Error
 
-**Solution**: Lambda execution error
-1. Check CloudWatch Logs for the specific function
-2. Look for JavaScript errors (TypeError, ReferenceError)
-3. Verify environment variable `PRODUCTS_TABLE` is set
-4. Check DynamoDB table exists and is accessible
+**Solución**: Error de ejecución de Lambda
+1. Revisar CloudWatch Logs para la función específica
+2. Buscar errores de JavaScript (TypeError, ReferenceError)
+3. Verificar que la variable de entorno `PRODUCTS_TABLE` esté configurada
+4. Comprobar que la tabla DynamoDB existe y es accesible
 
-### Issue: 404 Not Found (wrong reason)
+### Problema: 404 Not Found (razón incorrecta)
 
-**Solution**: API Gateway routing issue
-- Verify endpoint path matches template.yaml
-- Check HTTP method (GET vs POST vs PUT vs DELETE)
-- Ensure `/products` and `/products/{id}` routes exist
+**Solución**: Problema de enrutamiento de API Gateway
+- Verificar que la ruta del endpoint coincida con template.yaml
+- Revisar método HTTP (GET vs POST vs PUT vs DELETE)
+- Asegurar que existan las rutas `/products` y `/products/{id}`
 
-### Issue: Empty response or timeout
+### Problema: Respuesta vacía o timeout
 
-**Solution**: Lambda timeout or initialization error
-- Increase timeout in template.yaml (default 30s)
-- Check Lambda function has AWS SDK imports
-- Verify Node.js 18.x runtime compatibility
+**Solución**: Timeout o error de inicialización de Lambda
+- Aumentar timeout en template.yaml (predeterminado 30s)
+- Verificar que la función Lambda tenga imports del AWS SDK
+- Verificar compatibilidad con runtime Node.js 18.x
 
-## Best Practices
+## Mejores Prácticas
 
-1. **Test incrementally**: Don't wait to test all functions at once
-2. **Save productIds**: Keep track of created products for testing
-3. **Check logs immediately**: If a test fails, check CloudWatch right away
-4. **Use environment variables**: Store API_URL for easier testing
-5. **Test error cases**: Verify error handling works correctly
-6. **Clean up test data**: Delete products after testing to avoid clutter
+1. **Probar incrementalmente**: No esperes a probar todas las funciones a la vez
+2. **Guardar productIds**: Mantén registro de productos creados para pruebas
+3. **Revisar logs inmediatamente**: Si una prueba falla, revisa CloudWatch de inmediato
+4. **Usar variables de entorno**: Almacenar API_URL para facilitar las pruebas
+5. **Probar casos de error**: Verificar que el manejo de errores funcione correctamente
+6. **Limpiar datos de prueba**: Eliminar productos después de probar para evitar desorden
 
-## Next Steps
+## Próximos Pasos
 
-- Review [Debugging Guide](prompts/05_DEBUGGING.md) if tests fail
-- Check [CloudWatch Logs](prompts/05_DEBUGGING.md#prompt-51-analyze-cloudwatch-logs) for errors
-- Explore [X-Ray Traces](prompts/06_OPERATIONS.md#prompt-61-view-x-ray-traces) for performance insights
-- See [Cost Estimation](COST_AND_CLEANUP.md) for pricing details
+- Revisar [Guía de Depuración](prompts/05_DEBUGGING.md) si las pruebas fallan
+- Verificar [CloudWatch Logs](prompts/05_DEBUGGING.md#prompt-51-analyze-cloudwatch-logs) para errores
+- Explorar [Trazas X-Ray](prompts/06_OPERATIONS.md#prompt-61-view-x-ray-traces) para insights de rendimiento
+- Ver [Estimación de Costos](COST_AND_CLEANUP.md) para detalles de precios

@@ -1,21 +1,21 @@
-# TechModa Capstone - Solution Notes
+# TechModa Capstone - Notas de Solución
 
-## Purpose
+## Propósito
 
-This document provides implementation patterns and guidance for instructors. It does NOT contain complete solutions to avoid temptation to share with students. Instead, it offers:
+Este documento proporciona patrones de implementación y orientación para instructores. NO contiene soluciones completas para evitar la tentación de compartirlas con los estudiantes. En su lugar, ofrece:
 
-- Key implementation patterns for each function
-- Common mistakes students make
-- Best practices examples
-- Security and performance considerations
+- Patrones clave de implementación para cada función
+- Errores comunes que cometen los estudiantes
+- Ejemplos de mejores prácticas
+- Consideraciones de seguridad y rendimiento
 
-**DO NOT share this file with students**. Direct them to specifications and prompt templates instead.
+**NO comparta este archivo con los estudiantes**. Diríjalos a las especificaciones y plantillas de prompts en su lugar.
 
-## General Implementation Patterns
+## Patrones Generales de Implementación
 
-### AWS SDK v3 Setup
+### Configuración de AWS SDK v3
 
-All Lambda functions should initialize DynamoDB client this way:
+Todas las funciones Lambda deben inicializar el cliente de DynamoDB de esta manera:
 
 ```javascript
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
@@ -25,57 +25,57 @@ const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
 ```
 
-**Why DocumentClient?**: Simplifies JSON marshalling/unmarshalling (no need to specify types like `{S: "value"}`).
+**¿Por qué DocumentClient?**: Simplifica el marshalling/unmarshalling de JSON (no es necesario especificar tipos como `{S: "value"}`).
 
-### API Gateway Response Format
+### Formato de Respuesta de API Gateway
 
-Every Lambda must return this structure:
+Cada Lambda debe retornar esta estructura:
 
 ```javascript
 return {
-  statusCode: 200,  // Must be number, not string
+  statusCode: 200,  // Debe ser número, no string
   headers: {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*'
   },
-  body: JSON.stringify({...})  // Must be string, not object
+  body: JSON.stringify({...})  // Debe ser string, no objeto
 };
 ```
 
-**Common Mistakes**:
-- Returning object instead of stringified JSON
-- Missing CORS headers
-- statusCode as string ("200" instead of 200)
+**Errores Comunes**:
+- Retornar objeto en lugar de JSON stringificado
+- Faltan headers CORS
+- statusCode como string ("200" en lugar de 200)
 
-### Environment Variables
+### Variables de Entorno
 
-Always use environment variable for table name:
+Siempre usar variable de entorno para el nombre de la tabla:
 
 ```javascript
 const tableName = process.env.PRODUCTS_TABLE;
 ```
 
-**Never hardcode**: `const tableName = "techmoda-capstone-Products";` (breaks when deployed to different environments)
+**Nunca hardcodear**: `const tableName = "techmoda-capstone-Products";` (se rompe cuando se despliega en diferentes entornos)
 
-## Function-Specific Patterns
+## Patrones Específicos por Función
 
 ### ListItems (GET /products)
 
-**Key Operations**:
-1. Perform DynamoDB Scan
-2. Return items array wrapped in `products` field
-3. Handle empty table gracefully
+**Operaciones Clave**:
+1. Realizar DynamoDB Scan
+2. Retornar array de items envuelto en campo `products`
+3. Manejar tabla vacía elegantemente
 
-**Scan Command**:
+**Comando Scan**:
 ```javascript
 const result = await docClient.send(new ScanCommand({
   TableName: process.env.PRODUCTS_TABLE
 }));
 
-// result.Items is an array (empty array if no items)
+// result.Items es un array (array vacío si no hay items)
 ```
 
-**Success Response**:
+**Respuesta de Éxito**:
 ```javascript
 return {
   statusCode: 200,
@@ -84,24 +84,24 @@ return {
 };
 ```
 
-**Common Mistakes**:
-- Not handling empty Items array (should return empty products array, not error)
-- Returning `result` directly instead of wrapping in `{ products: [...] }`
-- Not including CORS headers
+**Errores Comunes**:
+- No manejar array Items vacío (debería retornar array de productos vacío, no error)
+- Retornar `result` directamente en lugar de envolver en `{ products: [...] }`
+- No incluir headers CORS
 
-**Performance Note**: Scan reads entire table. For capstone scope (< 50 items), this is acceptable. In production, use Query with GSI for large datasets.
+**Nota de Rendimiento**: Scan lee la tabla completa. Para el alcance del capstone (< 50 items), esto es aceptable. En producción, usar Query con GSI para conjuntos de datos grandes.
 
 ### CreateItem (POST /products)
 
-**Key Operations**:
-1. Parse JSON body safely
-2. Validate required fields (name, price)
-3. Generate UUID for productId
-4. Add timestamps
-5. Perform DynamoDB PutItem
-6. Return created item with 201 status
+**Operaciones Clave**:
+1. Parsear body JSON de forma segura
+2. Validar campos requeridos (name, price)
+3. Generar UUID para productId
+4. Agregar timestamps
+5. Realizar DynamoDB PutItem
+6. Retornar item creado con estado 201
 
-**JSON Parsing**:
+**Parseo de JSON**:
 ```javascript
 let body;
 try {
@@ -115,7 +115,7 @@ try {
 }
 ```
 
-**Validation**:
+**Validación**:
 ```javascript
 if (!body.name) {
   return {
@@ -134,7 +134,7 @@ if (body.price === undefined || body.price === null) {
 }
 ```
 
-**UUID Generation**:
+**Generación de UUID**:
 ```javascript
 const crypto = require('crypto');
 const productId = crypto.randomUUID();
@@ -155,7 +155,7 @@ const product = {
 };
 ```
 
-**PutItem Command**:
+**Comando PutItem**:
 ```javascript
 await docClient.send(new PutCommand({
   TableName: process.env.PRODUCTS_TABLE,
@@ -163,7 +163,7 @@ await docClient.send(new PutCommand({
 }));
 ```
 
-**Success Response** (note 201, not 200):
+**Respuesta de Éxito** (nota 201, no 200):
 ```javascript
 return {
   statusCode: 201,
@@ -172,25 +172,25 @@ return {
 };
 ```
 
-**Common Mistakes**:
-- Not parsing event.body (treating it as object instead of string)
-- Not validating required fields
-- Returning 200 instead of 201
-- Not generating UUID (expecting client to provide)
-- Missing timestamps
+**Errores Comunes**:
+- No parsear event.body (tratarlo como objeto en lugar de string)
+- No validar campos requeridos
+- Retornar 200 en lugar de 201
+- No generar UUID (esperando que el cliente lo proporcione)
+- Faltan timestamps
 
 ### GetItem (GET /products/{id})
 
-**Key Operations**:
-1. Extract productId from path parameters
-2. Perform DynamoDB GetItem
-3. Return 200 if found, 404 if not found
+**Operaciones Clave**:
+1. Extraer productId de parámetros de ruta
+2. Realizar DynamoDB GetItem
+3. Retornar 200 si se encuentra, 404 si no se encuentra
 
-**Path Parameter Extraction**:
+**Extracción de Parámetro de Ruta**:
 ```javascript
 const productId = event.pathParameters.id;
 
-// Optional safety check:
+// Verificación de seguridad opcional:
 if (!productId) {
   return {
     statusCode: 400,
@@ -200,7 +200,7 @@ if (!productId) {
 }
 ```
 
-**GetItem Command**:
+**Comando GetItem**:
 ```javascript
 const result = await docClient.send(new GetCommand({
   TableName: process.env.PRODUCTS_TABLE,
@@ -208,7 +208,7 @@ const result = await docClient.send(new GetCommand({
 }));
 ```
 
-**Check Existence**:
+**Verificar Existencia**:
 ```javascript
 if (!result.Item) {
   return {
@@ -225,25 +225,25 @@ return {
 };
 ```
 
-**Common Mistakes**:
-- Not checking if Item exists (returning undefined instead of 404)
-- Trying to access event.pathParameters without checking if it exists
-- Crashing when productId is invalid
+**Errores Comunes**:
+- No verificar si Item existe (retornar undefined en lugar de 404)
+- Intentar acceder a event.pathParameters sin verificar si existe
+- Fallar cuando productId es inválido
 
-**Performance**: GetItem is fastest DynamoDB operation (single-digit milliseconds).
+**Rendimiento**: GetItem es la operación más rápida de DynamoDB (milisegundos de un dígito).
 
 ### UpdateItem (PUT /products/{id})
 
-**Key Operations**:
-1. Extract productId from path parameters
-2. Parse update fields from body
-3. Check if product exists (optional but recommended)
-4. Build dynamic UpdateExpression
-5. Update updatedAt timestamp
-6. Perform DynamoDB UpdateItem
-7. Return updated item
+**Operaciones Clave**:
+1. Extraer productId de parámetros de ruta
+2. Parsear campos de actualización del body
+3. Verificar si el producto existe (opcional pero recomendado)
+4. Construir UpdateExpression dinámico
+5. Actualizar timestamp updatedAt
+6. Realizar DynamoDB UpdateItem
+7. Retornar item actualizado
 
-**Existence Check** (recommended):
+**Verificación de Existencia** (recomendado):
 ```javascript
 const getResult = await docClient.send(new GetCommand({
   TableName: process.env.PRODUCTS_TABLE,
@@ -259,7 +259,7 @@ if (!getResult.Item) {
 }
 ```
 
-**Dynamic UpdateExpression Building**:
+**Construcción Dinámica de UpdateExpression**:
 ```javascript
 const updates = [];
 const values = {};
@@ -289,14 +289,14 @@ if (body.imageUrl !== undefined) {
   values[':imageUrl'] = body.imageUrl;
 }
 
-// Always update timestamp
+// Siempre actualizar timestamp
 updates.push('updatedAt = :updatedAt');
 values[':updatedAt'] = new Date().toISOString();
 
 const updateExpression = 'SET ' + updates.join(', ');
 ```
 
-**UpdateItem Command**:
+**Comando UpdateItem**:
 ```javascript
 const result = await docClient.send(new UpdateCommand({
   TableName: process.env.PRODUCTS_TABLE,
@@ -313,25 +313,25 @@ return {
 };
 ```
 
-**Common Mistakes**:
-- Not building UpdateExpression dynamically (failing on partial updates)
-- Hardcoding field names instead of using ExpressionAttributeValues
-- Not updating updatedAt timestamp
-- Forgetting `ReturnValues: 'ALL_NEW'` (won't get updated item back)
-- Allowing updates to productId or createdAt (should be immutable)
+**Errores Comunes**:
+- No construir UpdateExpression dinámicamente (fallar en actualizaciones parciales)
+- Hardcodear nombres de campos en lugar de usar ExpressionAttributeValues
+- No actualizar timestamp updatedAt
+- Olvidar `ReturnValues: 'ALL_NEW'` (no obtendrá el item actualizado de vuelta)
+- Permitir actualizaciones a productId o createdAt (deberían ser inmutables)
 
-**Alternative (Simpler but Less Flexible)**:
-Update all fields even if not provided. Less code but overwrites with undefined/null.
+**Alternativa (Más Simple pero Menos Flexible)**:
+Actualizar todos los campos incluso si no se proporcionan. Menos código pero sobrescribe con undefined/null.
 
 ### DeleteItem (DELETE /products/{id})
 
-**Key Operations**:
-1. Extract productId from path parameters
-2. Optionally check existence first
-3. Perform DynamoDB DeleteItem
-4. Return success message
+**Operaciones Clave**:
+1. Extraer productId de parámetros de ruta
+2. Opcionalmente verificar existencia primero
+3. Realizar DynamoDB DeleteItem
+4. Retornar mensaje de éxito
 
-**Simple Implementation** (no existence check):
+**Implementación Simple** (sin verificación de existencia):
 ```javascript
 await docClient.send(new DeleteCommand({
   TableName: process.env.PRODUCTS_TABLE,
@@ -348,9 +348,9 @@ return {
 };
 ```
 
-**Advanced Implementation** (with existence check):
+**Implementación Avanzada** (con verificación de existencia):
 ```javascript
-// Check existence first
+// Verificar existencia primero
 const getResult = await docClient.send(new GetCommand({
   TableName: process.env.PRODUCTS_TABLE,
   Key: { productId }
@@ -364,7 +364,7 @@ if (!getResult.Item) {
   };
 }
 
-// Delete if exists
+// Eliminar si existe
 await docClient.send(new DeleteCommand({
   TableName: process.env.PRODUCTS_TABLE,
   Key: { productId }
@@ -380,7 +380,7 @@ return {
 };
 ```
 
-**Using ReturnValues** (alternative approach):
+**Usando ReturnValues** (enfoque alternativo):
 ```javascript
 const result = await docClient.send(new DeleteCommand({
   TableName: process.env.PRODUCTS_TABLE,
@@ -406,22 +406,22 @@ return {
 };
 ```
 
-**Common Mistakes**:
-- Not understanding DeleteItem is idempotent (succeeds even if item doesn't exist)
-- Confusing about whether to check existence first (both approaches valid)
+**Errores Comunes**:
+- No entender que DeleteItem es idempotente (tiene éxito incluso si el item no existe)
+- Confusión sobre si verificar existencia primero (ambos enfoques son válidos)
 
-**Design Decision**: Simple implementation (no existence check) is acceptable for capstone. Advanced implementation (with check) demonstrates better error handling.
+**Decisión de Diseño**: La implementación simple (sin verificación de existencia) es aceptable para el capstone. La implementación avanzada (con verificación) demuestra mejor manejo de errores.
 
-## Common Mistakes Students Make
+## Errores Comunes que Cometen los Estudiantes
 
-### 1. API Gateway Response Format Issues
+### 1. Problemas de Formato de Respuesta de API Gateway
 
-**Mistake**:
+**Error**:
 ```javascript
-return { products: [...] };  // ❌ Wrong
+return { products: [...] };  // ❌ Incorrecto
 ```
 
-**Correct**:
+**Correcto**:
 ```javascript
 return {
   statusCode: 200,
@@ -433,56 +433,56 @@ return {
 };
 ```
 
-### 2. Treating event.body as Object
+### 2. Tratar event.body como Objeto
 
-**Mistake**:
+**Error**:
 ```javascript
-const name = event.body.name;  // ❌ event.body is a string
+const name = event.body.name;  // ❌ event.body es un string
 ```
 
-**Correct**:
+**Correcto**:
 ```javascript
 const body = JSON.parse(event.body);
 const name = body.name;
 ```
 
-### 3. Not Awaiting Async Operations
+### 3. No Esperar Operaciones Asíncronas
 
-**Mistake**:
+**Error**:
 ```javascript
-docClient.send(new GetCommand({...}));  // ❌ Not awaited
+docClient.send(new GetCommand({...}));  // ❌ No esperado
 return { statusCode: 200, ... };
 ```
 
-**Correct**:
+**Correcto**:
 ```javascript
 const result = await docClient.send(new GetCommand({...}));
 return { statusCode: 200, body: JSON.stringify(result.Item) };
 ```
 
-### 4. Hardcoded Table Names
+### 4. Nombres de Tabla Hardcodeados
 
-**Mistake**:
+**Error**:
 ```javascript
-const tableName = "TechModa-Products";  // ❌ Breaks in other environments
+const tableName = "TechModa-Products";  // ❌ Se rompe en otros entornos
 ```
 
-**Correct**:
+**Correcto**:
 ```javascript
 const tableName = process.env.PRODUCTS_TABLE;
 ```
 
-### 5. Missing Error Handling
+### 5. Manejo de Errores Faltante
 
-**Mistake**:
+**Error**:
 ```javascript
 exports.handler = async (event) => {
-  const result = await docClient.send(...);  // ❌ No try/catch
+  const result = await docClient.send(...);  // ❌ Sin try/catch
   return { statusCode: 200, ... };
 };
 ```
 
-**Correct**:
+**Correcto**:
 ```javascript
 exports.handler = async (event) => {
   try {
@@ -499,23 +499,23 @@ exports.handler = async (event) => {
 };
 ```
 
-### 6. Incorrect DynamoDB SDK Syntax
+### 6. Sintaxis Incorrecta de SDK de DynamoDB
 
-**Mistake** (SDK v2 syntax in Node.js 18):
+**Error** (sintaxis SDK v2 en Node.js 18):
 ```javascript
 const result = await docClient.scan({ TableName: tableName }).promise();  // ❌ SDK v2
 ```
 
-**Correct** (SDK v3):
+**Correcto** (SDK v3):
 ```javascript
 const result = await docClient.send(new ScanCommand({ TableName: tableName }));
 ```
 
-### 7. Missing CORS Headers
+### 7. Headers CORS Faltantes
 
-**Symptom**: API works in curl but fails in browser
+**Síntoma**: La API funciona en curl pero falla en el navegador
 
-**Fix**: Add to all responses:
+**Corrección**: Agregar a todas las respuestas:
 ```javascript
 headers: {
   'Content-Type': 'application/json',
@@ -523,21 +523,21 @@ headers: {
 }
 ```
 
-### 8. Wrong Status Codes
+### 8. Códigos de Estado Incorrectos
 
-**Mistakes**:
-- CreateItem returning 200 (should be 201)
-- GetItem returning 500 when item not found (should be 404)
-- statusCode as string: `statusCode: "200"` (should be number)
+**Errores**:
+- CreateItem retornando 200 (debería ser 201)
+- GetItem retornando 500 cuando el item no se encuentra (debería ser 404)
+- statusCode como string: `statusCode: "200"` (debería ser número)
 
-## Advanced Features (Beyond Scope)
+## Características Avanzadas (Fuera del Alcance)
 
-Students may ask about these. They're NOT required but demonstrate initiative:
+Los estudiantes pueden preguntar sobre estas. NO son requeridas pero demuestran iniciativa:
 
-### Input Sanitization
+### Sanitización de Entrada
 
 ```javascript
-// Prevent XSS, SQL injection (though DynamoDB isn't SQL)
+// Prevenir XSS, inyección SQL (aunque DynamoDB no es SQL)
 const sanitize = (str) => str.trim().substring(0, 1000);
 
 const product = {
@@ -548,10 +548,10 @@ const product = {
 };
 ```
 
-### Pagination (ListItems)
+### Paginación (ListItems)
 
 ```javascript
-// For large datasets, use pagination
+// Para conjuntos de datos grandes, usar paginación
 const params = {
   TableName: process.env.PRODUCTS_TABLE,
   Limit: 20
@@ -573,10 +573,10 @@ return {
 };
 ```
 
-### Field-Level Validation
+### Validación a Nivel de Campo
 
 ```javascript
-// Validate price is positive number
+// Validar que price es un número positivo
 if (typeof body.price !== 'number' || body.price <= 0) {
   return {
     statusCode: 400,
@@ -585,7 +585,7 @@ if (typeof body.price !== 'number' || body.price <= 0) {
   };
 }
 
-// Validate URL format
+// Validar formato de URL
 const urlRegex = /^https?:\/\/.+/;
 if (body.imageUrl && !urlRegex.test(body.imageUrl)) {
   return {
@@ -596,10 +596,10 @@ if (body.imageUrl && !urlRegex.test(body.imageUrl)) {
 }
 ```
 
-### Conditional Updates
+### Actualizaciones Condicionales
 
 ```javascript
-// Only update if item hasn't changed (optimistic locking)
+// Solo actualizar si el item no ha cambiado (bloqueo optimista)
 const updateCommand = new UpdateCommand({
   TableName: process.env.PRODUCTS_TABLE,
   Key: { productId },
@@ -608,163 +608,163 @@ const updateCommand = new UpdateCommand({
   ExpressionAttributeValues: {
     ':price': body.price,
     ':updatedAt': new Date().toISOString(),
-    ':oldUpdatedAt': body.expectedUpdatedAt  // Client provides expected timestamp
+    ':oldUpdatedAt': body.expectedUpdatedAt  // Cliente proporciona timestamp esperado
   },
   ReturnValues: 'ALL_NEW'
 });
 ```
 
-## Security Considerations
+## Consideraciones de Seguridad
 
-### What Students Should DO
+### Lo que los Estudiantes DEBEN Hacer
 
-✅ Use environment variables for configuration
-✅ Implement least-privilege IAM policies
-✅ Include CORS headers for browser compatibility
-✅ Validate input data
-✅ Log errors (but not sensitive data)
-✅ Return appropriate error messages (not stack traces to clients)
+✅ Usar variables de entorno para configuración
+✅ Implementar políticas IAM de privilegios mínimos
+✅ Incluir headers CORS para compatibilidad con navegadores
+✅ Validar datos de entrada
+✅ Registrar errores (pero no datos sensibles)
+✅ Retornar mensajes de error apropiados (no stack traces a clientes)
 
-### What Students Should NOT DO
+### Lo que los Estudiantes NO DEBEN Hacer
 
-❌ Hardcode AWS credentials in code
-❌ Use wildcard IAM policies (`"Resource": "*"`)
-❌ Return detailed stack traces in API responses
-❌ Log sensitive data (credit cards, passwords)
-❌ Allow SQL injection (not applicable with DynamoDB but good habit)
+❌ Hardcodear credenciales de AWS en el código
+❌ Usar políticas IAM con wildcard (`"Resource": "*"`)
+❌ Retornar stack traces detallados en respuestas de API
+❌ Registrar datos sensibles (tarjetas de crédito, contraseñas)
+❌ Permitir inyección SQL (no aplicable con DynamoDB pero buen hábito)
 
-### Production Considerations (Beyond Capstone)
+### Consideraciones de Producción (Más Allá del Capstone)
 
-- Add authentication (Cognito, API keys)
-- Implement rate limiting
-- Add request validation (API Gateway request validators)
-- Use AWS WAF for additional security
-- Encrypt sensitive data at rest
-- Enable CloudTrail for auditing
+- Agregar autenticación (Cognito, claves API)
+- Implementar limitación de tasa
+- Agregar validación de solicitudes (validadores de solicitud de API Gateway)
+- Usar AWS WAF para seguridad adicional
+- Cifrar datos sensibles en reposo
+- Habilitar CloudTrail para auditoría
 
-## Performance Optimization
+## Optimización de Rendimiento
 
-### What Matters for Capstone
+### Lo que Importa para el Capstone
 
-- Use GetItem over Scan when possible (GetItem for single item retrieval)
-- Keep Lambda function code small (fewer dependencies = faster cold starts)
-- Set appropriate timeout (30s is fine for capstone, but some functions might need less)
+- Usar GetItem sobre Scan cuando sea posible (GetItem para recuperación de un solo item)
+- Mantener el código de la función Lambda pequeño (menos dependencias = arranques en frío más rápidos)
+- Establecer timeout apropiado (30s está bien para el capstone, pero algunas funciones podrían necesitar menos)
 
-### What Doesn't Matter for Capstone
+### Lo que No Importa para el Capstone
 
-- Lambda provisioned concurrency (unnecessary for low traffic)
-- DynamoDB provisioned capacity (PAY_PER_REQUEST is simpler and cheaper for this scale)
-- VPC configuration (not needed for simple DynamoDB access)
-- Lambda layers (overkill for this project)
+- Concurrencia provisionada de Lambda (innecesaria para tráfico bajo)
+- Capacidad provisionada de DynamoDB (PAY_PER_REQUEST es más simple y económico para esta escala)
+- Configuración de VPC (no necesaria para acceso simple a DynamoDB)
+- Capas de Lambda (excesivo para este proyecto)
 
-### Cold Start Optimization (Advanced)
+### Optimización de Arranque en Frío (Avanzado)
 
-Students may notice first request after deployment is slow (~1-2 seconds). This is **cold start**.
+Los estudiantes pueden notar que la primera solicitud después del despliegue es lenta (~1-2 segundos). Esto es **arranque en frío**.
 
-**Explanation**: Lambda initializes runtime, loads code, creates DynamoDB client
-**Mitigation (production)**: Provisioned concurrency, Lambda SnapStart
-**For capstone**: Accept cold starts (happens once per ~15 minutes of inactivity)
+**Explicación**: Lambda inicializa el runtime, carga el código, crea el cliente de DynamoDB
+**Mitigación (producción)**: Concurrencia provisionada, Lambda SnapStart
+**Para el capstone**: Aceptar arranques en frío (ocurre una vez por ~15 minutos de inactividad)
 
-## Troubleshooting Guide for Instructors
+## Guía de Solución de Problemas para Instructores
 
-### Quick Diagnostics
+### Diagnóstico Rápido
 
-**Student says "it doesn't work"**:
-1. Ask: "What specific error do you see?"
-2. Check: CloudWatch Logs (most issues show here)
-3. Verify: Deployment succeeded
-4. Test: Simple curl command
+**El estudiante dice "no funciona"**:
+1. Preguntar: "¿Qué error específico ves?"
+2. Revisar: CloudWatch Logs (la mayoría de los problemas se muestran aquí)
+3. Verificar: El despliegue tuvo éxito
+4. Probar: Comando curl simple
 
-**CloudWatch Log Errors to Look For**:
-- `Cannot find module`: Missing SDK import
-- `is not a function`: Wrong SDK syntax (v2 vs v3)
-- `AccessDeniedException`: IAM permission issue
-- `SyntaxError`: JSON parse error
-- `Cannot read property 'X' of undefined`: Missing path parameter or body
+**Errores de CloudWatch Log a Buscar**:
+- `Cannot find module`: Falta import de SDK
+- `is not a function`: Sintaxis SDK incorrecta (v2 vs v3)
+- `AccessDeniedException`: Problema de permisos IAM
+- `SyntaxError`: Error de parseo JSON
+- `Cannot read property 'X' of undefined`: Falta parámetro de ruta o body
 
-### Common Fixes
+### Correcciones Comunes
 
-**500 Error → Check Lambda Code**:
+**Error 500 → Revisar Código Lambda**:
 ```bash
 aws logs tail /aws/lambda/techmoda-capstone-[FunctionName] --follow
 ```
 
-**403 Forbidden → Check IAM Policies**:
-Verify template.yaml has correct policies:
+**403 Forbidden → Revisar Políticas IAM**:
+Verificar que template.yaml tiene políticas correctas:
 ```yaml
 Policies:
   - DynamoDBCrudPolicy:
       TableName: !Ref ProductsTable
 ```
 
-**502 Bad Gateway → Check Response Format**:
-Ensure Lambda returns:
-- statusCode (number)
-- headers (object)
+**502 Bad Gateway → Revisar Formato de Respuesta**:
+Asegurar que Lambda retorna:
+- statusCode (número)
+- headers (objeto)
 - body (string)
 
-## Testing Reference
+## Referencia de Pruebas
 
-### Minimal Working Test
+### Prueba Funcional Mínima
 
 ```bash
-# Set API URL
+# Establecer URL de API
 export API_URL="https://[api-id].execute-api.us-east-1.amazonaws.com/Prod"
 
-# Create product
+# Crear producto
 curl -X POST $API_URL/products \
   -H "Content-Type: application/json" \
   -d '{"name":"Test","price":99.99}'
 
-# List products
+# Listar productos
 curl -X GET $API_URL/products
 
-# Expected: { "products": [ {...} ] }
+# Esperado: { "products": [ {...} ] }
 ```
 
-If this works, basic infrastructure is functional.
+Si esto funciona, la infraestructura básica es funcional.
 
-## Best Practices for Code Review
+## Mejores Prácticas para Revisión de Código
 
-When reviewing student code, look for:
+Al revisar el código de los estudiantes, buscar:
 
-1. **Error Handling**: Try/catch blocks present
-2. **Input Validation**: Required fields checked
-3. **CORS**: Headers in all responses
-4. **Async/Await**: Proper use with DynamoDB operations
-5. **Environment Variables**: Not hardcoded
-6. **Comments**: Key logic explained
-7. **Formatting**: Consistent indentation
-8. **No Dead Code**: No commented-out sections
+1. **Manejo de Errores**: Bloques try/catch presentes
+2. **Validación de Entrada**: Campos requeridos verificados
+3. **CORS**: Headers en todas las respuestas
+4. **Async/Await**: Uso apropiado con operaciones DynamoDB
+5. **Variables de Entorno**: No hardcodeadas
+6. **Comentarios**: Lógica clave explicada
+7. **Formato**: Indentación consistente
+8. **Sin Código Muerto**: Sin secciones comentadas
 
-## Resources for Instructors
+## Recursos para Instructores
 
-### AWS Documentation
+### Documentación de AWS
 
-- [AWS SAM Developer Guide](https://docs.aws.amazon.com/serverless-application-model/)
-- [DynamoDB SDK v3 (JavaScript)](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/)
-- [Lambda Node.js Runtime](https://docs.aws.amazon.com/lambda/latest/dg/lambda-nodejs.html)
-- [API Gateway Lambda Proxy Integration](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html)
+- [Guía del Desarrollador de AWS SAM](https://docs.aws.amazon.com/serverless-application-model/)
+- [SDK v3 de DynamoDB (JavaScript)](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/)
+- [Runtime de Lambda Node.js](https://docs.aws.amazon.com/lambda/latest/dg/lambda-nodejs.html)
+- [Integración Proxy de Lambda de API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html)
 
-### Useful Commands
+### Comandos Útiles
 
 ```bash
-# View stack resources
+# Ver recursos del stack
 aws cloudformation list-stack-resources --stack-name techmoda-capstone
 
-# Get API URL
+# Obtener URL de API
 aws cloudformation describe-stacks --stack-name techmoda-capstone --query "Stacks[0].Outputs"
 
-# Scan DynamoDB table
+# Escanear tabla DynamoDB
 aws dynamodb scan --table-name techmoda-capstone-Products
 
-# Tail Lambda logs
+# Ver logs de Lambda
 aws logs tail /aws/lambda/techmoda-capstone-ListItems --follow
 
-# Delete stack
+# Eliminar stack
 sam delete --stack-name techmoda-capstone
 ```
 
 ---
 
-**Remember**: Guide students to discover solutions themselves. Use prompts and specifications to support learning, not provide complete answers.
+**Recuerde**: Guíe a los estudiantes a descubrir soluciones por sí mismos. Use prompts y especificaciones para apoyar el aprendizaje, no para proporcionar respuestas completas.

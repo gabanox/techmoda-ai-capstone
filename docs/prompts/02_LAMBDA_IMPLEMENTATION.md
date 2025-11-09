@@ -1,8 +1,8 @@
-# Prompt Templates: Lambda Implementation
+# Plantillas de Prompts: Implementación de Lambda
 
-These prompts help you implement all 5 Lambda functions for the TechModa product catalog API using Claude Code.
+Estos prompts le ayudan a implementar las 5 funciones Lambda para la API del catálogo de productos de TechModa usando Claude Code.
 
-## Prompt 2.1: Implement ListItems Function
+## Prompt 2.1: Implementar Función ListItems
 
 ```
 I need to implement a Lambda function in Node.js 18.x that lists all products from a DynamoDB table.
@@ -35,7 +35,7 @@ Please generate:
 5. Comments explaining each section
 ```
 
-## Prompt 2.2: Implement CreateItem Function
+## Prompt 2.2: Implementar Función CreateItem
 
 ```
 I need to implement a Lambda function in Node.js 18.x that creates a new product in DynamoDB.
@@ -72,7 +72,7 @@ Please generate:
 8. API Gateway response format
 ```
 
-## Prompt 2.3: Implement GetItem Function
+## Prompt 2.3: Implementar Función GetItem
 
 ```
 I need to implement a Lambda function in Node.js 18.x that retrieves a single product by ID from DynamoDB.
@@ -99,7 +99,7 @@ Please generate:
 7. API Gateway response format
 ```
 
-## Prompt 2.4: Implement UpdateItem Function
+## Prompt 2.4: Implementar Función UpdateItem
 
 ```
 I need to implement a Lambda function in Node.js 18.x that updates an existing product in DynamoDB.
@@ -135,7 +135,7 @@ Please generate:
 8. API Gateway response format
 ```
 
-## Prompt 2.5: Implement DeleteItem Function
+## Prompt 2.5: Implementar Función DeleteItem
 
 ```
 I need to implement a Lambda function in Node.js 18.x that deletes a product from DynamoDB.
@@ -162,51 +162,51 @@ Please generate:
 6. API Gateway response format
 ```
 
-## Usage Instructions
+## Instrucciones de Uso
 
-### Step 1: Choose the Right Prompt
+### Paso 1: Elegir el Prompt Correcto
 
-Start with the function you want to implement:
-- **CreateItem first** (recommended) - Allows you to add test data
-- Or follow the order in your Function Specifications
+Comience con la función que desea implementar:
+- **CreateItem primero** (recomendado) - Le permite agregar datos de prueba
+- O siga el orden en sus Especificaciones de Funciones
 
-### Step 2: Copy the Prompt
+### Paso 2: Copiar el Prompt
 
-Copy the entire prompt (including requirements and schema) to Claude Code.
+Copie el prompt completo (incluyendo requisitos y esquema) a Claude Code.
 
-### Step 3: Generate Implementation
+### Paso 3: Generar Implementación
 
-Claude Code will generate a complete `index.js` file with:
-- AWS SDK v3 imports
-- DynamoDB client initialization
-- Lambda handler function
-- Error handling
-- API Gateway response formatting
+Claude Code generará un archivo `index.js` completo con:
+- Importaciones de AWS SDK v3
+- Inicialización del cliente DynamoDB
+- Función handler de Lambda
+- Manejo de errores
+- Formato de respuesta de API Gateway
 
-### Step 4: Save to Correct Location
+### Paso 4: Guardar en la Ubicación Correcta
 
-Save the generated code to:
+Guarde el código generado en:
 ```
 functions/[function-name]/index.js
 ```
 
-For example:
+Por ejemplo:
 - `functions/list-items/index.js`
 - `functions/create-item/index.js`
 - `functions/get-item/index.js`
 - `functions/update-item/index.js`
 - `functions/delete-item/index.js`
 
-### Step 5: Review and Deploy
+### Paso 5: Revisar y Desplegar
 
-1. Review the generated code
-2. Run `sam build` to compile
-3. Run `sam deploy` to deploy
-4. Test with curl commands
+1. Revise el código generado
+2. Ejecute `sam build` para compilar
+3. Ejecute `sam deploy` para desplegar
+4. Pruebe con comandos curl
 
-## Follow-Up Prompts
+## Prompts de Seguimiento
 
-### If Generated Code Has Errors
+### Si el Código Generado Tiene Errores
 
 ```
 I generated a Lambda function using your code but I'm getting this error:
@@ -222,7 +222,7 @@ Please help me:
 3. Explain why the error happened
 ```
 
-### If Response Format Is Wrong
+### Si el Formato de Respuesta es Incorrecto
 
 ```
 My Lambda function executes successfully but API Gateway returns a 502 Bad Gateway error.
@@ -238,7 +238,7 @@ I think the issue is with the response format. Please help me:
 3. Ensure body is JSON.stringify() not a plain object
 ```
 
-### If DynamoDB Operation Fails
+### Si la Operación de DynamoDB Falla
 
 ```
 My Lambda function is failing when trying to access DynamoDB.
@@ -256,11 +256,11 @@ Please help me:
 4. Check the DynamoDB operation parameters
 ```
 
-## Common Issues and Solutions
+## Problemas Comunes y Soluciones
 
-### Issue: AWS SDK Not Found
+### Problema: AWS SDK No Encontrado
 
-**Symptom**: `Cannot find module '@aws-sdk/client-dynamodb'`
+**Síntoma**: `Cannot find module '@aws-sdk/client-dynamodb'`
 
 **Prompt**:
 ```
@@ -274,9 +274,9 @@ Please help me:
 3. Verify the import statements are correct
 ```
 
-### Issue: PRODUCTS_TABLE Undefined
+### Problema: PRODUCTS_TABLE Indefinido
 
-**Symptom**: Table name is undefined
+**Síntoma**: El nombre de la tabla es indefinido
 
 **Prompt**:
 ```
@@ -290,9 +290,9 @@ Please help me:
 3. Check my template.yaml configuration
 ```
 
-### Issue: JSON Parse Error
+### Problema: Error de Análisis JSON
 
-**Symptom**: `Unexpected token in JSON`
+**Síntoma**: `Unexpected token in JSON`
 
 **Prompt**:
 ```
@@ -307,45 +307,45 @@ Please help me:
 4. Return proper 400 response for invalid JSON
 ```
 
-## Testing Each Function
+## Probar Cada Función
 
-After implementing each function, test it:
+Después de implementar cada función, pruébela:
 
-### Test ListItems
+### Probar ListItems
 ```bash
 curl -X GET $API_URL/products
 ```
 
-### Test CreateItem
+### Probar CreateItem
 ```bash
 curl -X POST $API_URL/products \
   -H "Content-Type: application/json" \
   -d '{"name": "Test Product", "price": 99.99}'
 ```
 
-### Test GetItem
+### Probar GetItem
 ```bash
 curl -X GET $API_URL/products/{productId}
 ```
 
-### Test UpdateItem
+### Probar UpdateItem
 ```bash
 curl -X PUT $API_URL/products/{productId} \
   -H "Content-Type: application/json" \
   -d '{"price": 79.99}'
 ```
 
-### Test DeleteItem
+### Probar DeleteItem
 ```bash
 curl -X DELETE $API_URL/products/{productId}
 ```
 
-## Next Steps
+## Próximos Pasos
 
-After implementing all 5 functions:
+Después de implementar las 5 funciones:
 
-1. Test complete CRUD workflow
-2. Verify CloudWatch Logs show successful executions
-3. Check X-Ray traces
-4. Document your implementation in README.md
-5. Proceed to [Deployment Prompts](03_DEPLOYMENT.md)
+1. Pruebe el flujo CRUD completo
+2. Verifique que los CloudWatch Logs muestren ejecuciones exitosas
+3. Revise los traces de X-Ray
+4. Documente su implementación en README.md
+5. Proceda a [Prompts de Despliegue](03_DEPLOYMENT.md)

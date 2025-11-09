@@ -1,32 +1,32 @@
-# Lambda Function Specification: ListItems
+# Especificación de Función Lambda: ListItems
 
-## Purpose
+## Propósito
 
-Return all products in the TechModa fashion catalog by performing a DynamoDB Scan operation.
+Retornar todos los productos en el catálogo de moda TechModa realizando una operación Scan de DynamoDB.
 
-## API Endpoint
+## Endpoint API
 
-**Method**: `GET`
+**Método**: `GET`
 
-**Path**: `/products`
+**Ruta**: `/products`
 
-**Trigger**: API Gateway REST API event
+**Trigger**: Evento de API Gateway REST API
 
-## Input Schema
+## Esquema de Entrada
 
-### Path Parameters
-None
+### Parámetros de Ruta
+Ninguno
 
-### Query Parameters
-None
+### Parámetros de Consulta
+Ninguno
 
-### Request Headers
-None required
+### Encabezados de Solicitud
+Ninguno requerido
 
-### Request Body
-None
+### Cuerpo de Solicitud
+Ninguno
 
-### API Gateway Event Structure
+### Estructura de Evento API Gateway
 ```javascript
 {
   "httpMethod": "GET",
@@ -37,13 +37,13 @@ None
 }
 ```
 
-## Output Schema
+## Esquema de Salida
 
-### Success Response (200 OK)
+### Respuesta Exitosa (200 OK)
 
-**HTTP Status Code**: 200
+**Código de Estado HTTP**: 200
 
-**Headers**:
+**Encabezados**:
 ```javascript
 {
   "Content-Type": "application/json",
@@ -51,7 +51,7 @@ None
 }
 ```
 
-**Body**:
+**Cuerpo**:
 ```json
 {
   "products": [
@@ -79,18 +79,18 @@ None
 }
 ```
 
-**Empty Database Response**:
+**Respuesta de Base de Datos Vacía**:
 ```json
 {
   "products": []
 }
 ```
 
-### Error Response (500 Internal Server Error)
+### Respuesta de Error (500 Internal Server Error)
 
-**HTTP Status Code**: 500
+**Código de Estado HTTP**: 500
 
-**Headers**:
+**Encabezados**:
 ```javascript
 {
   "Content-Type": "application/json",
@@ -98,7 +98,7 @@ None
 }
 ```
 
-**Body**:
+**Cuerpo**:
 ```json
 {
   "error": "Internal server error",
@@ -106,29 +106,29 @@ None
 }
 ```
 
-## DynamoDB Operations
+## Operaciones DynamoDB
 
-### Operation: Scan
+### Operación: Scan
 
-**Purpose**: Retrieve all items from the TechModa-Products table
+**Propósito**: Recuperar todos los items de la tabla TechModa-Products
 
-**AWS SDK v3 Command**: `ScanCommand`
+**Comando AWS SDK v3**: `ScanCommand`
 
-**Parameters**:
+**Parámetros**:
 ```javascript
 {
   TableName: process.env.PRODUCTS_TABLE
 }
 ```
 
-**Response**:
+**Respuesta**:
 ```javascript
 {
   Items: [
     {
       productId: "123e4567-e89b-12d3-a456-426614174000",
       name: "Classic Denim Jacket",
-      // ... other attributes
+      // ... otros atributos
     }
   ],
   Count: 2,
@@ -136,48 +136,48 @@ None
 }
 ```
 
-**Performance Note**: Scan reads the entire table. For production applications with large datasets, consider using Query with a Global Secondary Index. For this capstone scope (< 50 products), Scan is acceptable.
+**Nota de Rendimiento**: Scan lee toda la tabla. Para aplicaciones de producción con conjuntos de datos grandes, considera usar Query con un Global Secondary Index. Para el alcance de este capstone (< 50 productos), Scan es aceptable.
 
-## Implementation Steps (Pseudocode)
+## Pasos de Implementación (Pseudocódigo)
 
 ```
-1. Initialize DynamoDB client and document client
-   - Import DynamoDBClient from @aws-sdk/client-dynamodb
-   - Import DynamoDBDocumentClient and ScanCommand from @aws-sdk/lib-dynamodb
-   - Create client instance
-   - Wrap with DocumentClient for simplified JSON handling
+1. Inicializar cliente DynamoDB y document client
+   - Importar DynamoDBClient desde @aws-sdk/client-dynamodb
+   - Importar DynamoDBDocumentClient y ScanCommand desde @aws-sdk/lib-dynamodb
+   - Crear instancia de cliente
+   - Envolver con DocumentClient para manejo simplificado de JSON
 
-2. Define Lambda handler function
-   - Async function: exports.handler = async (event)
+2. Definir función handler de Lambda
+   - Función async: exports.handler = async (event)
 
-3. Prepare DynamoDB Scan parameters
+3. Preparar parámetros de Scan de DynamoDB
    - TableName: process.env.PRODUCTS_TABLE
 
-4. Execute Scan operation
-   - Use try/catch for error handling
-   - Send ScanCommand to DynamoDB
-   - Extract Items array from response
+4. Ejecutar operación Scan
+   - Usar try/catch para manejo de errores
+   - Enviar ScanCommand a DynamoDB
+   - Extraer array Items de la respuesta
 
-5. Handle success case
-   - Wrap Items in response object: { products: Items }
-   - Return API Gateway response:
+5. Manejar caso exitoso
+   - Envolver Items en objeto de respuesta: { products: Items }
+   - Retornar respuesta API Gateway:
      * statusCode: 200
-     * headers: Content-Type and CORS
+     * headers: Content-Type y CORS
      * body: JSON.stringify({ products: Items })
 
-6. Handle error case
-   - Log error to CloudWatch (console.error)
-   - Return API Gateway error response:
+6. Manejar caso de error
+   - Registrar error en CloudWatch (console.error)
+   - Retornar respuesta de error API Gateway:
      * statusCode: 500
-     * headers: Content-Type and CORS
+     * headers: Content-Type y CORS
      * body: JSON.stringify({ error: "...", message: "..." })
 ```
 
-## Testing Curl Command
+## Comando Curl de Prueba
 
-### Retrieve API Gateway URL
+### Obtener URL de API Gateway
 
-After deploying your SAM stack, get the API URL from CloudFormation outputs:
+Después de desplegar tu stack SAM, obtén la URL del API desde los outputs de CloudFormation:
 
 ```bash
 aws cloudformation describe-stacks \
@@ -186,13 +186,13 @@ aws cloudformation describe-stacks \
   --output text
 ```
 
-### Test Command
+### Comando de Prueba
 
 ```bash
 curl -X GET https://{api-id}.execute-api.us-east-1.amazonaws.com/Prod/products
 ```
 
-### Expected Success Response
+### Respuesta Exitosa Esperada
 
 ```json
 {
@@ -211,37 +211,37 @@ curl -X GET https://{api-id}.execute-api.us-east-1.amazonaws.com/Prod/products
 }
 ```
 
-### Verify in CloudWatch Logs
+### Verificar en CloudWatch Logs
 
 ```bash
 aws logs tail /aws/lambda/techmoda-capstone-ListItems --follow
 ```
 
-Look for:
-- START RequestId line
-- Console.log() output showing Scan results
-- END RequestId line
-- REPORT line showing duration and memory usage
+Buscar:
+- Línea START RequestId
+- Salida de Console.log() mostrando resultados de Scan
+- Línea END RequestId
+- Línea REPORT mostrando duración y uso de memoria
 
-## Claude Code Prompt
+## Prompt para Claude Code
 
-Use this prompt to generate the implementation:
+Usa este prompt para generar la implementación:
 
 ```
-I need to implement a Lambda function in Node.js 18.x that lists all products from a DynamoDB table.
+Necesito implementar una función Lambda en Node.js 18.x que liste todos los productos de una tabla DynamoDB.
 
-Requirements:
-- Function name: ListItems
+Requisitos:
+- Nombre de función: ListItems
 - Runtime: Node.js 18.x
 - Trigger: API Gateway (GET /products)
-- Database: DynamoDB table (name from environment variable PRODUCTS_TABLE)
-- Operation: Scan all items
-- Response: JSON array of products with HTTP 200
-- Error handling: Return HTTP 500 if DynamoDB operation fails
-- CORS: Include Access-Control-Allow-Origin: * header
+- Base de datos: Tabla DynamoDB (nombre de variable de entorno PRODUCTS_TABLE)
+- Operación: Scan de todos los items
+- Respuesta: Array JSON de productos con HTTP 200
+- Manejo de errores: Retornar HTTP 500 si falla la operación DynamoDB
+- CORS: Incluir encabezado Access-Control-Allow-Origin: *
 
-DynamoDB Schema:
-- productId (String, primary key)
+Esquema DynamoDB:
+- productId (String, clave primaria)
 - name (String)
 - description (String)
 - price (Number)
@@ -250,25 +250,25 @@ DynamoDB Schema:
 - createdAt (String)
 - updatedAt (String)
 
-Please generate:
-1. Complete index.js file with exports.handler function
-2. AWS SDK v3 imports for DynamoDB
-3. Error handling with try/catch
-4. API Gateway response format (statusCode, headers, body)
-5. Comments explaining each section
+Por favor genera:
+1. Archivo index.js completo con función exports.handler
+2. Imports de AWS SDK v3 para DynamoDB
+3. Manejo de errores con try/catch
+4. Formato de respuesta API Gateway (statusCode, headers, body)
+5. Comentarios explicando cada sección
 ```
 
-## Implementation Notes
+## Notas de Implementación
 
-### Environment Variables
+### Variables de Entorno
 
-The Lambda function receives the DynamoDB table name via environment variable:
+La función Lambda recibe el nombre de la tabla DynamoDB vía variable de entorno:
 
 ```javascript
 const tableName = process.env.PRODUCTS_TABLE;
 ```
 
-This is injected by the SAM template:
+Esto es inyectado por el template SAM:
 
 ```yaml
 Environment:
@@ -276,9 +276,9 @@ Environment:
     PRODUCTS_TABLE: !Ref ProductsTable
 ```
 
-### AWS SDK v3 Usage
+### Uso de AWS SDK v3
 
-Use the modular AWS SDK v3 for smaller bundle sizes:
+Usa el AWS SDK v3 modular para tamaños de bundle más pequeños:
 
 ```javascript
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
@@ -288,9 +288,9 @@ const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
 ```
 
-### CORS Headers
+### Encabezados CORS
 
-Include CORS headers in all responses to allow browser-based clients:
+Incluye encabezados CORS en todas las respuestas para permitir clientes basados en navegador:
 
 ```javascript
 const headers = {
@@ -299,20 +299,20 @@ const headers = {
 };
 ```
 
-### Error Logging
+### Registro de Errores
 
-Always log errors to CloudWatch for debugging:
+Siempre registra errores en CloudWatch para depuración:
 
 ```javascript
 catch (error) {
   console.error('Error scanning products:', error);
-  // Return 500 response
+  // Retornar respuesta 500
 }
 ```
 
-### API Gateway Response Format
+### Formato de Respuesta API Gateway
 
-Lambda must return responses in this structure:
+Lambda debe retornar respuestas en esta estructura:
 
 ```javascript
 {
@@ -325,21 +325,21 @@ Lambda must return responses in this structure:
 }
 ```
 
-**Important**: `body` must be a JSON string, not an object.
+**Importante**: `body` debe ser una cadena JSON, no un objeto.
 
-## Common Errors and Solutions
+## Errores Comunes y Soluciones
 
 ### Error: "Cannot find module '@aws-sdk/client-dynamodb'"
 
-**Cause**: AWS SDK not installed in Lambda function directory
+**Causa**: AWS SDK no instalado en el directorio de la función Lambda
 
-**Solution**: Ensure `package.json` exists in `functions/list-items/` with SDK dependencies, or rely on Lambda's built-in SDK (available in Node.js 18.x runtime)
+**Solución**: Asegura que exista `package.json` en `functions/list-items/` con dependencias del SDK, o confía en el SDK integrado de Lambda (disponible en runtime Node.js 18.x)
 
 ### Error: "PRODUCTS_TABLE is not defined"
 
-**Cause**: Environment variable not set in SAM template
+**Causa**: Variable de entorno no configurada en template SAM
 
-**Solution**: Verify `template.yaml` includes:
+**Solución**: Verifica que `template.yaml` incluya:
 ```yaml
 Environment:
   Variables:
@@ -348,9 +348,9 @@ Environment:
 
 ### Error: "AccessDeniedException: User is not authorized to perform: dynamodb:Scan"
 
-**Cause**: Lambda execution role lacks DynamoDB permissions
+**Causa**: El rol de ejecución de Lambda carece de permisos DynamoDB
 
-**Solution**: Add DynamoDB read policy in SAM template:
+**Solución**: Agrega política de lectura DynamoDB en template SAM:
 ```yaml
 Policies:
   - DynamoDBReadPolicy:
@@ -359,32 +359,32 @@ Policies:
 
 ### Error: "undefined is not a function"
 
-**Cause**: Incorrect AWS SDK v3 import
+**Causa**: Import incorrecto de AWS SDK v3
 
-**Solution**: Use DocumentClient for simplified JSON handling:
+**Solución**: Usa DocumentClient para manejo simplificado de JSON:
 ```javascript
 const { DynamoDBDocumentClient, ScanCommand } = require('@aws-sdk/lib-dynamodb');
 ```
 
-## Validation Criteria
+## Criterios de Validación
 
-Your ListItems function is correctly implemented when:
+Tu función ListItems está correctamente implementada cuando:
 
-✅ GET /products returns 200 OK
-✅ Response includes `products` array
-✅ Empty database returns `{ "products": [] }`
-✅ All product attributes are present (productId, name, price, etc.)
-✅ CORS headers are included
-✅ DynamoDB Scan errors return 500 with error message
-✅ CloudWatch Logs show successful execution
-✅ X-Ray trace displays DynamoDB segment
+✅ GET /products retorna 200 OK
+✅ La respuesta incluye array `products`
+✅ Base de datos vacía retorna `{ "products": [] }`
+✅ Todos los atributos del producto están presentes (productId, name, price, etc.)
+✅ Los encabezados CORS están incluidos
+✅ Los errores de Scan de DynamoDB retornan 500 con mensaje de error
+✅ CloudWatch Logs muestra ejecución exitosa
+✅ La traza X-Ray muestra segmento DynamoDB
 
-## Next Steps
+## Próximos Pasos
 
-After implementing ListItems:
+Después de implementar ListItems:
 
-1. Deploy with `sam build && sam deploy`
-2. Test with curl command
-3. Verify response in terminal
-4. Check CloudWatch Logs for execution logs
-5. Proceed to implement CreateItem function
+1. Desplegar con `sam build && sam deploy`
+2. Probar con comando curl
+3. Verificar respuesta en terminal
+4. Revisar CloudWatch Logs para logs de ejecución
+5. Proceder a implementar la función CreateItem

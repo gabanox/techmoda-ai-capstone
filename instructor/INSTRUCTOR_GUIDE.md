@@ -1,237 +1,237 @@
-# TechModa Capstone - Instructor Guide
+# TechModa Capstone - Guía para el Instructor
 
-## Overview
+## Descripción General
 
-This guide helps instructors facilitate Session 10 (the capstone session), support students during implementation, evaluate submissions, and troubleshoot common issues.
+Esta guía ayuda a los instructores a facilitar la Sesión 10 (la sesión del capstone), apoyar a los estudiantes durante la implementación, evaluar las entregas y solucionar problemas comunes.
 
-## Session 10 Timeline (120 minutes)
+## Cronograma de la Sesión 10 (120 minutos)
 
-### 0-15 min: Introduction and Setup
+### 0-15 min: Introducción y Configuración
 
-**Instructor Activities**:
-- Introduce capstone project and business context (TechModa fashion e-commerce)
-- Review evaluation rubric (60% of bootcamp grade)
-- Explain deliverables (GitHub repository URL)
-- Emphasize cost constraints (under $1 USD, AWS Free Tier)
+**Actividades del Instructor**:
+- Presentar el proyecto capstone y el contexto empresarial (TechModa e-commerce de moda)
+- Revisar la rúbrica de evaluación (60% de la calificación del bootcamp)
+- Explicar los entregables (URL del repositorio GitHub)
+- Enfatizar las restricciones de costos (menos de $1 USD, AWS Free Tier)
 
-**Student Activities**:
-- Clone starter repository
-- Verify AWS CLI and SAM CLI installations
-- Confirm AWS credentials are configured
-- Test `aws sts get-caller-identity` and `sam --version`
+**Actividades del Estudiante**:
+- Clonar el repositorio inicial
+- Verificar las instalaciones de AWS CLI y SAM CLI
+- Confirmar que las credenciales de AWS están configuradas
+- Probar `aws sts get-caller-identity` y `sam --version`
 
-**Common Issues**:
-- AWS CLI/SAM CLI not installed → Direct to [docs/prompts/01_ENVIRONMENT_SETUP.md](../docs/prompts/01_ENVIRONMENT_SETUP.md)
-- Credentials not configured → Help with `aws configure`
-- Permission errors → Verify IAM user has necessary policies
+**Problemas Comunes**:
+- AWS CLI/SAM CLI no instalados → Dirigir a [docs/prompts/01_ENVIRONMENT_SETUP.md](../docs/prompts/01_ENVIRONMENT_SETUP.md)
+- Credenciales no configuradas → Ayudar con `aws configure`
+- Errores de permisos → Verificar que el usuario IAM tiene las políticas necesarias
 
-### 15-30 min: Architecture Review
+### 15-30 min: Revisión de la Arquitectura
 
-**Instructor Activities**:
-- Walk through [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md)
-- Explain API Gateway → Lambda → DynamoDB flow
-- Review SAM template structure (template.yaml)
-- Discuss each Lambda function's responsibility
-- Show DynamoDB schema (productId, name, price, etc.)
+**Actividades del Instructor**:
+- Recorrer [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md)
+- Explicar el flujo API Gateway → Lambda → DynamoDB
+- Revisar la estructura del template SAM (template.yaml)
+- Discutir la responsabilidad de cada función Lambda
+- Mostrar el esquema de DynamoDB (productId, name, price, etc.)
 
-**Student Activities**:
-- Read ARCHITECTURE.md
-- Examine template.yaml
-- Review function specifications in docs/specs/
-- Ask clarifying questions
+**Actividades del Estudiante**:
+- Leer ARCHITECTURE.md
+- Examinar template.yaml
+- Revisar las especificaciones de funciones en docs/specs/
+- Hacer preguntas de aclaración
 
-**Key Points to Emphasize**:
-- RESTful API design (GET, POST, PUT, DELETE)
-- Serverless architecture benefits (no servers, auto-scaling, pay-per-use)
-- AWS SAM simplifies infrastructure as code
-- DynamoDB PAY_PER_REQUEST is cost-effective for low volumes
+**Puntos Clave a Enfatizar**:
+- Diseño de API RESTful (GET, POST, PUT, DELETE)
+- Beneficios de la arquitectura serverless (sin servidores, auto-escalado, pago por uso)
+- AWS SAM simplifica la infraestructura como código
+- DynamoDB PAY_PER_REQUEST es rentable para volúmenes bajos
 
-### 30-90 min: Lambda Implementation
+### 30-90 min: Implementación de Lambda
 
-**Instructor Activities**:
-- Demonstrate using one Lambda function (e.g., ListItems)
-- Show how to use prompts from [docs/prompts/02_LAMBDA_IMPLEMENTATION.md](../docs/prompts/02_LAMBDA_IMPLEMENTATION.md)
-- Walk through Claude Code workflow:
-  1. Copy prompt
-  2. Paste to Claude Code
-  3. Review generated code
-  4. Save to correct location
-  5. Deploy and test
-- Encourage students to start with CreateItem (to populate database)
-- Circulate to help individual students
+**Actividades del Instructor**:
+- Demostrar usando una función Lambda (ej., ListItems)
+- Mostrar cómo usar los prompts de [docs/prompts/02_LAMBDA_IMPLEMENTATION.md](../docs/prompts/02_LAMBDA_IMPLEMENTATION.md)
+- Recorrer el flujo de trabajo de Claude Code:
+  1. Copiar el prompt
+  2. Pegar en Claude Code
+  3. Revisar el código generado
+  4. Guardar en la ubicación correcta
+  5. Desplegar y probar
+- Alentar a los estudiantes a comenzar con CreateItem (para poblar la base de datos)
+- Circular para ayudar a estudiantes individuales
 
-**Student Activities**:
-- Implement all 5 Lambda functions using Claude Code
-- Follow function specifications in docs/specs/
-- Use prompt templates to generate implementations
-- Deploy incrementally (test each function before moving to next)
+**Actividades del Estudiante**:
+- Implementar las 5 funciones Lambda usando Claude Code
+- Seguir las especificaciones de funciones en docs/specs/
+- Usar plantillas de prompts para generar implementaciones
+- Desplegar incrementalmente (probar cada función antes de pasar a la siguiente)
 
-**Recommended Implementation Order**:
-1. **CreateItem** (POST /products) - Generate test data
-2. **ListItems** (GET /products) - Verify data exists
-3. **GetItem** (GET /products/{id}) - Test single retrieval
-4. **UpdateItem** (PUT /products/{id}) - Modify data
-5. **DeleteItem** (DELETE /products/{id}) - Clean up test data
+**Orden de Implementación Recomendado**:
+1. **CreateItem** (POST /products) - Generar datos de prueba
+2. **ListItems** (GET /products) - Verificar que existen datos
+3. **GetItem** (GET /products/{id}) - Probar recuperación individual
+4. **UpdateItem** (PUT /products/{id}) - Modificar datos
+5. **DeleteItem** (DELETE /products/{id}) - Limpiar datos de prueba
 
-**Support Strategies**:
-- Point to relevant specs for each function
-- Help with AWS SDK v3 syntax if students struggle
-- Verify environment variables (PRODUCTS_TABLE) are being used
-- Check CORS headers are included in responses
-- Remind about proper API Gateway response format
+**Estrategias de Apoyo**:
+- Señalar las especificaciones relevantes para cada función
+- Ayudar con la sintaxis de AWS SDK v3 si los estudiantes tienen dificultades
+- Verificar que se están usando las variables de entorno (PRODUCTS_TABLE)
+- Comprobar que se incluyen los headers CORS en las respuestas
+- Recordar sobre el formato apropiado de respuesta de API Gateway
 
-### 90-110 min: Deployment and Testing
+### 90-110 min: Despliegue y Pruebas
 
-**Instructor Activities**:
-- Demonstrate `sam build && sam deploy --guided`
-- Show how to retrieve API Gateway URL from outputs
-- Walk through testing with curl ([docs/TESTING_GUIDE.md](../docs/TESTING_GUIDE.md))
-- Demonstrate CloudWatch Logs access
-- Show X-Ray traces (optional, time permitting)
+**Actividades del Instructor**:
+- Demostrar `sam build && sam deploy --guided`
+- Mostrar cómo recuperar la URL de API Gateway de los outputs
+- Recorrer las pruebas con curl ([docs/TESTING_GUIDE.md](../docs/TESTING_GUIDE.md))
+- Demostrar el acceso a CloudWatch Logs
+- Mostrar trazas de X-Ray (opcional, si el tiempo lo permite)
 
-**Student Activities**:
-- Build and deploy SAM application
-- Test all 5 endpoints with curl
-- Verify responses match expected outputs
-- Check CloudWatch Logs for execution logs
-- Debug any failing tests
+**Actividades del Estudiante**:
+- Construir y desplegar la aplicación SAM
+- Probar los 5 endpoints con curl
+- Verificar que las respuestas coinciden con los outputs esperados
+- Revisar CloudWatch Logs para logs de ejecución
+- Depurar cualquier prueba que falle
 
-**Common Deployment Issues**:
-- CAPABILITY_IAM not allowed → Students must answer "Y" to IAM prompts
-- Stack already exists → Help delete old stack or choose new name
-- Deployment timeout → Check CloudFormation console for stuck resources
+**Problemas Comunes de Despliegue**:
+- CAPABILITY_IAM no permitida → Los estudiantes deben responder "Y" a los prompts de IAM
+- El stack ya existe → Ayudar a eliminar el stack antiguo o elegir un nuevo nombre
+- Timeout de despliegue → Revisar la consola de CloudFormation para recursos atascados
 
-**Testing Support**:
-- Provide curl command examples
-- Help capture productId from CreateItem response for use in other tests
-- Verify HTTP status codes (200, 201, 404, 500)
-- Check error responses are properly formatted
+**Apoyo en Pruebas**:
+- Proporcionar ejemplos de comandos curl
+- Ayudar a capturar el productId de la respuesta de CreateItem para uso en otras pruebas
+- Verificar códigos de estado HTTP (200, 201, 404, 500)
+- Comprobar que las respuestas de error están correctamente formateadas
 
-### 110-120 min: Troubleshooting and Q&A
+### 110-120 min: Solución de Problemas y Preguntas
 
-**Instructor Activities**:
-- Address common errors (see Troubleshooting section below)
-- Answer architecture questions
-- Help students debug failing functions
-- Discuss cleanup procedures (sam delete)
-- Remind about submission deadline and requirements
+**Actividades del Instructor**:
+- Abordar errores comunes (ver sección de Solución de Problemas abajo)
+- Responder preguntas de arquitectura
+- Ayudar a los estudiantes a depurar funciones que fallan
+- Discutir procedimientos de limpieza (sam delete)
+- Recordar sobre la fecha límite de entrega y requisitos
 
-**Student Activities**:
-- Fix any remaining issues
-- Complete testing verification
-- Start documentation (README updates)
-- Ask final questions
+**Actividades del Estudiante**:
+- Arreglar cualquier problema restante
+- Completar la verificación de pruebas
+- Comenzar la documentación (actualizaciones del README)
+- Hacer preguntas finales
 
-**Wrap-Up Checklist**:
-- ✅ All 5 CRUD operations working
-- ✅ API Gateway URL accessible
-- ✅ CloudWatch Logs showing executions
-- ✅ No permission errors
-- ✅ Students understand how to delete resources
+**Checklist de Cierre**:
+- ✅ Las 5 operaciones CRUD funcionando
+- ✅ URL de API Gateway accesible
+- ✅ CloudWatch Logs mostrando ejecuciones
+- ✅ Sin errores de permisos
+- ✅ Los estudiantes entienden cómo eliminar recursos
 
-## Learning Objectives
+## Objetivos de Aprendizaje
 
-By the end of Session 10, students should demonstrate:
+Al final de la Sesión 10, los estudiantes deben demostrar:
 
-1. **Serverless Architecture Design**
-   - Design event-driven systems with Lambda, API Gateway, DynamoDB
-   - Understand serverless vs. traditional architectures
-   - Apply AWS Well-Architected principles
+1. **Diseño de Arquitectura Serverless**
+   - Diseñar sistemas orientados a eventos con Lambda, API Gateway, DynamoDB
+   - Comprender arquitecturas serverless vs. tradicionales
+   - Aplicar principios de AWS Well-Architected
 
-2. **RESTful API Implementation**
-   - Implement proper HTTP methods (GET, POST, PUT, DELETE)
-   - Return appropriate status codes (200, 201, 404, 500)
-   - Structure JSON request/response payloads
+2. **Implementación de API RESTful**
+   - Implementar métodos HTTP apropiados (GET, POST, PUT, DELETE)
+   - Retornar códigos de estado apropiados (200, 201, 404, 500)
+   - Estructurar payloads de solicitud/respuesta JSON
 
-3. **Infrastructure as Code**
-   - Write and deploy AWS SAM templates
-   - Define resources declaratively
-   - Manage IAM roles with least-privilege
+3. **Infraestructura como Código**
+   - Escribir y desplegar templates AWS SAM
+   - Definir recursos declarativamente
+   - Gestionar roles IAM con privilegios mínimos
 
-4. **Manual API Testing**
-   - Test endpoints with curl
-   - Interpret HTTP responses
-   - Verify CRUD operations
+4. **Pruebas Manuales de API**
+   - Probar endpoints con curl
+   - Interpretar respuestas HTTP
+   - Verificar operaciones CRUD
 
-5. **Serverless Debugging**
-   - Analyze CloudWatch Logs
-   - Interpret X-Ray traces
-   - Diagnose permission issues
+5. **Depuración Serverless**
+   - Analizar CloudWatch Logs
+   - Interpretar trazas de X-Ray
+   - Diagnosticar problemas de permisos
 
-6. **AWS Cost Management**
-   - Estimate serverless costs
-   - Understand Free Tier limits
-   - Clean up resources properly
+6. **Gestión de Costos de AWS**
+   - Estimar costos serverless
+   - Comprender los límites de Free Tier
+   - Limpiar recursos correctamente
 
-7. **AI-Accelerated Development**
-   - Use Claude Code for implementation
-   - Write effective prompts
-   - Debug with AI assistance
+7. **Desarrollo Acelerado con IA**
+   - Usar Claude Code para implementación
+   - Escribir prompts efectivos
+   - Depurar con asistencia de IA
 
-8. **Technical Documentation**
-   - Create architecture diagrams
-   - Write deployment instructions
-   - Document APIs with examples
+8. **Documentación Técnica**
+   - Crear diagramas de arquitectura
+   - Escribir instrucciones de despliegue
+   - Documentar APIs con ejemplos
 
-9. **AWS Best Practices**
-   - Security (IAM least-privilege)
-   - Observability (CloudWatch, X-Ray)
-   - Cost optimization
+9. **Mejores Prácticas de AWS**
+   - Seguridad (privilegios mínimos en IAM)
+   - Observabilidad (CloudWatch, X-Ray)
+   - Optimización de costos
 
-## Common Student Challenges and Solutions
+## Desafíos Comunes de los Estudiantes y Soluciones
 
-### Challenge 1: Environment Setup Issues
+### Desafío 1: Problemas de Configuración del Entorno
 
-**Symptoms**:
-- AWS CLI or SAM CLI not found
-- Credentials invalid
-- Permission errors
+**Síntomas**:
+- AWS CLI o SAM CLI no encontrados
+- Credenciales inválidas
+- Errores de permisos
 
-**Solutions**:
-- Direct to [docs/prompts/01_ENVIRONMENT_SETUP.md](../docs/prompts/01_ENVIRONMENT_SETUP.md)
-- Verify PATH includes AWS CLI/SAM CLI binaries
-- Test credentials: `aws sts get-caller-identity`
-- Confirm IAM user has necessary permissions (CloudFormation, Lambda, DynamoDB, API Gateway, IAM)
+**Soluciones**:
+- Dirigir a [docs/prompts/01_ENVIRONMENT_SETUP.md](../docs/prompts/01_ENVIRONMENT_SETUP.md)
+- Verificar que PATH incluye los binarios de AWS CLI/SAM CLI
+- Probar credenciales: `aws sts get-caller-identity`
+- Confirmar que el usuario IAM tiene los permisos necesarios (CloudFormation, Lambda, DynamoDB, API Gateway, IAM)
 
-### Challenge 2: Lambda Function Errors
+### Desafío 2: Errores en Funciones Lambda
 
-**Symptoms**:
-- 500 Internal Server Error from API
-- CloudWatch Logs show JavaScript errors
-- DynamoDB permission errors
+**Síntomas**:
+- 500 Internal Server Error de la API
+- CloudWatch Logs muestra errores de JavaScript
+- Errores de permisos de DynamoDB
 
-**Solutions**:
-- Check CloudWatch Logs for specific error
-- Verify AWS SDK v3 imports are correct
-- Confirm environment variable PRODUCTS_TABLE is being read
-- Check DynamoDB policies in template.yaml (DynamoDBReadPolicy, DynamoDBCrudPolicy)
-- Verify API Gateway response format (statusCode, headers, body)
+**Soluciones**:
+- Revisar CloudWatch Logs para el error específico
+- Verificar que los imports de AWS SDK v3 son correctos
+- Confirmar que se está leyendo la variable de entorno PRODUCTS_TABLE
+- Revisar las políticas de DynamoDB en template.yaml (DynamoDBReadPolicy, DynamoDBCrudPolicy)
+- Verificar el formato de respuesta de API Gateway (statusCode, headers, body)
 
-**Common Code Issues**:
+**Problemas Comunes en el Código**:
 ```javascript
-// WRONG: body is not a string
+// INCORRECTO: body no es un string
 return {
   statusCode: 200,
-  body: { products: [] }  // ❌ Should be JSON.stringify()
+  body: { products: [] }  // ❌ Debería ser JSON.stringify()
 };
 
-// CORRECT:
+// CORRECTO:
 return {
   statusCode: 200,
   body: JSON.stringify({ products: [] })  // ✅
 };
 ```
 
-### Challenge 3: Path Parameter Issues (GetItem, UpdateItem, DeleteItem)
+### Desafío 3: Problemas con Parámetros de Ruta (GetItem, UpdateItem, DeleteItem)
 
-**Symptoms**:
+**Síntomas**:
 - "Cannot read property 'id' of undefined"
-- Functions fail to extract productId
+- Las funciones fallan al extraer productId
 
-**Solutions**:
-- Verify API Gateway route has `{id}` parameter in template.yaml
-- Check extraction: `const productId = event.pathParameters.id`
-- Add safety check:
+**Soluciones**:
+- Verificar que la ruta de API Gateway tiene el parámetro `{id}` en template.yaml
+- Comprobar la extracción: `const productId = event.pathParameters.id`
+- Agregar verificación de seguridad:
   ```javascript
   if (!event.pathParameters || !event.pathParameters.id) {
     return {
@@ -242,15 +242,15 @@ return {
   }
   ```
 
-### Challenge 4: JSON Parse Errors (CreateItem, UpdateItem)
+### Desafío 4: Errores de Parseo JSON (CreateItem, UpdateItem)
 
-**Symptoms**:
+**Síntomas**:
 - SyntaxError: Unexpected token in JSON
-- Request body not being parsed
+- El body de la solicitud no se está parseando
 
-**Solutions**:
-- Explain that `event.body` is a JSON string, not an object
-- Show safe parsing:
+**Soluciones**:
+- Explicar que `event.body` es un string JSON, no un objeto
+- Mostrar parseo seguro:
   ```javascript
   let body;
   try {
@@ -264,26 +264,26 @@ return {
   }
   ```
 
-### Challenge 5: DynamoDB Scan Returns Empty (ListItems)
+### Desafío 5: DynamoDB Scan Retorna Vacío (ListItems)
 
-**Symptoms**:
-- GET /products returns empty array even after creating products
+**Síntomas**:
+- GET /products retorna un array vacío incluso después de crear productos
 
-**Solutions**:
-- Verify CreateItem function actually created products (check CloudWatch Logs)
-- Check DynamoDB console to see if items exist
-- Verify table name matches: `process.env.PRODUCTS_TABLE`
-- Test GetItem with known productId to isolate issue
+**Soluciones**:
+- Verificar que la función CreateItem efectivamente creó productos (revisar CloudWatch Logs)
+- Revisar la consola de DynamoDB para ver si existen items
+- Verificar que el nombre de la tabla coincide: `process.env.PRODUCTS_TABLE`
+- Probar GetItem con un productId conocido para aislar el problema
 
-### Challenge 6: UpdateItem Not Working
+### Desafío 6: UpdateItem No Funciona
 
-**Symptoms**:
-- 404 Not Found even though product exists
-- Updates don't persist
+**Síntomas**:
+- 404 Not Found incluso cuando el producto existe
+- Las actualizaciones no persisten
 
-**Solutions**:
-- Verify UpdateItem checks existence first (GetItem before UpdateItem)
-- Check UpdateExpression syntax:
+**Soluciones**:
+- Verificar que UpdateItem comprueba la existencia primero (GetItem antes de UpdateItem)
+- Revisar la sintaxis de UpdateExpression:
   ```javascript
   UpdateExpression: 'SET price = :price, updatedAt = :updatedAt'
   ExpressionAttributeValues: {
@@ -291,314 +291,314 @@ return {
     ':updatedAt': new Date().toISOString()
   }
   ```
-- Ensure `ReturnValues: 'ALL_NEW'` is set to return updated item
+- Asegurar que `ReturnValues: 'ALL_NEW'` está configurado para retornar el item actualizado
 
-### Challenge 7: Deployment Failures
+### Desafío 7: Fallos de Despliegue
 
-**Symptoms**:
-- CloudFormation stack stuck or failed
-- Resources not created
+**Síntomas**:
+- Stack de CloudFormation atascado o fallido
+- Recursos no creados
 
-**Solutions**:
-- Check CloudFormation console Events tab for specific errors
-- Common causes:
-  - IAM permissions: Student didn't allow IAM role creation
-  - Resource limits: Exceeded service quotas (unlikely)
-  - Invalid template: YAML syntax errors
-- Retry deployment after fixing issue
-- Delete failed stack: `aws cloudformation delete-stack --stack-name techmoda-capstone`
+**Soluciones**:
+- Revisar la pestaña Events de la consola de CloudFormation para errores específicos
+- Causas comunes:
+  - Permisos IAM: El estudiante no permitió la creación de roles IAM
+  - Límites de recursos: Cuotas de servicio excedidas (poco probable)
+  - Template inválido: Errores de sintaxis YAML
+- Reintentar despliegue después de corregir el problema
+- Eliminar stack fallido: `aws cloudformation delete-stack --stack-name techmoda-capstone`
 
-### Challenge 8: Testing Confusion
+### Desafío 8: Confusión con las Pruebas
 
-**Symptoms**:
-- Students don't know how to test
-- Can't find API Gateway URL
-- Curl commands not working
+**Síntomas**:
+- Los estudiantes no saben cómo probar
+- No pueden encontrar la URL de API Gateway
+- Los comandos curl no funcionan
 
-**Solutions**:
-- Show how to get API URL: CloudFormation Outputs or `aws cloudformation describe-stacks`
-- Provide curl examples from [docs/TESTING_GUIDE.md](../docs/TESTING_GUIDE.md)
-- Demonstrate capturing productId:
+**Soluciones**:
+- Mostrar cómo obtener la URL de la API: Outputs de CloudFormation o `aws cloudformation describe-stacks`
+- Proporcionar ejemplos de curl de [docs/TESTING_GUIDE.md](../docs/TESTING_GUIDE.md)
+- Demostrar la captura de productId:
   ```bash
   RESPONSE=$(curl -s -X POST $API_URL/products -H "Content-Type: application/json" -d '{"name":"Test","price":99.99}')
   PRODUCT_ID=$(echo $RESPONSE | jq -r '.productId')
   echo $PRODUCT_ID
   ```
-- Note: `jq` might not be installed; have students manually copy productId if needed
+- Nota: `jq` podría no estar instalado; que los estudiantes copien manualmente el productId si es necesario
 
-## How to Support Students
+## Cómo Apoyar a los Estudiantes
 
-### During Implementation
+### Durante la Implementación
 
-1. **Encourage incremental development**: Test each function before moving to next
-2. **Promote prompt usage**: Students should leverage Claude Code with provided templates
-3. **Emphasize specs**: Direct students to docs/specs/ for detailed requirements
-4. **Show CloudWatch Logs early**: Debugging starts with logs
-5. **Don't give complete solutions**: Guide students to discover issues themselves
+1. **Fomentar el desarrollo incremental**: Probar cada función antes de pasar a la siguiente
+2. **Promover el uso de prompts**: Los estudiantes deben aprovechar Claude Code con las plantillas proporcionadas
+3. **Enfatizar las especificaciones**: Dirigir a los estudiantes a docs/specs/ para requisitos detallados
+4. **Mostrar CloudWatch Logs temprano**: La depuración comienza con los logs
+5. **No dar soluciones completas**: Guiar a los estudiantes a descubrir problemas por sí mismos
 
-### When Students Are Stuck
+### Cuando los Estudiantes Están Atascados
 
-**Do's**:
-- ✅ Ask diagnostic questions ("What does CloudWatch Logs show?")
-- ✅ Point to relevant documentation (specs, prompts, guides)
-- ✅ Show how to interpret errors
-- ✅ Demonstrate debugging workflow
-- ✅ Encourage AI assistance (Claude Code)
+**Hacer**:
+- ✅ Hacer preguntas diagnósticas ("¿Qué muestra CloudWatch Logs?")
+- ✅ Señalar la documentación relevante (specs, prompts, guías)
+- ✅ Mostrar cómo interpretar errores
+- ✅ Demostrar el flujo de trabajo de depuración
+- ✅ Fomentar la asistencia de IA (Claude Code)
 
-**Don'ts**:
-- ❌ Write code for students
-- ❌ Take over their keyboard
-- ❌ Give answers without explanation
-- ❌ Skip debugging steps
+**No Hacer**:
+- ❌ Escribir código para los estudiantes
+- ❌ Tomar control de su teclado
+- ❌ Dar respuestas sin explicación
+- ❌ Saltar pasos de depuración
 
-### Time Management
+### Gestión del Tiempo
 
-- **30 min mark**: Students should be implementing functions
-- **60 min mark**: At least 2-3 functions implemented
-- **90 min mark**: All functions implemented, starting deployment
-- **100 min mark**: Deployment complete, testing in progress
-- **110 min mark**: All tests passing, debugging edge cases
+- **Marca de 30 min**: Los estudiantes deben estar implementando funciones
+- **Marca de 60 min**: Al menos 2-3 funciones implementadas
+- **Marca de 90 min**: Todas las funciones implementadas, comenzando despliegue
+- **Marca de 100 min**: Despliegue completo, pruebas en progreso
+- **Marca de 110 min**: Todas las pruebas pasando, depurando casos extremos
 
-**If Students Fall Behind**:
-- Prioritize CreateItem, ListItems, GetItem (core CRUD)
-- UpdateItem and DeleteItem can be homework
-- Ensure students understand concepts even if implementation incomplete
-- Extend support during homework hours
+**Si los Estudiantes se Atrasan**:
+- Priorizar CreateItem, ListItems, GetItem (CRUD básico)
+- UpdateItem y DeleteItem pueden ser tarea
+- Asegurar que los estudiantes entienden los conceptos aunque la implementación esté incompleta
+- Extender apoyo durante horas de tarea
 
-## How to Evaluate Submissions
+## Cómo Evaluar las Entregas
 
-### Required Deliverable
+### Entregable Requerido
 
-Students must submit:
-- **GitHub repository URL** with complete, working implementation
+Los estudiantes deben entregar:
+- **URL del repositorio GitHub** con implementación completa y funcional
 
-### Evaluation Checklist
+### Checklist de Evaluación
 
-#### Technical Excellence (30%)
+#### Excelencia Técnica (30%)
 
-**All 5 CRUD operations functional (10%)**:
-- ✅ ListItems returns products array (empty or populated)
-- ✅ CreateItem returns 201 with new product (including productId, timestamps)
-- ✅ GetItem returns 200 with product or 404 for non-existent
-- ✅ UpdateItem returns 200 with updated product or 404
-- ✅ DeleteItem returns 200 with success message
+**Las 5 operaciones CRUD funcionales (10%)**:
+- ✅ ListItems retorna array de productos (vacío o poblado)
+- ✅ CreateItem retorna 201 con nuevo producto (incluyendo productId, timestamps)
+- ✅ GetItem retorna 200 con producto o 404 para no existente
+- ✅ UpdateItem retorna 200 con producto actualizado o 404
+- ✅ DeleteItem retorna 200 con mensaje de éxito
 
-**Test by**:
-1. Clone student's repository
-2. Deploy to your AWS account: `sam build && sam deploy --guided`
-3. Run curl tests for all endpoints
-4. Verify responses match expectations
+**Probar mediante**:
+1. Clonar el repositorio del estudiante
+2. Desplegar en su cuenta AWS: `sam build && sam deploy --guided`
+3. Ejecutar pruebas curl para todos los endpoints
+4. Verificar que las respuestas coinciden con las expectativas
 
-**Proper error handling (5%)**:
-- ✅ Try/catch blocks in Lambda functions
-- ✅ 404 for non-existent resources (GetItem, UpdateItem optional for DeleteItem)
-- ✅ 400 for validation errors (CreateItem missing name/price)
-- ✅ 500 for DynamoDB errors with error messages
+**Manejo apropiado de errores (5%)**:
+- ✅ Bloques try/catch en las funciones Lambda
+- ✅ 404 para recursos no existentes (GetItem, UpdateItem opcional para DeleteItem)
+- ✅ 400 para errores de validación (CreateItem falta name/price)
+- ✅ 500 para errores de DynamoDB con mensajes de error
 
-**Code quality and readability (5%)**:
-- ✅ Clean, consistent formatting
-- ✅ Meaningful variable names
-- ✅ Comments explaining logic
-- ✅ No commented-out code or debug console.logs
+**Calidad y legibilidad del código (5%)**:
+- ✅ Formato limpio y consistente
+- ✅ Nombres de variables significativos
+- ✅ Comentarios explicando la lógica
+- ✅ Sin código comentado o console.logs de depuración
 
-**SAM template correctness (5%)**:
-- ✅ Valid YAML syntax
-- ✅ All 5 Lambda functions defined
-- ✅ API Gateway with correct routes
-- ✅ DynamoDB table with proper schema
-- ✅ IAM policies (DynamoDB permissions)
-- ✅ Environment variables injected
+**Corrección del template SAM (5%)**:
+- ✅ Sintaxis YAML válida
+- ✅ Las 5 funciones Lambda definidas
+- ✅ API Gateway con rutas correctas
+- ✅ Tabla DynamoDB con esquema apropiado
+- ✅ Políticas IAM (permisos de DynamoDB)
+- ✅ Variables de entorno inyectadas
 
-**AWS best practices (5%)**:
-- ✅ IAM least-privilege (function-specific policies)
-- ✅ X-Ray tracing enabled
-- ✅ CloudWatch Logs configured
-- ✅ CORS headers in responses
-- ✅ PAY_PER_REQUEST billing for DynamoDB
+**Mejores prácticas de AWS (5%)**:
+- ✅ Privilegios mínimos en IAM (políticas específicas por función)
+- ✅ Rastreo X-Ray habilitado
+- ✅ CloudWatch Logs configurados
+- ✅ Headers CORS en respuestas
+- ✅ Facturación PAY_PER_REQUEST para DynamoDB
 
-#### Documentation (15%)
+#### Documentación (15%)
 
-**README completeness (5%)**:
-- ✅ Project overview and purpose
-- ✅ Architecture description
-- ✅ Deployment instructions (prerequisites, commands)
-- ✅ Testing examples (curl commands)
-- ✅ Cleanup instructions
+**Completitud del README (5%)**:
+- ✅ Descripción general del proyecto y propósito
+- ✅ Descripción de la arquitectura
+- ✅ Instrucciones de despliegue (prerequisitos, comandos)
+- ✅ Ejemplos de pruebas (comandos curl)
+- ✅ Instrucciones de limpieza
 
-**Architecture diagram (5%)**:
-- ✅ Diagram present (text-based, diagrams.py, or draw.io)
-- ✅ Shows all components (API Gateway, Lambda, DynamoDB)
-- ✅ Request flow indicated
-- ✅ Clear and understandable
+**Diagrama de arquitectura (5%)**:
+- ✅ Diagrama presente (basado en texto, diagrams.py, o draw.io)
+- ✅ Muestra todos los componentes (API Gateway, Lambda, DynamoDB)
+- ✅ Flujo de solicitud indicado
+- ✅ Claro y comprensible
 
-**Testing examples (5%)**:
-- ✅ Curl commands for all 5 endpoints
-- ✅ Sample request bodies
-- ✅ Expected responses documented
-- ✅ Clear instructions
+**Ejemplos de pruebas (5%)**:
+- ✅ Comandos curl para los 5 endpoints
+- ✅ Cuerpos de solicitud de ejemplo
+- ✅ Respuestas esperadas documentadas
+- ✅ Instrucciones claras
 
-#### Business Relevance (15%)
+#### Relevancia Empresarial (15%)
 
-**Solves fashion catalog problem (7%)**:
-- ✅ Product schema appropriate (name, price, description, category, imageUrl)
-- ✅ CRUD operations support e-commerce use case
-- ✅ Implementation aligns with TechModa business context
+**Resuelve el problema del catálogo de moda (7%)**:
+- ✅ Esquema de producto apropiado (name, price, description, category, imageUrl)
+- ✅ Las operaciones CRUD apoyan el caso de uso de e-commerce
+- ✅ La implementación se alinea con el contexto empresarial de TechModa
 
-**Appropriate technology choices (5%)**:
-- ✅ Serverless architecture justified for use case
-- ✅ DynamoDB suitable for product catalog
-- ✅ API Gateway appropriate for REST API
-- ✅ Cost-effective design decisions
+**Elecciones tecnológicas apropiadas (5%)**:
+- ✅ Arquitectura serverless justificada para el caso de uso
+- ✅ DynamoDB adecuado para catálogo de productos
+- ✅ API Gateway apropiado para REST API
+- ✅ Decisiones de diseño rentables
 
-**Cost-consciousness (3%)**:
-- ✅ Uses AWS Free Tier services
-- ✅ PAY_PER_REQUEST billing mode
-- ✅ Cleanup instructions provided
-- ✅ Evidence of cost awareness in design
+**Conciencia de costos (3%)**:
+- ✅ Usa servicios de AWS Free Tier
+- ✅ Modo de facturación PAY_PER_REQUEST
+- ✅ Instrucciones de limpieza proporcionadas
+- ✅ Evidencia de conciencia de costos en el diseño
 
-### Grading Rubric
+### Rúbrica de Calificación
 
-See [EVALUATION_RUBRIC.md](EVALUATION_RUBRIC.md) for detailed scoring criteria.
+Ver [EVALUATION_RUBRIC.md](EVALUATION_RUBRIC.md) para criterios de puntuación detallados.
 
-### Red Flags
+### Señales de Alerta
 
-**Automatic grade reduction**:
-- ❌ Plagiarism (identical code from another student)
-- ❌ Doesn't deploy (CloudFormation errors, invalid template)
-- ❌ Major functions don't work (< 3 of 5 CRUD operations)
-- ❌ No documentation (README empty or minimal)
-- ❌ Hardcoded credentials or secrets
+**Reducción automática de calificación**:
+- ❌ Plagio (código idéntico de otro estudiante)
+- ❌ No despliega (errores de CloudFormation, template inválido)
+- ❌ Funciones principales no funcionan (< 3 de 5 operaciones CRUD)
+- ❌ Sin documentación (README vacío o mínimo)
+- ❌ Credenciales o secretos hardcodeados
 
-**Minor deductions**:
-- ⚠️ Missing error handling
-- ⚠️ Incomplete documentation
-- ⚠️ Poor code formatting
-- ⚠️ No architecture diagram
+**Deducciones menores**:
+- ⚠️ Manejo de errores faltante
+- ⚠️ Documentación incompleta
+- ⚠️ Formato de código pobre
+- ⚠️ Sin diagrama de arquitectura
 
-## What to Look for in Working Implementations
+## Qué Buscar en Implementaciones Funcionales
 
-### Excellent Implementations (90-100%)
+### Implementaciones Excelentes (90-100%)
 
-- All 5 CRUD operations work flawlessly
-- Comprehensive error handling (400, 404, 500)
-- Clean, well-commented code
-- Complete documentation with diagrams
-- Proper AWS best practices (IAM, X-Ray, CORS)
-- Evidence of testing (test scripts, screenshots)
-- Professional README suitable for portfolio
+- Las 5 operaciones CRUD funcionan impecablemente
+- Manejo integral de errores (400, 404, 500)
+- Código limpio y bien comentado
+- Documentación completa con diagramas
+- Mejores prácticas apropiadas de AWS (IAM, X-Ray, CORS)
+- Evidencia de pruebas (scripts de prueba, capturas de pantalla)
+- README profesional adecuado para portafolio
 
-### Good Implementations (75-89%)
+### Implementaciones Buenas (75-89%)
 
-- All 5 CRUD operations work
-- Basic error handling (404 for non-existent)
-- Readable code with some comments
-- Adequate documentation
-- Most AWS best practices followed
-- Successful deployment and testing
+- Las 5 operaciones CRUD funcionan
+- Manejo básico de errores (404 para no existente)
+- Código legible con algunos comentarios
+- Documentación adecuada
+- Se siguen la mayoría de mejores prácticas de AWS
+- Despliegue y pruebas exitosos
 
-### Satisfactory Implementations (60-74%)
+### Implementaciones Satisfactorias (60-74%)
 
-- 4-5 CRUD operations work
-- Minimal error handling (try/catch present)
-- Functional but less polished code
-- Basic README with deployment steps
-- Deploys successfully
-- Some AWS best practices
+- 4-5 operaciones CRUD funcionan
+- Manejo mínimo de errores (try/catch presente)
+- Código funcional pero menos pulido
+- README básico con pasos de despliegue
+- Despliega exitosamente
+- Algunas mejores prácticas de AWS
 
-### Needs Improvement (<60%)
+### Necesita Mejora (<60%)
 
-- Fewer than 4 CRUD operations work
-- Poor or missing error handling
-- Difficult to understand code
-- Minimal or no documentation
-- Deployment issues
-- Security concerns (hardcoded credentials)
+- Menos de 4 operaciones CRUD funcionan
+- Manejo de errores pobre o faltante
+- Código difícil de entender
+- Documentación mínima o inexistente
+- Problemas de despliegue
+- Preocupaciones de seguridad (credenciales hardcodeadas)
 
-## Troubleshooting Tips for Instructors
+## Consejos de Solución de Problemas para Instructores
 
-### Quick Diagnosis
+### Diagnóstico Rápido
 
-**If student says "it doesn't work"**:
-1. Ask: "What specific error do you see?"
-2. Check: CloudWatch Logs for Lambda execution
-3. Verify: Deployment succeeded (CloudFormation status)
-4. Test: Simple curl command yourself
+**Si el estudiante dice "no funciona"**:
+1. Preguntar: "¿Qué error específico ves?"
+2. Revisar: CloudWatch Logs para ejecución de Lambda
+3. Verificar: El despliegue tuvo éxito (estado de CloudFormation)
+4. Probar: Comando curl simple usted mismo
 
-**If deployment fails**:
-1. Check: CloudFormation Events tab
-2. Look for: Resource-specific error messages
-3. Common: IAM permission issues, invalid YAML
-4. Solution: Delete stack, fix issue, redeploy
+**Si el despliegue falla**:
+1. Revisar: Pestaña Events de CloudFormation
+2. Buscar: Mensajes de error específicos del recurso
+3. Común: Problemas de permisos IAM, YAML inválido
+4. Solución: Eliminar stack, corregir problema, redesplegar
 
-**If function returns 500**:
-1. Check: CloudWatch Logs immediately
-2. Look for: JavaScript errors, DynamoDB errors
-3. Common: Missing await, wrong SDK syntax, permission issues
-4. Solution: Fix code, redeploy
+**Si la función retorna 500**:
+1. Revisar: CloudWatch Logs inmediatamente
+2. Buscar: Errores de JavaScript, errores de DynamoDB
+3. Común: Falta await, sintaxis SDK incorrecta, problemas de permisos
+4. Solución: Corregir código, redesplegar
 
-### Common Quick Fixes
+### Correcciones Rápidas Comunes
 
-**Missing API URL**:
+**URL de API faltante**:
 ```bash
 aws cloudformation describe-stacks --stack-name techmoda-capstone --query "Stacks[0].Outputs"
 ```
 
-**Check DynamoDB items**:
+**Revisar items de DynamoDB**:
 ```bash
 aws dynamodb scan --table-name techmoda-capstone-Products
 ```
 
-**View recent Lambda logs**:
+**Ver logs recientes de Lambda**:
 ```bash
 aws logs tail /aws/lambda/techmoda-capstone-ListItems --since 5m
 ```
 
-**Force delete stuck stack**:
+**Forzar eliminación de stack atascado**:
 ```bash
 aws cloudformation delete-stack --stack-name techmoda-capstone
 ```
 
-## Post-Session Follow-Up
+## Seguimiento Post-Sesión
 
-### Homework Expectations
+### Expectativas de Tarea
 
-Students should complete:
-- ✅ All 5 Lambda functions fully implemented and tested
-- ✅ Comprehensive README documentation
-- ✅ Architecture diagram
-- ✅ Evidence of working implementation (screenshots optional)
-- ✅ GitHub repository ready for submission
+Los estudiantes deben completar:
+- ✅ Las 5 funciones Lambda completamente implementadas y probadas
+- ✅ Documentación completa del README
+- ✅ Diagrama de arquitectura
+- ✅ Evidencia de implementación funcional (capturas de pantalla opcional)
+- ✅ Repositorio GitHub listo para entrega
 
-### Office Hours Support
+### Apoyo en Horas de Oficina
 
-Be available for:
-- Debugging complex issues
-- Architecture questions
-- Deployment problems
-- Documentation review (optional)
+Estar disponible para:
+- Depuración de problemas complejos
+- Preguntas de arquitectura
+- Problemas de despliegue
+- Revisión de documentación (opcional)
 
-### Submission Deadline
+### Fecha Límite de Entrega
 
-- Clearly communicate deadline
-- Specify submission format (GitHub URL via LMS/email)
-- Remind students to cleanup resources after submission
-- Provide grace period for technical difficulties (1-2 days)
+- Comunicar claramente la fecha límite
+- Especificar el formato de entrega (URL de GitHub vía LMS/email)
+- Recordar a los estudiantes que limpien recursos después de la entrega
+- Proporcionar período de gracia para dificultades técnicas (1-2 días)
 
-## Resources for Instructors
+## Recursos para Instructores
 
-### Reference Implementation
+### Implementación de Referencia
 
-See [SOLUTION_NOTES.md](SOLUTION_NOTES.md) for implementation patterns (not full solutions).
+Ver [SOLUTION_NOTES.md](SOLUTION_NOTES.md) para patrones de implementación (no soluciones completas).
 
-### Quick Links
+### Enlaces Rápidos
 
-- [Function Specifications](../docs/specs/)
-- [Testing Guide](../docs/TESTING_GUIDE.md)
-- [Architecture Documentation](../docs/ARCHITECTURE.md)
-- [Cost and Cleanup](../docs/COST_AND_CLEANUP.md)
-- [Prompt Templates](../docs/prompts/)
+- [Especificaciones de Funciones](../docs/specs/)
+- [Guía de Pruebas](../docs/TESTING_GUIDE.md)
+- [Documentación de Arquitectura](../docs/ARCHITECTURE.md)
+- [Costos y Limpieza](../docs/COST_AND_CLEANUP.md)
+- [Plantillas de Prompts](../docs/prompts/)
 
-### AWS Console Links
+### Enlaces de Consola AWS
 
 - CloudFormation: https://console.aws.amazon.com/cloudformation
 - Lambda: https://console.aws.amazon.com/lambda
@@ -607,33 +607,33 @@ See [SOLUTION_NOTES.md](SOLUTION_NOTES.md) for implementation patterns (not full
 - CloudWatch: https://console.aws.amazon.com/cloudwatch
 - X-Ray: https://console.aws.amazon.com/xray
 
-## FAQs from Students
+## Preguntas Frecuentes de los Estudiantes
 
-**Q: Can I use Python instead of Node.js?**
-A: No, capstone requires Node.js 18.x for consistency in evaluation.
+**P: ¿Puedo usar Python en lugar de Node.js?**
+R: No, el capstone requiere Node.js 18.x para consistencia en la evaluación.
 
-**Q: Do I need to write tests?**
-A: No automated tests required. Manual testing with curl is sufficient.
+**P: ¿Necesito escribir tests?**
+R: No se requieren tests automatizados. Las pruebas manuales con curl son suficientes.
 
-**Q: Can I add extra features (authentication, image upload)?**
-A: Focus on core CRUD first. Extra features are optional but not required for full credit.
+**P: ¿Puedo agregar características extra (autenticación, carga de imágenes)?**
+R: Concéntrese primero en el CRUD básico. Las características extra son opcionales pero no requeridas para crédito completo.
 
-**Q: What if I exceed $1 cost?**
-A: Unlikely with proper usage. If concerned, monitor AWS Billing Dashboard. Delete resources immediately after testing.
+**P: ¿Qué pasa si excedo $1 de costo?**
+R: Poco probable con uso apropiado. Si le preocupa, monitoree el Panel de Facturación de AWS. Elimine recursos inmediatamente después de las pruebas.
 
-**Q: Can I resubmit if I find bugs?**
-A: Depends on policy. Generally, one resubmission allowed within 24 hours of deadline.
+**P: ¿Puedo reenviar si encuentro bugs?**
+R: Depende de la política. Generalmente, se permite un reenvío dentro de las 24 horas de la fecha límite.
 
-**Q: Do I need to include evidence (screenshots)?**
-A: Not required but recommended for showcasing working implementation.
+**P: ¿Necesito incluir evidencia (capturas de pantalla)?**
+R: No es requerido pero recomendado para mostrar la implementación funcional.
 
-## Contact and Support
+## Contacto y Soporte
 
-For instructor questions or issues with this guide:
-- Review [CAPSTONE_OVERVIEW.md](../CAPSTONE_OVERVIEW.md)
-- Check [AWS SAM Documentation](https://docs.aws.amazon.com/serverless-application-model/)
-- AWS Bootcamp instructor community/Slack
+Para preguntas de instructores o problemas con esta guía:
+- Revisar [CAPSTONE_OVERVIEW.md](../CAPSTONE_OVERVIEW.md)
+- Consultar [Documentación de AWS SAM](https://docs.aws.amazon.com/serverless-application-model/)
+- Comunidad de instructores de AWS Bootcamp/Slack
 
 ---
 
-**Good luck facilitating an excellent capstone experience!**
+**¡Buena suerte facilitando una excelente experiencia de capstone!**

@@ -1,8 +1,8 @@
-# Prompt Templates: Testing
+# Plantillas de Prompts: Pruebas
 
-These prompts help you test your TechModa API endpoints using curl commands and troubleshoot failed requests.
+Estos prompts le ayudan a probar sus endpoints de la API de TechModa usando comandos curl y a solucionar problemas de solicitudes fallidas.
 
-## Prompt 4.1: Generate Curl Commands for All Endpoints
+## Prompt 4.1: Generar Comandos Curl para Todos los Endpoints
 
 ```
 I have deployed my TechModa capstone API and need curl commands to test all 5 endpoints.
@@ -23,7 +23,7 @@ Please provide:
 4. How to capture productId from create response for use in other commands
 ```
 
-## Prompt 4.2: Debug Failed API Request
+## Prompt 4.2: Depurar Solicitud de API Fallida
 
 ```
 I'm getting an error when calling my API endpoint.
@@ -43,31 +43,31 @@ Please help me:
 4. Provide debugging steps
 ```
 
-## Usage Instructions
+## Instrucciones de Uso
 
-### Testing Workflow
+### Flujo de Trabajo de Pruebas
 
-Follow this sequence for complete testing:
+Siga esta secuencia para pruebas completas:
 
-1. **Create Product** → Get productId
-2. **List Products** → Verify product appears
-3. **Get Product** → Retrieve by ID
-4. **Update Product** → Modify attributes
-5. **Delete Product** → Remove from catalog
+1. **Crear Producto** → Obtener productId
+2. **Listar Productos** → Verificar que el producto aparece
+3. **Obtener Producto** → Recuperar por ID
+4. **Actualizar Producto** → Modificar atributos
+5. **Eliminar Producto** → Eliminar del catálogo
 
-### Save API URL
+### Guardar URL de API
 
 ```bash
 export API_URL="https://abc123xyz.execute-api.us-east-1.amazonaws.com/Prod"
 ```
 
-### Test All Endpoints
+### Probar Todos los Endpoints
 
-Use prompts to generate specific curl commands for your API.
+Use prompts para generar comandos curl específicos para su API.
 
-## Example Test Scenarios
+## Ejemplos de Escenarios de Prueba
 
-### Scenario 1: Create and Verify Product
+### Escenario 1: Crear y Verificar Producto
 
 **Prompt**:
 ```
@@ -82,7 +82,7 @@ Please provide:
 4. Curl command to retrieve specific product by ID
 ```
 
-### Scenario 2: Update and Verify Changes
+### Escenario 2: Actualizar y Verificar Cambios
 
 **Prompt**:
 ```
@@ -97,7 +97,7 @@ Please provide:
 3. How to check that updatedAt timestamp changed
 ```
 
-### Scenario 3: Delete and Verify Removal
+### Escenario 3: Eliminar y Verificar Eliminación
 
 **Prompt**:
 ```
@@ -112,7 +112,7 @@ Please provide:
 3. Curl command to list all products (deleted one shouldn't appear)
 ```
 
-### Scenario 4: Test Error Handling
+### Escenario 4: Probar Manejo de Errores
 
 **Prompt**:
 ```
@@ -127,7 +127,7 @@ Please provide curl commands to test:
 4. Creating product with invalid JSON
 ```
 
-## Debugging Prompts
+## Prompts de Depuración
 
 ### 500 Internal Server Error
 
@@ -151,7 +151,7 @@ Please help me:
 4. How to fix the issue
 ```
 
-### 404 Not Found (Unexpected)
+### 404 Not Found (Inesperado)
 
 ```
 I'm getting a 404 Not Found but the product should exist.
@@ -211,7 +211,7 @@ Please help me:
 4. Redeploy if needed
 ```
 
-### No Response / Timeout
+### Sin Respuesta / Timeout
 
 ```
 My API request is timing out or returning no response.
@@ -228,9 +228,9 @@ Please help me:
 4. How to increase Lambda timeout if needed
 ```
 
-## Advanced Testing Prompts
+## Prompts de Pruebas Avanzadas
 
-### Test with jq for Pretty Output
+### Probar con jq para Salida Formateada
 
 ```
 I want to format my curl responses with jq for better readability.
@@ -241,7 +241,7 @@ Please show me:
 3. How to save response to file and parse it
 ```
 
-### Test with Postman Alternative
+### Probar con Alternativa a Postman
 
 ```
 I prefer using a GUI tool instead of curl.
@@ -252,7 +252,7 @@ Please recommend:
 3. How to set up environment variables for API URL
 ```
 
-### Automated Test Script
+### Script de Pruebas Automatizado
 
 ```
 I want to create a bash script that tests all endpoints automatically.
@@ -268,39 +268,39 @@ Please provide:
 3. Clean output showing pass/fail for each test
 ```
 
-## Verification Checklist
+## Lista de Verificación
 
-After testing, verify:
+Después de las pruebas, verifique:
 
 ✅ **Create** (POST /products)
-   - Returns 201 Created
-   - Includes productId in response
-   - Product has timestamps
+   - Devuelve 201 Created
+   - Incluye productId en la respuesta
+   - El producto tiene timestamps
 
 ✅ **List** (GET /products)
-   - Returns 200 OK
-   - Shows all created products
-   - Empty array if no products
+   - Devuelve 200 OK
+   - Muestra todos los productos creados
+   - Array vacío si no hay productos
 
 ✅ **Get** (GET /products/{id})
-   - Returns 200 OK for existing product
-   - Returns 404 for non-existent product
-   - Response matches created product
+   - Devuelve 200 OK para producto existente
+   - Devuelve 404 para producto no existente
+   - La respuesta coincide con el producto creado
 
 ✅ **Update** (PUT /products/{id})
-   - Returns 200 OK
-   - Updated fields changed
-   - updatedAt timestamp newer than createdAt
-   - Returns 404 for non-existent product
+   - Devuelve 200 OK
+   - Los campos actualizados cambiaron
+   - El timestamp updatedAt es más reciente que createdAt
+   - Devuelve 404 para producto no existente
 
 ✅ **Delete** (DELETE /products/{id})
-   - Returns 200 OK
-   - Subsequent GET returns 404
-   - Product removed from list
+   - Devuelve 200 OK
+   - El GET subsecuente devuelve 404
+   - El producto se eliminó de la lista
 
-## Common Issues and Solutions
+## Problemas Comunes y Soluciones
 
-### Issue: Connection Refused
+### Problema: Connection Refused
 
 **Prompt**:
 ```
@@ -314,7 +314,7 @@ Please help me:
 3. Test connectivity to AWS
 ```
 
-### Issue: Malformed JSON
+### Problema: JSON Malformado
 
 **Prompt**:
 ```
@@ -331,7 +331,7 @@ Please help me:
 3. Show correct format for curl -d flag
 ```
 
-### Issue: CORS Error in Browser
+### Problema: Error CORS en el Navegador
 
 **Prompt**:
 ```
@@ -345,12 +345,12 @@ Please help me:
 3. Fix CORS configuration
 ```
 
-## Next Steps
+## Próximos Pasos
 
-After successful testing:
+Después de pruebas exitosas:
 
-1. Document test results (screenshots optional)
-2. Verify CloudWatch Logs show executions
-3. Review X-Ray traces
-4. Proceed to [Debugging Guide](05_DEBUGGING.md) if issues found
-5. Move to [Operations Prompts](06_OPERATIONS.md) for monitoring
+1. Documente los resultados de las pruebas (capturas de pantalla opcionales)
+2. Verifique que los CloudWatch Logs muestren las ejecuciones
+3. Revise los traces de X-Ray
+4. Proceda a [Guía de Depuración](05_DEBUGGING.md) si se encuentran problemas
+5. Continúe a [Prompts de Operaciones](06_OPERATIONS.md) para monitoreo

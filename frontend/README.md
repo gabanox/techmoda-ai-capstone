@@ -1,85 +1,85 @@
 # TechModa Frontend
 
-React + TypeScript + Vite frontend for the TechModa product catalog.
+Frontend React + TypeScript + Vite para el catálogo de productos TechModa.
 
-## Local Development
+## Desarrollo Local
 
-1. Set API URL in `.env`:
+1. Configurar URL del API en `.env`:
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and add your API URL:
+Editar `.env` y agregar tu URL del API:
 ```
 VITE_API_URL=https://your-api-id.execute-api.us-east-1.amazonaws.com/Prod
 ```
 
-2. Install dependencies:
+2. Instalar dependencias:
 ```bash
 npm install
 ```
 
-3. Run development server:
+3. Ejecutar servidor de desarrollo:
 ```bash
 npm run dev
 ```
 
-4. Open your browser to http://localhost:5173
+4. Abrir tu navegador en http://localhost:5173
 
-## Build for Production
+## Build para Producción
 
 ```bash
 npm run build
 ```
 
-The built files will be in the `dist/` directory.
+Los archivos construidos estarán en el directorio `dist/`.
 
-## Deployment
+## Despliegue
 
-The frontend is deployed to S3 + CloudFront using the SAM template.
+El frontend se despliega en S3 + CloudFront usando el template SAM.
 
-Use the parent directory scripts:
+Usar los scripts del directorio padre:
 ```bash
 cd ..
 ./scripts/build-frontend.sh
 ./scripts/deploy-frontend.sh
 ```
 
-## Project Structure
+## Estructura del Proyecto
 
 ```
 frontend/
 ├── src/
-│   ├── components/       # React components
-│   ├── hooks/           # Custom React hooks
-│   ├── lib/             # Utility libraries
-│   │   ├── api.ts       # API client
-│   │   └── types.ts     # TypeScript types
-│   ├── App.tsx          # Main application component
-│   └── main.tsx         # Application entry point
-├── public/              # Static assets
-├── index.html           # HTML template
-└── vite.config.ts       # Vite configuration
+│   ├── components/       # Componentes React
+│   ├── hooks/           # Hooks personalizados de React
+│   ├── lib/             # Librerías de utilidad
+│   │   ├── api.ts       # Cliente API
+│   │   └── types.ts     # Tipos TypeScript
+│   ├── App.tsx          # Componente principal de la aplicación
+│   └── main.tsx         # Punto de entrada de la aplicación
+├── public/              # Recursos estáticos
+├── index.html           # Template HTML
+└── vite.config.ts       # Configuración de Vite
 ```
 
-## Available Scripts
+## Scripts Disponibles
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build locally
-- `npm run lint` - Run ESLint
-- `npm run typecheck` - Run TypeScript type checking
+- `npm run dev` - Iniciar servidor de desarrollo
+- `npm run build` - Construir para producción
+- `npm run preview` - Previsualizar build de producción localmente
+- `npm run lint` - Ejecutar ESLint
+- `npm run typecheck` - Ejecutar verificación de tipos TypeScript
 
-## Technologies Used
+## Tecnologías Utilizadas
 
-- **React 18** - UI library
-- **TypeScript** - Type safety
-- **Vite** - Build tool and dev server
-- **Tailwind CSS** - Styling
-- **Lucide React** - Icons
+- **React 18** - Librería UI
+- **TypeScript** - Seguridad de tipos
+- **Vite** - Herramienta de build y servidor de desarrollo
+- **Tailwind CSS** - Estilos
+- **Lucide React** - Iconos
 
-## API Integration
+## Integración con API
 
-The frontend communicates with the TechModa API deployed on AWS. The API URL is configured via the `VITE_API_URL` environment variable.
+El frontend se comunica con el API TechModa desplegado en AWS. La URL del API se configura vía la variable de entorno `VITE_API_URL`.
 
-See `src/lib/api.ts` for the API client implementation.
+Ver `src/lib/api.ts` para la implementación del cliente API.

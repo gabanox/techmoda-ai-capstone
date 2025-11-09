@@ -1,37 +1,37 @@
-# TechModa Serverless Architecture
+# Arquitectura Serverless de TechModa
 
-## Architecture Diagram
+## Diagrama de Arquitectura
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                          Internet/Client                             │
-│                       (curl, Postman, Browser)                       │
+│                          Internet/Cliente                            │
+│                       (curl, Postman, Navegador)                     │
 └────────────────────────────┬─────────────────────────────────────────┘
                              │
-                             │ HTTPS Requests
+                             │ Peticiones HTTPS
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                     Amazon API Gateway (REST API)                    │
 │  ┌────────────────────────────────────────────────────────────────┐ │
 │  │  Endpoints:                                                     │ │
-│  │  • GET  /products          → ListItems Lambda                  │ │
-│  │  • POST /products          → CreateItem Lambda                 │ │
-│  │  • GET  /products/{id}     → GetItem Lambda                    │ │
-│  │  • PUT  /products/{id}     → UpdateItem Lambda                 │ │
-│  │  • DELETE /products/{id}   → DeleteItem Lambda                 │ │
+│  │  • GET  /products          → Lambda ListItems                  │ │
+│  │  • POST /products          → Lambda CreateItem                 │ │
+│  │  • GET  /products/{id}     → Lambda GetItem                    │ │
+│  │  • PUT  /products/{id}     → Lambda UpdateItem                 │ │
+│  │  • DELETE /products/{id}   → Lambda DeleteItem                 │ │
 │  └────────────────────────────────────────────────────────────────┘ │
 └────────────────────────────┬─────────────────────────────────────────┘
                              │
-                             │ Event Invocation
+                             │ Invocación de Eventos
                              │
                 ┌────────────┴────────────┐
                 │                         │
                 ▼                         ▼
 ┌───────────────────────────┐   ┌──────────────────────────┐
-│   AWS Lambda Functions    │   │   CloudWatch & X-Ray     │
+│   Funciones AWS Lambda    │   │   CloudWatch & X-Ray     │
 │  ┌─────────────────────┐  │   │                          │
-│  │  ListItems          │──┼───│→ Logs & Traces           │
+│  │  ListItems          │──┼───│→ Logs & Trazas           │
 │  │  (GET /products)    │  │   │                          │
 │  └─────────────────────┘  │   └──────────────────────────┘
 │  ┌─────────────────────┐  │
@@ -52,18 +52,18 @@
 │  └─────────────────────┘  │
 └────────────┬──────────────┘
              │
-             │ DynamoDB SDK v3 Operations
+             │ Operaciones SDK DynamoDB v3
              │ (Scan, PutItem, GetItem, UpdateItem, DeleteItem)
              │
              ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        Amazon DynamoDB                               │
 │  ┌────────────────────────────────────────────────────────────────┐ │
-│  │  Table: TechModa-Products                                      │ │
-│  │  Primary Key: productId (String)                               │ │
-│  │  Billing Mode: PAY_PER_REQUEST                                 │ │
+│  │  Tabla: TechModa-Products                                      │ │
+│  │  Clave Primaria: productId (String)                            │ │
+│  │  Modo de Facturación: PAY_PER_REQUEST                          │ │
 │  │                                                                 │ │
-│  │  Attributes:                                                    │ │
+│  │  Atributos:                                                     │ │
 │  │  • productId (String) - UUID                                   │ │
 │  │  • name (String)                                               │ │
 │  │  • description (String)                                        │ │
@@ -76,41 +76,41 @@
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-## Component Descriptions
+## Descripciones de Componentes
 
 ### Amazon API Gateway
 
-**Purpose**: Serves as the entry point for all HTTP requests to the product catalog API.
+**Propósito**: Sirve como punto de entrada para todas las peticiones HTTP a la API del catálogo de productos.
 
-**Configuration**:
-- **Type**: REST API (not HTTP API)
+**Configuración**:
+- **Tipo**: REST API (no HTTP API)
 - **Stage**: Prod
-- **Endpoint Type**: Regional
-- **CORS**: Enabled for all endpoints
-- **Integration**: Lambda Proxy Integration (passes entire request to Lambda)
+- **Tipo de Endpoint**: Regional
+- **CORS**: Habilitado para todos los endpoints
+- **Integración**: Integración Proxy Lambda (pasa la petición completa a Lambda)
 
-**Responsibilities**:
-- Route requests to appropriate Lambda functions based on HTTP method and path
-- Handle CORS preflight requests
-- Return Lambda responses to clients with proper HTTP status codes
-- Log requests to CloudWatch
+**Responsabilidades**:
+- Enrutar peticiones a las funciones Lambda apropiadas basándose en el método HTTP y la ruta
+- Manejar peticiones preflight de CORS
+- Devolver respuestas Lambda a clientes con códigos de estado HTTP apropiados
+- Registrar peticiones en CloudWatch
 
-**Base URL Format**: `https://{api-id}.execute-api.us-east-1.amazonaws.com/Prod`
+**Formato de URL Base**: `https://{api-id}.execute-api.us-east-1.amazonaws.com/Prod`
 
-### AWS Lambda Functions
+### Funciones AWS Lambda
 
-**Purpose**: Execute business logic for each CRUD operation.
+**Propósito**: Ejecutar la lógica de negocio para cada operación CRUD.
 
-**Common Configuration (all 5 functions)**:
+**Configuración Común (las 5 funciones)**:
 - **Runtime**: Node.js 18.x
-- **Memory**: 1024 MB
-- **Timeout**: 30 seconds
-- **Architecture**: x86_64
-- **X-Ray Tracing**: Active
-- **Environment Variables**: `PRODUCTS_TABLE` (injected by SAM)
+- **Memoria**: 1024 MB
+- **Timeout**: 30 segundos
+- **Arquitectura**: x86_64
+- **Tracing X-Ray**: Activo
+- **Variables de Entorno**: `PRODUCTS_TABLE` (inyectado por SAM)
 
-**IAM Permissions**:
-Each function has least-privilege access to DynamoDB:
+**Permisos IAM**:
+Cada función tiene acceso de privilegio mínimo a DynamoDB:
 - ListItems: `dynamodb:Scan`
 - CreateItem: `dynamodb:PutItem`
 - GetItem: `dynamodb:GetItem`
@@ -119,253 +119,253 @@ Each function has least-privilege access to DynamoDB:
 
 ### Amazon DynamoDB
 
-**Purpose**: Persistent NoSQL data store for product catalog.
+**Propósito**: Almacén de datos NoSQL persistente para el catálogo de productos.
 
-**Table Configuration**:
-- **Table Name**: `{StackName}-Products` (e.g., `techmoda-capstone-Products`)
-- **Primary Key**: `productId` (String) - Partition key only
-- **Billing Mode**: PAY_PER_REQUEST (on-demand)
-- **Deletion Protection**: Disabled (for easy cleanup)
+**Configuración de Tabla**:
+- **Nombre de Tabla**: `{StackName}-Products` (ej., `techmoda-capstone-Products`)
+- **Clave Primaria**: `productId` (String) - Solo clave de partición
+- **Modo de Facturación**: PAY_PER_REQUEST (bajo demanda)
+- **Protección de Eliminación**: Deshabilitada (para limpieza fácil)
 
-**Schema Design**:
+**Diseño de Esquema**:
 
-| Attribute | Type | Required | Description |
+| Atributo | Tipo | Requerido | Descripción |
 |-----------|------|----------|-------------|
-| productId | String | Yes | UUID v4 generated by CreateItem |
-| name | String | Yes | Product name (e.g., "Classic Denim Jacket") |
-| description | String | No | Product description |
-| price | Number | Yes | Price in USD (e.g., 79.99) |
-| category | String | No | Fashion category (e.g., "Jackets") |
-| imageUrl | String | No | URL to product image |
-| createdAt | String | Yes | ISO 8601 timestamp of creation |
-| updatedAt | String | Yes | ISO 8601 timestamp of last update |
+| productId | String | Sí | UUID v4 generado por CreateItem |
+| name | String | Sí | Nombre del producto (ej., "Chaqueta Denim Clásica") |
+| description | String | No | Descripción del producto |
+| price | Number | Sí | Precio en USD (ej., 79.99) |
+| category | String | No | Categoría de moda (ej., "Chaquetas") |
+| imageUrl | String | No | URL a imagen del producto |
+| createdAt | String | Sí | Marca de tiempo ISO 8601 de creación |
+| updatedAt | String | Sí | Marca de tiempo ISO 8601 de última actualización |
 
-**Why PAY_PER_REQUEST?**
-- No capacity planning needed (no RCU/WCU to configure)
-- Cost-effective for low-volume applications
-- Automatically scales with traffic
-- Ideal for student projects and prototypes
+**¿Por qué PAY_PER_REQUEST?**
+- No se necesita planificación de capacidad (no hay RCU/WCU que configurar)
+- Rentable para aplicaciones de bajo volumen
+- Escala automáticamente con el tráfico
+- Ideal para proyectos de estudiantes y prototipos
 
 ### CloudWatch Logs
 
-**Purpose**: Centralized logging for Lambda function execution.
+**Propósito**: Registro centralizado para ejecución de funciones Lambda.
 
-**Log Groups**:
-Each Lambda function automatically creates a log group:
+**Grupos de Logs**:
+Cada función Lambda crea automáticamente un grupo de logs:
 - `/aws/lambda/{StackName}-ListItems`
 - `/aws/lambda/{StackName}-CreateItem`
 - `/aws/lambda/{StackName}-GetItem`
 - `/aws/lambda/{StackName}-UpdateItem`
 - `/aws/lambda/{StackName}-DeleteItem`
 
-**What Gets Logged**:
-- Function invocation start/end
-- Console.log() statements from code
-- Errors and stack traces
-- Lambda runtime errors
-- DynamoDB operation results
+**Qué se Registra**:
+- Inicio/fin de invocación de función
+- Declaraciones console.log() del código
+- Errores y trazas de stack
+- Errores de runtime de Lambda
+- Resultados de operaciones DynamoDB
 
-**Retention**: 7 days (configurable in SAM template)
+**Retención**: 7 días (configurable en template SAM)
 
 ### AWS X-Ray
 
-**Purpose**: Distributed tracing for request flow visualization.
+**Propósito**: Tracing distribuido para visualización del flujo de peticiones.
 
-**Configuration**:
-- Enabled for API Gateway
-- Enabled for all Lambda functions (via `Tracing: Active`)
-- Automatic instrumentation of AWS SDK calls
+**Configuración**:
+- Habilitado para API Gateway
+- Habilitado para todas las funciones Lambda (vía `Tracing: Active`)
+- Instrumentación automática de llamadas AWS SDK
 
-**Trace Details**:
-- API Gateway → Lambda invocation latency
-- Lambda execution time breakdown
-- DynamoDB operation duration
-- Error identification
-- Cold start vs. warm start analysis
+**Detalles de Traza**:
+- Latencia de invocación API Gateway → Lambda
+- Desglose del tiempo de ejecución Lambda
+- Duración de operación DynamoDB
+- Identificación de errores
+- Análisis de cold start vs. warm start
 
-### IAM Roles
+### Roles IAM
 
-**Purpose**: Secure access control following least-privilege principle.
+**Propósito**: Control de acceso seguro siguiendo el principio de privilegio mínimo.
 
-**Lambda Execution Roles**:
-SAM automatically creates execution roles for each function with:
-- `AWSLambdaBasicExecutionRole` (CloudWatch Logs write)
-- `AWSXRayDaemonWriteAccess` (X-Ray tracing)
-- Custom DynamoDB policies (specific to function needs)
+**Roles de Ejecución Lambda**:
+SAM crea automáticamente roles de ejecución para cada función con:
+- `AWSLambdaBasicExecutionRole` (escritura CloudWatch Logs)
+- `AWSXRayDaemonWriteAccess` (tracing X-Ray)
+- Políticas DynamoDB personalizadas (específicas a las necesidades de la función)
 
-**Example Policy (ListItems)**:
+**Ejemplo de Política (ListItems)**:
 ```yaml
 Policies:
   - DynamoDBReadPolicy:
       TableName: !Ref ProductsTable
 ```
 
-This grants only `dynamodb:Scan` and `dynamodb:GetItem` on the specific table.
+Esto otorga solo `dynamodb:Scan` y `dynamodb:GetItem` en la tabla específica.
 
-## Data Flow Diagrams
+## Diagramas de Flujo de Datos
 
-### Create Product Flow
+### Flujo Crear Producto
 
 ```
-1. Client sends POST request
+1. Cliente envía petición POST
    └─> curl -X POST {API_URL}/products -H "Content-Type: application/json" -d '{...}'
 
-2. API Gateway receives request
-   └─> Validates HTTP method, headers
-   └─> Routes to CreateItem Lambda
+2. API Gateway recibe petición
+   └─> Valida método HTTP, encabezados
+   └─> Enruta a Lambda CreateItem
 
-3. CreateItem Lambda processes
-   └─> Parses JSON body (JSON.parse(event.body))
-   └─> Validates required fields (name, price)
-   └─> Generates UUID (crypto.randomUUID())
-   └─> Adds timestamps (new Date().toISOString())
-   └─> Calls DynamoDB PutItem
-   └─> Returns 201 Created with product object
+3. Lambda CreateItem procesa
+   └─> Analiza cuerpo JSON (JSON.parse(event.body))
+   └─> Valida campos requeridos (name, price)
+   └─> Genera UUID (crypto.randomUUID())
+   └─> Agrega marcas de tiempo (new Date().toISOString())
+   └─> Llama DynamoDB PutItem
+   └─> Devuelve 201 Created con objeto producto
 
-4. DynamoDB stores item
-   └─> Writes to TechModa-Products table
-   └─> Returns success
+4. DynamoDB almacena item
+   └─> Escribe en tabla TechModa-Products
+   └─> Devuelve éxito
 
-5. API Gateway sends response
-   └─> HTTP 201 with JSON body
-   └─> Includes CORS headers
+5. API Gateway envía respuesta
+   └─> HTTP 201 con cuerpo JSON
+   └─> Incluye encabezados CORS
 ```
 
-### List Products Flow
+### Flujo Listar Productos
 
 ```
-1. Client sends GET request
+1. Cliente envía petición GET
    └─> curl -X GET {API_URL}/products
 
-2. API Gateway receives request
-   └─> Routes to ListItems Lambda
+2. API Gateway recibe petición
+   └─> Enruta a Lambda ListItems
 
-3. ListItems Lambda processes
-   └─> Calls DynamoDB Scan (no filters)
-   └─> Receives all items
-   └─> Returns 200 OK with products array
+3. Lambda ListItems procesa
+   └─> Llama DynamoDB Scan (sin filtros)
+   └─> Recibe todos los items
+   └─> Devuelve 200 OK con array de productos
 
-4. DynamoDB returns items
-   └─> Scans entire table
-   └─> Returns Items array
+4. DynamoDB devuelve items
+   └─> Escanea tabla completa
+   └─> Devuelve array Items
 
-5. API Gateway sends response
-   └─> HTTP 200 with JSON array
+5. API Gateway envía respuesta
+   └─> HTTP 200 con array JSON
 ```
 
-### Get Product Flow
+### Flujo Obtener Producto
 
 ```
-1. Client sends GET request with ID
+1. Cliente envía petición GET con ID
    └─> curl -X GET {API_URL}/products/{productId}
 
-2. API Gateway receives request
-   └─> Extracts path parameter {id}
-   └─> Routes to GetItem Lambda
+2. API Gateway recibe petición
+   └─> Extrae parámetro de ruta {id}
+   └─> Enruta a Lambda GetItem
 
-3. GetItem Lambda processes
-   └─> Extracts productId from event.pathParameters.id
-   └─> Calls DynamoDB GetItem with Key: {productId}
-   └─> If found: return 200 with product
-   └─> If not found: return 404
+3. Lambda GetItem procesa
+   └─> Extrae productId de event.pathParameters.id
+   └─> Llama DynamoDB GetItem con Key: {productId}
+   └─> Si encontrado: devuelve 200 con producto
+   └─> Si no encontrado: devuelve 404
 
-4. DynamoDB retrieves item
-   └─> Direct key lookup (fast)
-   └─> Returns Item or null
+4. DynamoDB recupera item
+   └─> Búsqueda directa por clave (rápido)
+   └─> Devuelve Item o null
 
-5. API Gateway sends response
-   └─> HTTP 200 (found) or 404 (not found)
+5. API Gateway envía respuesta
+   └─> HTTP 200 (encontrado) o 404 (no encontrado)
 ```
 
-### Update Product Flow
+### Flujo Actualizar Producto
 
 ```
-1. Client sends PUT request with ID and body
+1. Cliente envía petición PUT con ID y cuerpo
    └─> curl -X PUT {API_URL}/products/{productId} -H "Content-Type: application/json" -d '{...}'
 
-2. API Gateway receives request
-   └─> Extracts path parameter {id}
-   └─> Routes to UpdateItem Lambda
+2. API Gateway recibe petición
+   └─> Extrae parámetro de ruta {id}
+   └─> Enruta a Lambda UpdateItem
 
-3. UpdateItem Lambda processes
-   └─> Extracts productId from path parameters
-   └─> Parses update fields from body
-   └─> Calls DynamoDB GetItem (check existence)
-   └─> If not exists: return 404
-   └─> Updates timestamp (updatedAt)
-   └─> Calls DynamoDB UpdateItem
-   └─> Returns 200 with updated product
+3. Lambda UpdateItem procesa
+   └─> Extrae productId de parámetros de ruta
+   └─> Analiza campos de actualización del cuerpo
+   └─> Llama DynamoDB GetItem (verificar existencia)
+   └─> Si no existe: devuelve 404
+   └─> Actualiza marca de tiempo (updatedAt)
+   └─> Llama DynamoDB UpdateItem
+   └─> Devuelve 200 con producto actualizado
 
-4. DynamoDB updates item
-   └─> Modifies specified attributes
-   └─> Returns updated item
+4. DynamoDB actualiza item
+   └─> Modifica atributos especificados
+   └─> Devuelve item actualizado
 
-5. API Gateway sends response
-   └─> HTTP 200 (updated) or 404 (not found)
+5. API Gateway envía respuesta
+   └─> HTTP 200 (actualizado) o 404 (no encontrado)
 ```
 
-### Delete Product Flow
+### Flujo Eliminar Producto
 
 ```
-1. Client sends DELETE request with ID
+1. Cliente envía petición DELETE con ID
    └─> curl -X DELETE {API_URL}/products/{productId}
 
-2. API Gateway receives request
-   └─> Extracts path parameter {id}
-   └─> Routes to DeleteItem Lambda
+2. API Gateway recibe petición
+   └─> Extrae parámetro de ruta {id}
+   └─> Enruta a Lambda DeleteItem
 
-3. DeleteItem Lambda processes
-   └─> Extracts productId from path parameters
-   └─> Calls DynamoDB DeleteItem
-   └─> Returns 200 with success message
+3. Lambda DeleteItem procesa
+   └─> Extrae productId de parámetros de ruta
+   └─> Llama DynamoDB DeleteItem
+   └─> Devuelve 200 con mensaje de éxito
 
-4. DynamoDB deletes item
-   └─> Removes item by primary key
-   └─> Succeeds even if item doesn't exist (idempotent)
+4. DynamoDB elimina item
+   └─> Remueve item por clave primaria
+   └─> Tiene éxito incluso si el item no existe (idempotente)
 
-5. API Gateway sends response
-   └─> HTTP 200 with deletion confirmation
+5. API Gateway envía respuesta
+   └─> HTTP 200 con confirmación de eliminación
 ```
 
-## API Endpoint Specifications
+## Especificaciones de Endpoints API
 
-### Base URL
+### URL Base
 
 ```
 https://{api-id}.execute-api.us-east-1.amazonaws.com/Prod
 ```
 
-Replace `{api-id}` with your actual API Gateway ID from deployment output.
+Reemplace `{api-id}` con su ID real de API Gateway de la salida de deployment.
 
-### Endpoints Summary
+### Resumen de Endpoints
 
-| Method | Endpoint | Function | Purpose |
+| Método | Endpoint | Función | Propósito |
 |--------|----------|----------|---------|
-| GET | /products | ListItems | List all products |
-| POST | /products | CreateItem | Create new product |
-| GET | /products/{id} | GetItem | Get product by ID |
-| PUT | /products/{id} | UpdateItem | Update product |
-| DELETE | /products/{id} | DeleteItem | Delete product |
+| GET | /products | ListItems | Listar todos los productos |
+| POST | /products | CreateItem | Crear nuevo producto |
+| GET | /products/{id} | GetItem | Obtener producto por ID |
+| PUT | /products/{id} | UpdateItem | Actualizar producto |
+| DELETE | /products/{id} | DeleteItem | Eliminar producto |
 
-### 1. List Products
+### 1. Listar Productos
 
 **Endpoint**: `GET /products`
 
-**Request**:
-- No path parameters
-- No query parameters
-- No request body
+**Petición**:
+- Sin parámetros de ruta
+- Sin parámetros de consulta
+- Sin cuerpo de petición
 
-**Success Response (200 OK)**:
+**Respuesta de Éxito (200 OK)**:
 ```json
 {
   "products": [
     {
       "productId": "123e4567-e89b-12d3-a456-426614174000",
-      "name": "Classic Denim Jacket",
-      "description": "Timeless denim jacket for all seasons",
+      "name": "Chaqueta Denim Clásica",
+      "description": "Chaqueta denim atemporal para todas las estaciones",
       "price": 79.99,
-      "category": "Jackets",
+      "category": "Chaquetas",
       "imageUrl": "https://example.com/jacket.jpg",
       "createdAt": "2025-10-30T12:00:00Z",
       "updatedAt": "2025-10-30T12:00:00Z"
@@ -374,7 +374,7 @@ Replace `{api-id}` with your actual API Gateway ID from deployment output.
 }
 ```
 
-**Error Response (500 Internal Server Error)**:
+**Respuesta de Error (500 Internal Server Error)**:
 ```json
 {
   "error": "Internal server error",
@@ -382,45 +382,45 @@ Replace `{api-id}` with your actual API Gateway ID from deployment output.
 }
 ```
 
-### 2. Create Product
+### 2. Crear Producto
 
 **Endpoint**: `POST /products`
 
-**Request Headers**:
+**Encabezados de Petición**:
 ```
 Content-Type: application/json
 ```
 
-**Request Body**:
+**Cuerpo de Petición**:
 ```json
 {
-  "name": "Classic Denim Jacket",
-  "description": "Timeless denim jacket for all seasons",
+  "name": "Chaqueta Denim Clásica",
+  "description": "Chaqueta denim atemporal para todas las estaciones",
   "price": 79.99,
-  "category": "Jackets",
+  "category": "Chaquetas",
   "imageUrl": "https://example.com/jacket.jpg"
 }
 ```
 
-**Required Fields**: `name`, `price`
+**Campos Requeridos**: `name`, `price`
 
-**Success Response (201 Created)**:
+**Respuesta de Éxito (201 Created)**:
 ```json
 {
   "productId": "123e4567-e89b-12d3-a456-426614174000",
-  "name": "Classic Denim Jacket",
-  "description": "Timeless denim jacket for all seasons",
+  "name": "Chaqueta Denim Clásica",
+  "description": "Chaqueta denim atemporal para todas las estaciones",
   "price": 79.99,
-  "category": "Jackets",
+  "category": "Chaquetas",
   "imageUrl": "https://example.com/jacket.jpg",
   "createdAt": "2025-10-30T12:00:00Z",
   "updatedAt": "2025-10-30T12:00:00Z"
 }
 ```
 
-**Error Responses**:
+**Respuestas de Error**:
 
-400 Bad Request (missing required fields):
+400 Bad Request (faltan campos requeridos):
 ```json
 {
   "error": "Bad Request",
@@ -436,28 +436,28 @@ Content-Type: application/json
 }
 ```
 
-### 3. Get Product
+### 3. Obtener Producto
 
 **Endpoint**: `GET /products/{id}`
 
-**Path Parameters**:
-- `id`: Product UUID (productId)
+**Parámetros de Ruta**:
+- `id`: UUID del producto (productId)
 
-**Success Response (200 OK)**:
+**Respuesta de Éxito (200 OK)**:
 ```json
 {
   "productId": "123e4567-e89b-12d3-a456-426614174000",
-  "name": "Classic Denim Jacket",
-  "description": "Timeless denim jacket for all seasons",
+  "name": "Chaqueta Denim Clásica",
+  "description": "Chaqueta denim atemporal para todas las estaciones",
   "price": 79.99,
-  "category": "Jackets",
+  "category": "Chaquetas",
   "imageUrl": "https://example.com/jacket.jpg",
   "createdAt": "2025-10-30T12:00:00Z",
   "updatedAt": "2025-10-30T12:00:00Z"
 }
 ```
 
-**Error Responses**:
+**Respuestas de Error**:
 
 404 Not Found:
 ```json
@@ -475,41 +475,41 @@ Content-Type: application/json
 }
 ```
 
-### 4. Update Product
+### 4. Actualizar Producto
 
 **Endpoint**: `PUT /products/{id}`
 
-**Path Parameters**:
-- `id`: Product UUID (productId)
+**Parámetros de Ruta**:
+- `id`: UUID del producto (productId)
 
-**Request Headers**:
+**Encabezados de Petición**:
 ```
 Content-Type: application/json
 ```
 
-**Request Body** (partial update):
+**Cuerpo de Petición** (actualización parcial):
 ```json
 {
   "price": 69.99,
-  "description": "Updated description with sale pricing"
+  "description": "Descripción actualizada con precio de oferta"
 }
 ```
 
-**Success Response (200 OK)**:
+**Respuesta de Éxito (200 OK)**:
 ```json
 {
   "productId": "123e4567-e89b-12d3-a456-426614174000",
-  "name": "Classic Denim Jacket",
-  "description": "Updated description with sale pricing",
+  "name": "Chaqueta Denim Clásica",
+  "description": "Descripción actualizada con precio de oferta",
   "price": 69.99,
-  "category": "Jackets",
+  "category": "Chaquetas",
   "imageUrl": "https://example.com/jacket.jpg",
   "createdAt": "2025-10-30T12:00:00Z",
   "updatedAt": "2025-10-30T14:30:00Z"
 }
 ```
 
-**Error Responses**:
+**Respuestas de Error**:
 
 404 Not Found:
 ```json
@@ -535,14 +535,14 @@ Content-Type: application/json
 }
 ```
 
-### 5. Delete Product
+### 5. Eliminar Producto
 
 **Endpoint**: `DELETE /products/{id}`
 
-**Path Parameters**:
-- `id`: Product UUID (productId)
+**Parámetros de Ruta**:
+- `id`: UUID del producto (productId)
 
-**Success Response (200 OK)**:
+**Respuesta de Éxito (200 OK)**:
 ```json
 {
   "message": "Product deleted successfully",
@@ -550,9 +550,9 @@ Content-Type: application/json
 }
 ```
 
-**Error Responses**:
+**Respuestas de Error**:
 
-404 Not Found (if existence check implemented):
+404 Not Found (si se implementa verificación de existencia):
 ```json
 {
   "error": "Not Found",
@@ -568,13 +568,13 @@ Content-Type: application/json
 }
 ```
 
-## DynamoDB Operations
+## Operaciones DynamoDB
 
 ### Scan (ListItems)
 
-**Operation**: Retrieves all items from table
+**Operación**: Recupera todos los items de la tabla
 
-**Code Example**:
+**Ejemplo de Código**:
 ```javascript
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, ScanCommand } = require('@aws-sdk/lib-dynamodb');
@@ -589,19 +589,19 @@ const result = await docClient.send(new ScanCommand({
 const products = result.Items;
 ```
 
-**Performance Note**: Scan reads entire table, not suitable for large datasets. Acceptable for capstone scope.
+**Nota de Rendimiento**: Scan lee la tabla completa, no es adecuado para conjuntos de datos grandes. Aceptable para el alcance del capstone.
 
 ### PutItem (CreateItem)
 
-**Operation**: Creates new item in table
+**Operación**: Crea nuevo item en la tabla
 
-**Code Example**:
+**Ejemplo de Código**:
 ```javascript
 const { PutCommand } = require('@aws-sdk/lib-dynamodb');
 
 const product = {
   productId: crypto.randomUUID(),
-  name: 'Classic Denim Jacket',
+  name: 'Chaqueta Denim Clásica',
   price: 79.99,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString()
@@ -615,34 +615,34 @@ await docClient.send(new PutCommand({
 
 ### GetItem (GetItem)
 
-**Operation**: Retrieves single item by primary key
+**Operación**: Recupera un solo item por clave primaria
 
-**Code Example**:
+**Ejemplo de Código**:
 ```javascript
 const { GetCommand } = require('@aws-sdk/lib-dynamodb');
 
 const result = await docClient.send(new GetCommand({
   TableName: process.env.PRODUCTS_TABLE,
   Key: {
-    productId: 'uuid-here'
+    productId: 'uuid-aqui'
   }
 }));
 
-const product = result.Item; // null if not found
+const product = result.Item; // null si no se encuentra
 ```
 
 ### UpdateItem (UpdateItem)
 
-**Operation**: Modifies existing item attributes
+**Operación**: Modifica atributos de item existente
 
-**Code Example**:
+**Ejemplo de Código**:
 ```javascript
 const { UpdateCommand } = require('@aws-sdk/lib-dynamodb');
 
 const result = await docClient.send(new UpdateCommand({
   TableName: process.env.PRODUCTS_TABLE,
   Key: {
-    productId: 'uuid-here'
+    productId: 'uuid-aqui'
   },
   UpdateExpression: 'SET price = :price, updatedAt = :updatedAt',
   ExpressionAttributeValues: {
@@ -657,38 +657,38 @@ const updatedProduct = result.Attributes;
 
 ### DeleteItem (DeleteItem)
 
-**Operation**: Removes item from table
+**Operación**: Remueve item de la tabla
 
-**Code Example**:
+**Ejemplo de Código**:
 ```javascript
 const { DeleteCommand } = require('@aws-sdk/lib-dynamodb');
 
 await docClient.send(new DeleteCommand({
   TableName: process.env.PRODUCTS_TABLE,
   Key: {
-    productId: 'uuid-here'
+    productId: 'uuid-aqui'
   }
 }));
 ```
 
-**Note**: DeleteItem succeeds even if item doesn't exist (idempotent operation).
+**Nota**: DeleteItem tiene éxito incluso si el item no existe (operación idempotente).
 
-## Observability
+## Observabilidad
 
-### CloudWatch Logs Analysis
+### Análisis de CloudWatch Logs
 
-**How to View Logs**:
-1. AWS Console → CloudWatch → Log groups
-2. Select `/aws/lambda/{StackName}-{FunctionName}`
-3. View log streams (one per Lambda execution)
+**Cómo Ver Logs**:
+1. Consola AWS → CloudWatch → Grupos de logs
+2. Seleccionar `/aws/lambda/{StackName}-{FunctionName}`
+3. Ver streams de logs (uno por ejecución Lambda)
 
-**What to Look For**:
-- START/END/REPORT lines (Lambda runtime info)
-- Console.log() output from your code
-- ERROR messages with stack traces
-- Duration and memory usage statistics
+**Qué Buscar**:
+- Líneas START/END/REPORT (información de runtime Lambda)
+- Salida console.log() de su código
+- Mensajes ERROR con trazas de stack
+- Estadísticas de duración y uso de memoria
 
-**Example Log Entry**:
+**Ejemplo de Entrada de Log**:
 ```
 START RequestId: abc-123 Version: $LATEST
 2025-10-30T12:00:00.000Z  abc-123  INFO  Received event: {...}
@@ -697,117 +697,117 @@ END RequestId: abc-123
 REPORT RequestId: abc-123  Duration: 150.00 ms  Billed Duration: 150 ms  Memory Size: 1024 MB  Max Memory Used: 85 MB
 ```
 
-### X-Ray Traces
+### Trazas X-Ray
 
-**How to View Traces**:
-1. AWS Console → X-Ray → Traces
-2. Filter by time range (last 5 minutes)
-3. Click individual trace to see details
+**Cómo Ver Trazas**:
+1. Consola AWS → X-Ray → Traces
+2. Filtrar por rango de tiempo (últimos 5 minutos)
+3. Hacer clic en traza individual para ver detalles
 
-**Service Map**:
-Shows visual representation of:
-- API Gateway → Lambda → DynamoDB call chain
-- Latency for each segment
-- Error rates
-- Cold start indicators
+**Mapa de Servicios**:
+Muestra representación visual de:
+- Cadena de llamadas API Gateway → Lambda → DynamoDB
+- Latencia para cada segmento
+- Tasas de error
+- Indicadores de cold start
 
-**Trace Details**:
-- Total request duration
-- Time spent in each service
-- DynamoDB query performance
-- Error locations
+**Detalles de Traza**:
+- Duración total de petición
+- Tiempo gastado en cada servicio
+- Rendimiento de consulta DynamoDB
+- Ubicaciones de errores
 
-## Security Considerations
+## Consideraciones de Seguridad
 
-### IAM Least-Privilege
+### Privilegio Mínimo IAM
 
-Each Lambda function has only the permissions it needs:
-- No wildcard resource ARNs (`*`)
-- No admin access
-- Table-specific policies
-- Operation-specific permissions
+Cada función Lambda tiene solo los permisos que necesita:
+- Sin ARNs de recursos comodín (`*`)
+- Sin acceso de administrador
+- Políticas específicas a la tabla
+- Permisos específicos a la operación
 
-### CORS Configuration
+### Configuración CORS
 
-API Gateway allows cross-origin requests for browser compatibility:
+API Gateway permite peticiones de origen cruzado para compatibilidad del navegador:
 - `Access-Control-Allow-Origin: *`
 - `Access-Control-Allow-Headers: Content-Type`
 - `Access-Control-Allow-Methods: GET,POST,PUT,DELETE,OPTIONS`
 
-**Production Note**: In real applications, restrict `Allow-Origin` to specific domains.
+**Nota de Producción**: En aplicaciones reales, restringa `Allow-Origin` a dominios específicos.
 
-### API Authentication
+### Autenticación API
 
-**Not Implemented** (out of capstone scope):
-- No API keys
-- No AWS Signature Version 4
-- No Cognito user pools
-- Public API for demonstration purposes
+**No Implementado** (fuera del alcance del capstone):
+- Sin API keys
+- Sin AWS Signature Version 4
+- Sin user pools de Cognito
+- API pública para propósitos de demostración
 
-**Production Requirement**: Always add authentication to production APIs.
+**Requisito de Producción**: Siempre agregue autenticación a APIs de producción.
 
-## Performance Characteristics
+## Características de Rendimiento
 
-### Expected Latency
+### Latencia Esperada
 
-| Operation | Cold Start | Warm Start |
+| Operación | Cold Start | Warm Start |
 |-----------|------------|------------|
-| List Products | 800-1200ms | 100-200ms |
-| Create Product | 800-1200ms | 150-250ms |
-| Get Product | 800-1200ms | 50-100ms |
-| Update Product | 800-1200ms | 150-250ms |
-| Delete Product | 800-1200ms | 100-150ms |
+| Listar Productos | 800-1200ms | 100-200ms |
+| Crear Producto | 800-1200ms | 150-250ms |
+| Obtener Producto | 800-1200ms | 50-100ms |
+| Actualizar Producto | 800-1200ms | 150-250ms |
+| Eliminar Producto | 800-1200ms | 100-150ms |
 
-**Cold Start**: First invocation after deployment or idle period
-**Warm Start**: Subsequent invocations within ~15 minutes
+**Cold Start**: Primera invocación después de deployment o período inactivo
+**Warm Start**: Invocaciones subsecuentes dentro de ~15 minutos
 
-### Scalability
+### Escalabilidad
 
-- **Lambda**: Automatic scaling up to account concurrency limit (default 1000)
-- **API Gateway**: Handles 10,000 requests per second by default
-- **DynamoDB**: PAY_PER_REQUEST mode automatically scales to handle traffic
+- **Lambda**: Escalado automático hasta el límite de concurrencia de cuenta (predeterminado 1000)
+- **API Gateway**: Maneja 10,000 peticiones por segundo por defecto
+- **DynamoDB**: El modo PAY_PER_REQUEST escala automáticamente para manejar tráfico
 
-### Throughput Limits
+### Límites de Throughput
 
-For student capstone projects, these limits are not concerns:
-- Lambda: 1000 concurrent executions
-- API Gateway: 10,000 RPS per region
-- DynamoDB: No throughput limits in PAY_PER_REQUEST mode
+Para proyectos capstone de estudiantes, estos límites no son preocupación:
+- Lambda: 1000 ejecuciones concurrentes
+- API Gateway: 10,000 RPS por región
+- DynamoDB: Sin límites de throughput en modo PAY_PER_REQUEST
 
-## Architecture Decisions
+## Decisiones de Arquitectura
 
-### Why Serverless?
+### ¿Por qué Serverless?
 
-✅ **Cost-effective**: Pay only for actual usage
-✅ **No server management**: AWS handles scaling, patching, availability
-✅ **Fast deployment**: Deploy changes in minutes
-✅ **Auto-scaling**: Handles traffic spikes automatically
-✅ **Portfolio value**: Modern, in-demand architecture pattern
+✅ **Rentable**: Pague solo por uso real
+✅ **Sin gestión de servidores**: AWS maneja escalado, parches, disponibilidad
+✅ **Deployment rápido**: Deploy de cambios en minutos
+✅ **Auto-escalado**: Maneja picos de tráfico automáticamente
+✅ **Valor de portafolio**: Patrón de arquitectura moderno y en demanda
 
-### Why Node.js?
+### ¿Por qué Node.js?
 
-✅ **JavaScript familiarity**: Most accessible language for bootcamp students
-✅ **AWS SDK v3**: First-class support for DynamoDB
-✅ **Fast cold starts**: Lighter runtime than Java or .NET
-✅ **JSON native**: Natural fit for REST API development
+✅ **Familiaridad con JavaScript**: Lenguaje más accesible para estudiantes de bootcamp
+✅ **AWS SDK v3**: Soporte de primera clase para DynamoDB
+✅ **Cold starts rápidos**: Runtime más ligero que Java o .NET
+✅ **Nativo JSON**: Ajuste natural para desarrollo de API REST
 
-### Why DynamoDB?
+### ¿Por qué DynamoDB?
 
-✅ **Fully managed**: No database administration
-✅ **Serverless integration**: Built for Lambda use cases
-✅ **PAY_PER_REQUEST**: No capacity planning needed
-✅ **Single-table design**: Simple schema for capstone scope
+✅ **Completamente gestionado**: Sin administración de base de datos
+✅ **Integración serverless**: Construido para casos de uso Lambda
+✅ **PAY_PER_REQUEST**: No se necesita planificación de capacidad
+✅ **Diseño de tabla única**: Esquema simple para alcance del capstone
 
-### Why SAM over Serverless Framework?
+### ¿Por qué SAM sobre Serverless Framework?
 
-✅ **AWS native**: Official AWS tooling
-✅ **CloudFormation integration**: Same syntax as IaC standard
-✅ **Free tier**: No external service costs
-✅ **Local testing**: `sam local` commands for development
+✅ **Nativo AWS**: Herramientas oficiales de AWS
+✅ **Integración CloudFormation**: Misma sintaxis que estándar IaC
+✅ **Free tier**: Sin costos de servicio externo
+✅ **Testing local**: Comandos `sam local` para desarrollo
 
-## Next Steps
+## Próximos Pasos
 
-1. Review [Lambda Function Specifications](specs/) for implementation details
-2. Study [Testing Guide](TESTING_GUIDE.md) for curl examples
-3. Check [Cost and Cleanup](COST_AND_CLEANUP.md) for AWS pricing details
-4. Use [Prompt Templates](prompts/) for AI-assisted development
+1. Revisar [Especificaciones de Función Lambda](specs/) para detalles de implementación
+2. Estudiar [Guía de Testing](TESTING_GUIDE.md) para ejemplos curl
+3. Consultar [Costo y Limpieza](COST_AND_CLEANUP.md) para detalles de precios AWS
+4. Usar [Plantillas de Prompts](prompts/) para desarrollo asistido por IA

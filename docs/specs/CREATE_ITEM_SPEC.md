@@ -1,37 +1,37 @@
-# Lambda Function Specification: CreateItem
+# Especificación de Función Lambda: CreateItem
 
-## Purpose
+## Propósito
 
-Add a new product to the TechModa fashion catalog by performing a DynamoDB PutItem operation with auto-generated UUID and timestamps.
+Agregar un nuevo producto al catálogo de moda TechModa realizando una operación PutItem de DynamoDB con UUID generado automáticamente y timestamps.
 
-## API Endpoint
+## Endpoint API
 
-**Method**: `POST`
+**Método**: `POST`
 
-**Path**: `/products`
+**Ruta**: `/products`
 
-**Trigger**: API Gateway REST API event with JSON body
+**Trigger**: Evento de API Gateway REST API con cuerpo JSON
 
-## Input Schema
+## Esquema de Entrada
 
-### Path Parameters
-None
+### Parámetros de Ruta
+Ninguno
 
-### Query Parameters
-None
+### Parámetros de Consulta
+Ninguno
 
-### Request Headers
+### Encabezados de Solicitud
 ```
 Content-Type: application/json
 ```
 
-### Request Body
+### Cuerpo de Solicitud
 
-**Required Fields**: `name`, `price`
+**Campos Requeridos**: `name`, `price`
 
-**Optional Fields**: `description`, `category`, `imageUrl`
+**Campos Opcionales**: `description`, `category`, `imageUrl`
 
-**Example**:
+**Ejemplo**:
 ```json
 {
   "name": "Classic Denim Jacket",
@@ -42,7 +42,7 @@ Content-Type: application/json
 }
 ```
 
-**Minimal Example**:
+**Ejemplo Mínimo**:
 ```json
 {
   "name": "Summer Dress",
@@ -50,7 +50,7 @@ Content-Type: application/json
 }
 ```
 
-### API Gateway Event Structure
+### Estructura de Evento API Gateway
 ```javascript
 {
   "httpMethod": "POST",
@@ -62,15 +62,15 @@ Content-Type: application/json
 }
 ```
 
-**Important**: `event.body` is a JSON string, not an object. You must parse it with `JSON.parse(event.body)`.
+**Importante**: `event.body` es una cadena JSON, no un objeto. Debe parsearlo con `JSON.parse(event.body)`.
 
-## Output Schema
+## Esquema de Salida
 
-### Success Response (201 Created)
+### Respuesta Exitosa (201 Created)
 
-**HTTP Status Code**: 201
+**Código de Estado HTTP**: 201
 
-**Headers**:
+**Encabezados**:
 ```javascript
 {
   "Content-Type": "application/json",
@@ -78,7 +78,7 @@ Content-Type: application/json
 }
 ```
 
-**Body**:
+**Cuerpo**:
 ```json
 {
   "productId": "123e4567-e89b-12d3-a456-426614174000",
@@ -92,13 +92,13 @@ Content-Type: application/json
 }
 ```
 
-### Error Responses
+### Respuestas de Error
 
-#### 400 Bad Request (Missing Required Fields)
+#### 400 Bad Request (Campos Requeridos Faltantes)
 
-**HTTP Status Code**: 400
+**Código de Estado HTTP**: 400
 
-**Body**:
+**Cuerpo**:
 ```json
 {
   "error": "Bad Request",
@@ -106,7 +106,7 @@ Content-Type: application/json
 }
 ```
 
-Or:
+O:
 ```json
 {
   "error": "Bad Request",
@@ -114,9 +114,9 @@ Or:
 }
 ```
 
-#### 400 Bad Request (Invalid JSON)
+#### 400 Bad Request (JSON Inválido)
 
-**Body**:
+**Cuerpo**:
 ```json
 {
   "error": "Bad Request",
@@ -126,9 +126,9 @@ Or:
 
 #### 500 Internal Server Error
 
-**HTTP Status Code**: 500
+**Código de Estado HTTP**: 500
 
-**Body**:
+**Cuerpo**:
 ```json
 {
   "error": "Internal server error",
@@ -136,15 +136,15 @@ Or:
 }
 ```
 
-## DynamoDB Operations
+## Operaciones DynamoDB
 
-### Operation: PutItem
+### Operación: PutItem
 
-**Purpose**: Create new item in the TechModa-Products table
+**Propósito**: Crear nuevo item en la tabla TechModa-Products
 
-**AWS SDK v3 Command**: `PutCommand`
+**Comando AWS SDK v3**: `PutCommand`
 
-**Parameters**:
+**Parámetros**:
 ```javascript
 {
   TableName: process.env.PRODUCTS_TABLE,
@@ -161,58 +161,58 @@ Or:
 }
 ```
 
-**Response**:
-PutItem returns an empty response on success. The function should return the created item.
+**Respuesta**:
+PutItem retorna una respuesta vacía en caso de éxito. La función debe retornar el item creado.
 
-## Implementation Steps (Pseudocode)
+## Pasos de Implementación (Pseudocódigo)
 
 ```
-1. Initialize DynamoDB client
-   - Import DynamoDBClient from @aws-sdk/client-dynamodb
-   - Import DynamoDBDocumentClient and PutCommand from @aws-sdk/lib-dynamodb
-   - Create and wrap client
+1. Inicializar cliente DynamoDB
+   - Importar DynamoDBClient desde @aws-sdk/client-dynamodb
+   - Importar DynamoDBDocumentClient y PutCommand desde @aws-sdk/lib-dynamodb
+   - Crear y envolver cliente
 
-2. Define Lambda handler function
-   - Async function: exports.handler = async (event)
+2. Definir función handler de Lambda
+   - Función async: exports.handler = async (event)
 
-3. Parse request body
-   - Use try/catch for JSON.parse(event.body)
-   - If parse fails, return 400 Bad Request
+3. Parsear cuerpo de solicitud
+   - Usar try/catch para JSON.parse(event.body)
+   - Si falla el parseo, retornar 400 Bad Request
 
-4. Validate required fields
-   - Check if body.name exists
-   - Check if body.price exists
-   - If missing, return 400 with specific error message
+4. Validar campos requeridos
+   - Verificar si body.name existe
+   - Verificar si body.price existe
+   - Si falta alguno, retornar 400 con mensaje de error específico
 
-5. Generate product object
+5. Generar objeto de producto
    - productId: crypto.randomUUID()
    - name: body.name
-   - description: body.description (optional)
+   - description: body.description (opcional)
    - price: body.price
-   - category: body.category (optional)
-   - imageUrl: body.imageUrl (optional)
+   - category: body.category (opcional)
+   - imageUrl: body.imageUrl (opcional)
    - createdAt: new Date().toISOString()
    - updatedAt: new Date().toISOString()
 
-6. Execute PutItem operation
-   - Use try/catch for error handling
-   - Send PutCommand to DynamoDB
-   - Parameters: TableName and Item
+6. Ejecutar operación PutItem
+   - Usar try/catch para manejo de errores
+   - Enviar PutCommand a DynamoDB
+   - Parámetros: TableName e Item
 
-7. Handle success case
-   - Return API Gateway response:
+7. Manejar caso exitoso
+   - Retornar respuesta API Gateway:
      * statusCode: 201
-     * headers: Content-Type and CORS
+     * headers: Content-Type y CORS
      * body: JSON.stringify(product)
 
-8. Handle error cases
-   - Log error to CloudWatch (console.error)
-   - Return 500 response with error details
+8. Manejar casos de error
+   - Registrar error en CloudWatch (console.error)
+   - Retornar respuesta 500 con detalles del error
 ```
 
-## Testing Curl Command
+## Comando Curl de Prueba
 
-### Create Product with All Fields
+### Crear Producto con Todos los Campos
 
 ```bash
 curl -X POST https://{api-id}.execute-api.us-east-1.amazonaws.com/Prod/products \
@@ -226,7 +226,7 @@ curl -X POST https://{api-id}.execute-api.us-east-1.amazonaws.com/Prod/products 
   }'
 ```
 
-### Create Product with Minimal Fields
+### Crear Producto con Campos Mínimos
 
 ```bash
 curl -X POST https://{api-id}.execute-api.us-east-1.amazonaws.com/Prod/products \
@@ -237,7 +237,7 @@ curl -X POST https://{api-id}.execute-api.us-east-1.amazonaws.com/Prod/products 
   }'
 ```
 
-### Test Validation (Missing Name)
+### Probar Validación (Nombre Faltante)
 
 ```bash
 curl -X POST https://{api-id}.execute-api.us-east-1.amazonaws.com/Prod/products \
@@ -247,9 +247,9 @@ curl -X POST https://{api-id}.execute-api.us-east-1.amazonaws.com/Prod/products 
   }'
 ```
 
-**Expected**: 400 Bad Request with "Missing required field: name"
+**Esperado**: 400 Bad Request con "Missing required field: name"
 
-### Expected Success Response
+### Respuesta Exitosa Esperada
 
 ```json
 {
@@ -264,9 +264,9 @@ curl -X POST https://{api-id}.execute-api.us-east-1.amazonaws.com/Prod/products 
 }
 ```
 
-**Important**: Save the `productId` from the response for use in Get, Update, and Delete tests.
+**Importante**: Guarde el `productId` de la respuesta para usarlo en las pruebas de Get, Update y Delete.
 
-### Verify in DynamoDB
+### Verificar en DynamoDB
 
 ```bash
 aws dynamodb scan \
@@ -274,70 +274,70 @@ aws dynamodb scan \
   --query "Items[*].[productId.S, name.S, price.N]"
 ```
 
-## Claude Code Prompt
+## Prompt para Claude Code
 
 ```
-I need to implement a Lambda function in Node.js 18.x that creates a new product in DynamoDB.
+Necesito implementar una función Lambda en Node.js 18.x que cree un nuevo producto en DynamoDB.
 
-Requirements:
-- Function name: CreateItem
+Requisitos:
+- Nombre de función: CreateItem
 - Runtime: Node.js 18.x
-- Trigger: API Gateway (POST /products with JSON body)
-- Database: DynamoDB table (name from environment variable PRODUCTS_TABLE)
-- Input validation: name and price are required fields
-- Generate UUID for productId using crypto.randomUUID()
-- Add timestamps: createdAt and updatedAt (ISO 8601 format)
-- Response: Created product object with HTTP 201
-- Error handling: 400 for validation errors, 500 for DynamoDB errors
-- CORS: Include Access-Control-Allow-Origin: * header
+- Trigger: API Gateway (POST /products con cuerpo JSON)
+- Base de datos: Tabla DynamoDB (nombre de variable de entorno PRODUCTS_TABLE)
+- Validación de entrada: name y price son campos requeridos
+- Generar UUID para productId usando crypto.randomUUID()
+- Agregar timestamps: createdAt y updatedAt (formato ISO 8601)
+- Respuesta: Objeto de producto creado con HTTP 201
+- Manejo de errores: 400 para errores de validación, 500 para errores de DynamoDB
+- CORS: Incluir encabezado Access-Control-Allow-Origin: *
 
-Input JSON body:
+Cuerpo JSON de entrada:
 {
-  "name": "Product name",
-  "description": "Description",
+  "name": "Nombre del producto",
+  "description": "Descripción",
   "price": 99.99,
-  "category": "Category",
+  "category": "Categoría",
   "imageUrl": "https://..."
 }
 
-Please generate:
-1. Complete index.js with exports.handler
-2. AWS SDK v3 for DynamoDB
-3. Input validation logic
-4. UUID generation
-5. Timestamp generation
-6. DynamoDB PutItem operation
-7. Proper error responses (400/500)
-8. API Gateway response format
+Por favor genera:
+1. Archivo index.js completo con exports.handler
+2. AWS SDK v3 para DynamoDB
+3. Lógica de validación de entrada
+4. Generación de UUID
+5. Generación de timestamps
+6. Operación PutItem de DynamoDB
+7. Respuestas de error apropiadas (400/500)
+8. Formato de respuesta API Gateway
 ```
 
-## Implementation Notes
+## Notas de Implementación
 
-### UUID Generation
+### Generación de UUID
 
-Use Node.js built-in crypto module:
+Usa el módulo crypto integrado de Node.js:
 
 ```javascript
 const crypto = require('crypto');
 
 const productId = crypto.randomUUID();
-// Example: "123e4567-e89b-12d3-a456-426614174000"
+// Ejemplo: "123e4567-e89b-12d3-a456-426614174000"
 ```
 
-**Alternative**: Import `uuid` package, but crypto is built-in and sufficient.
+**Alternativa**: Importar paquete `uuid`, pero crypto es integrado y suficiente.
 
-### ISO 8601 Timestamps
+### Timestamps ISO 8601
 
-Use JavaScript Date object:
+Usa el objeto Date de JavaScript:
 
 ```javascript
 const timestamp = new Date().toISOString();
-// Example: "2025-10-30T12:00:00.000Z"
+// Ejemplo: "2025-10-30T12:00:00.000Z"
 ```
 
-### Input Validation
+### Validación de Entrada
 
-Check required fields before DynamoDB operation:
+Verifica campos requeridos antes de la operación DynamoDB:
 
 ```javascript
 if (!body.name) {
@@ -363,9 +363,9 @@ if (!body.price) {
 }
 ```
 
-### JSON Parsing Safety
+### Seguridad en Parseo de JSON
 
-Wrap JSON.parse in try/catch:
+Envuelve JSON.parse en try/catch:
 
 ```javascript
 let body;
@@ -383,9 +383,9 @@ try {
 }
 ```
 
-### 201 Created Status Code
+### Código de Estado 201 Created
 
-Use 201 (not 200) to indicate resource creation:
+Usa 201 (no 200) para indicar creación de recurso:
 
 ```javascript
 return {
@@ -395,60 +395,60 @@ return {
 };
 ```
 
-## Common Errors and Solutions
+## Errores Comunes y Soluciones
 
 ### Error: "Missing required field: name"
 
-**Cause**: Request body doesn't include `name` field
+**Causa**: El cuerpo de solicitud no incluye el campo `name`
 
-**Solution**: Ensure curl command includes `"name": "..."` in JSON body
+**Solución**: Asegura que el comando curl incluya `"name": "..."` en el cuerpo JSON
 
 ### Error: "SyntaxError: Unexpected token..."
 
-**Cause**: Malformed JSON in request body
+**Causa**: JSON malformado en el cuerpo de solicitud
 
-**Solution**: Validate JSON syntax. Use online JSON validator or `jq` to check:
+**Solución**: Valida sintaxis JSON. Usa un validador JSON en línea o `jq` para verificar:
 ```bash
 echo '{"name":"Test","price":99.99}' | jq .
 ```
 
 ### Error: "crypto.randomUUID is not a function"
 
-**Cause**: Using Node.js version < 14.17
+**Causa**: Usando versión de Node.js < 14.17
 
-**Solution**: Verify Lambda runtime is Node.js 18.x in template.yaml:
+**Solución**: Verifica que el runtime de Lambda sea Node.js 18.x en template.yaml:
 ```yaml
 Runtime: nodejs18.x
 ```
 
 ### Error: "ConditionalCheckFailedException"
 
-**Cause**: Attempting to create product with existing productId (unlikely with UUID)
+**Causa**: Intentando crear producto con productId existente (improbable con UUID)
 
-**Solution**: This should not occur with randomly generated UUIDs
+**Solución**: Esto no debería ocurrir con UUIDs generados aleatoriamente
 
-## Validation Criteria
+## Criterios de Validación
 
-Your CreateItem function is correctly implemented when:
+Tu función CreateItem está correctamente implementada cuando:
 
-✅ POST /products with valid body returns 201 Created
-✅ Response includes auto-generated `productId` (UUID format)
-✅ Response includes `createdAt` and `updatedAt` timestamps
-✅ Missing `name` returns 400 with appropriate error
-✅ Missing `price` returns 400 with appropriate error
-✅ Invalid JSON returns 400 with parse error
-✅ Product appears in DynamoDB table
-✅ Subsequent GET /products includes the created product
-✅ CloudWatch Logs show successful PutItem operation
-✅ X-Ray trace displays DynamoDB PutItem segment
+✅ POST /products con cuerpo válido retorna 201 Created
+✅ La respuesta incluye `productId` generado automáticamente (formato UUID)
+✅ La respuesta incluye timestamps `createdAt` y `updatedAt`
+✅ `name` faltante retorna 400 con error apropiado
+✅ `price` faltante retorna 400 con error apropiado
+✅ JSON inválido retorna 400 con error de parseo
+✅ El producto aparece en la tabla DynamoDB
+✅ Subsecuente GET /products incluye el producto creado
+✅ CloudWatch Logs muestra operación PutItem exitosa
+✅ La traza X-Ray muestra segmento PutItem de DynamoDB
 
-## Next Steps
+## Próximos Pasos
 
-After implementing CreateItem:
+Después de implementar CreateItem:
 
-1. Deploy with `sam build && sam deploy`
-2. Test with curl command
-3. Save the returned `productId` for later tests
-4. Verify product exists with GET /products
-5. Check CloudWatch Logs for execution details
-6. Proceed to implement GetItem function
+1. Desplegar con `sam build && sam deploy`
+2. Probar con comando curl
+3. Guardar el `productId` retornado para pruebas posteriores
+4. Verificar que el producto existe con GET /products
+5. Revisar CloudWatch Logs para detalles de ejecución
+6. Proceder a implementar la función GetItem

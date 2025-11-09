@@ -1,42 +1,42 @@
-# Lambda Function Specification: UpdateItem
+# Especificación de Función Lambda: UpdateItem
 
-## Purpose
+## Propósito
 
-Update an existing product in the TechModa fashion catalog using DynamoDB UpdateItem operation with partial updates and automatic timestamp management.
+Actualizar un producto existente en el catálogo de moda TechModa usando la operación UpdateItem de DynamoDB con actualizaciones parciales y gestión automática de timestamps.
 
-## API Endpoint
+## Endpoint API
 
-**Method**: `PUT`
+**Método**: `PUT`
 
-**Path**: `/products/{id}`
+**Ruta**: `/products/{id}`
 
-**Trigger**: API Gateway REST API event with path parameter and JSON body
+**Trigger**: Evento de API Gateway REST API con parámetro de ruta y cuerpo JSON
 
-## Input Schema
+## Esquema de Entrada
 
-### Path Parameters
+### Parámetros de Ruta
 
-**Required**: `id` (productId)
+**Requerido**: `id` (productId)
 
-**Example**: `/products/123e4567-e89b-12d3-a456-426614174000`
+**Ejemplo**: `/products/123e4567-e89b-12d3-a456-426614174000`
 
-### Query Parameters
-None
+### Parámetros de Consulta
+Ninguno
 
-### Request Headers
+### Encabezados de Solicitud
 ```
 Content-Type: application/json
 ```
 
-### Request Body
+### Cuerpo de Solicitud
 
-**Partial Update**: Only include fields to update
+**Actualización Parcial**: Solo incluir campos a actualizar
 
-**Updateable Fields**: `name`, `description`, `price`, `category`, `imageUrl`
+**Campos Actualizables**: `name`, `description`, `price`, `category`, `imageUrl`
 
-**Non-Updateable Fields**: `productId`, `createdAt` (maintained by system)
+**Campos No Actualizables**: `productId`, `createdAt` (mantenidos por el sistema)
 
-**Example**:
+**Ejemplo**:
 ```json
 {
   "price": 69.99,
@@ -44,7 +44,7 @@ Content-Type: application/json
 }
 ```
 
-**Another Example**:
+**Otro Ejemplo**:
 ```json
 {
   "name": "Vintage Denim Jacket",
@@ -53,7 +53,7 @@ Content-Type: application/json
 }
 ```
 
-### API Gateway Event Structure
+### Estructura de Evento API Gateway
 ```javascript
 {
   "httpMethod": "PUT",
@@ -68,13 +68,13 @@ Content-Type: application/json
 }
 ```
 
-## Output Schema
+## Esquema de Salida
 
-### Success Response (200 OK)
+### Respuesta Exitosa (200 OK)
 
-**HTTP Status Code**: 200
+**Código de Estado HTTP**: 200
 
-**Headers**:
+**Encabezados**:
 ```javascript
 {
   "Content-Type": "application/json",
@@ -82,7 +82,7 @@ Content-Type: application/json
 }
 ```
 
-**Body**:
+**Cuerpo**:
 ```json
 {
   "productId": "123e4567-e89b-12d3-a456-426614174000",
@@ -96,15 +96,15 @@ Content-Type: application/json
 }
 ```
 
-**Note**: `updatedAt` is newer than `createdAt`
+**Nota**: `updatedAt` es más reciente que `createdAt`
 
-### Error Responses
+### Respuestas de Error
 
 #### 404 Not Found
 
-**HTTP Status Code**: 404
+**Código de Estado HTTP**: 404
 
-**Body**:
+**Cuerpo**:
 ```json
 {
   "error": "Not Found",
@@ -112,11 +112,11 @@ Content-Type: application/json
 }
 ```
 
-#### 400 Bad Request (Invalid Data)
+#### 400 Bad Request (Datos Inválidos)
 
-**HTTP Status Code**: 400
+**Código de Estado HTTP**: 400
 
-**Body**:
+**Cuerpo**:
 ```json
 {
   "error": "Bad Request",
@@ -126,9 +126,9 @@ Content-Type: application/json
 
 #### 500 Internal Server Error
 
-**HTTP Status Code**: 500
+**Código de Estado HTTP**: 500
 
-**Body**:
+**Cuerpo**:
 ```json
 {
   "error": "Internal server error",
@@ -136,15 +136,15 @@ Content-Type: application/json
 }
 ```
 
-## DynamoDB Operations
+## Operaciones DynamoDB
 
-### Operation 1: GetItem (Check Existence)
+### Operación 1: GetItem (Verificar Existencia)
 
-**Purpose**: Verify product exists before updating
+**Propósito**: Verificar que el producto existe antes de actualizar
 
-**AWS SDK v3 Command**: `GetCommand`
+**Comando AWS SDK v3**: `GetCommand`
 
-**Parameters**:
+**Parámetros**:
 ```javascript
 {
   TableName: process.env.PRODUCTS_TABLE,
@@ -154,13 +154,13 @@ Content-Type: application/json
 }
 ```
 
-### Operation 2: UpdateItem (Perform Update)
+### Operación 2: UpdateItem (Realizar Actualización)
 
-**Purpose**: Update specific attributes
+**Propósito**: Actualizar atributos específicos
 
-**AWS SDK v3 Command**: `UpdateCommand`
+**Comando AWS SDK v3**: `UpdateCommand`
 
-**Parameters**:
+**Parámetros**:
 ```javascript
 {
   TableName: process.env.PRODUCTS_TABLE,
@@ -177,7 +177,7 @@ Content-Type: application/json
 }
 ```
 
-**Response**:
+**Respuesta**:
 ```javascript
 {
   Attributes: {
@@ -185,61 +185,61 @@ Content-Type: application/json
     name: "Classic Denim Jacket",
     description: "Updated description",
     price: 69.99,
-    // ... all attributes with updates applied
+    // ... todos los atributos con actualizaciones aplicadas
   }
 }
 ```
 
-## Implementation Steps (Pseudocode)
+## Pasos de Implementación (Pseudocódigo)
 
 ```
-1. Initialize DynamoDB client
-   - Import DynamoDBClient from @aws-sdk/client-dynamodb
-   - Import DynamoDBDocumentClient, GetCommand, UpdateCommand from @aws-sdk/lib-dynamodb
-   - Create and wrap client
+1. Inicializar cliente DynamoDB
+   - Importar DynamoDBClient desde @aws-sdk/client-dynamodb
+   - Importar DynamoDBDocumentClient, GetCommand, UpdateCommand desde @aws-sdk/lib-dynamodb
+   - Crear y envolver cliente
 
-2. Define Lambda handler function
-   - Async function: exports.handler = async (event)
+2. Definir función handler de Lambda
+   - Función async: exports.handler = async (event)
 
-3. Extract productId from path parameters
+3. Extraer productId de parámetros de ruta
    - const productId = event.pathParameters.id
 
-4. Parse request body
-   - Use try/catch for JSON.parse(event.body)
-   - If parse fails, return 400 Bad Request
+4. Parsear cuerpo de solicitud
+   - Usar try/catch para JSON.parse(event.body)
+   - Si falla el parseo, retornar 400 Bad Request
 
-5. Check if product exists
-   - Execute GetItem with productId
-   - If Item is undefined, return 404 Not Found
+5. Verificar si el producto existe
+   - Ejecutar GetItem con productId
+   - Si Item es undefined, retornar 404 Not Found
 
-6. Build UpdateExpression dynamically
-   - Iterate through update fields (price, name, description, category, imageUrl)
-   - Build SET clause: "SET price = :price, name = :name, ..."
-   - Add updatedAt to expression
-   - Build ExpressionAttributeValues object
+6. Construir UpdateExpression dinámicamente
+   - Iterar sobre campos de actualización (price, name, description, category, imageUrl)
+   - Construir cláusula SET: "SET price = :price, name = :name, ..."
+   - Agregar updatedAt a la expresión
+   - Construir objeto ExpressionAttributeValues
 
-7. Execute UpdateItem operation
-   - Use try/catch for error handling
-   - Send UpdateCommand to DynamoDB
-   - Set ReturnValues: "ALL_NEW" to get updated item
-   - Extract Attributes from response
+7. Ejecutar operación UpdateItem
+   - Usar try/catch para manejo de errores
+   - Enviar UpdateCommand a DynamoDB
+   - Configurar ReturnValues: "ALL_NEW" para obtener item actualizado
+   - Extraer Attributes de la respuesta
 
-8. Handle success case
-   - Return API Gateway response:
+8. Manejar caso exitoso
+   - Retornar respuesta API Gateway:
      * statusCode: 200
-     * headers: Content-Type and CORS
+     * headers: Content-Type y CORS
      * body: JSON.stringify(Attributes)
 
-9. Handle error cases
-   - 404 if product not found in step 5
-   - 400 if no valid update fields provided
-   - 500 for DynamoDB errors
-   - Log errors to CloudWatch
+9. Manejar casos de error
+   - 404 si el producto no se encuentra en paso 5
+   - 400 si no se proporcionan campos de actualización válidos
+   - 500 para errores de DynamoDB
+   - Registrar errores en CloudWatch
 ```
 
-## Testing Curl Command
+## Comando Curl de Prueba
 
-### Update Price and Description
+### Actualizar Precio y Descripción
 
 ```bash
 curl -X PUT $API_URL/products/{PRODUCT_ID} \
@@ -250,7 +250,7 @@ curl -X PUT $API_URL/products/{PRODUCT_ID} \
   }'
 ```
 
-### Update Multiple Fields
+### Actualizar Múltiples Campos
 
 ```bash
 curl -X PUT $API_URL/products/{PRODUCT_ID} \
@@ -263,7 +263,7 @@ curl -X PUT $API_URL/products/{PRODUCT_ID} \
   }'
 ```
 
-### Update Single Field
+### Actualizar Un Solo Campo
 
 ```bash
 curl -X PUT $API_URL/products/{PRODUCT_ID} \
@@ -273,7 +273,7 @@ curl -X PUT $API_URL/products/{PRODUCT_ID} \
   }'
 ```
 
-### Test 404 Not Found
+### Probar 404 Not Found
 
 ```bash
 curl -X PUT $API_URL/products/nonexistent-id \
@@ -281,30 +281,30 @@ curl -X PUT $API_URL/products/nonexistent-id \
   -d '{"price": 99.99}'
 ```
 
-**Expected**: 404 Not Found
+**Esperado**: 404 Not Found
 
-### Complete Test Workflow
+### Flujo de Prueba Completo
 
 ```bash
-# 1. Create product
+# 1. Crear producto
 RESPONSE=$(curl -s -X POST $API_URL/products \
   -H "Content-Type: application/json" \
   -d '{"name": "Test Product", "price": 100.00}')
 
-# 2. Extract productId
+# 2. Extraer productId
 PRODUCT_ID=$(echo $RESPONSE | jq -r '.productId')
 echo "Created product: $PRODUCT_ID"
 
-# 3. Update product
+# 3. Actualizar producto
 curl -X PUT $API_URL/products/$PRODUCT_ID \
   -H "Content-Type: application/json" \
   -d '{"price": 79.99, "description": "Updated"}' | jq .
 
-# 4. Verify update
+# 4. Verificar actualización
 curl -X GET $API_URL/products/$PRODUCT_ID | jq .
 ```
 
-### Expected Success Response
+### Respuesta Exitosa Esperada
 
 ```json
 {
@@ -319,49 +319,49 @@ curl -X GET $API_URL/products/$PRODUCT_ID | jq .
 }
 ```
 
-**Verify**: `updatedAt` is newer than `createdAt`
+**Verificar**: `updatedAt` es más reciente que `createdAt`
 
-## Claude Code Prompt
+## Prompt para Claude Code
 
 ```
-I need to implement a Lambda function in Node.js 18.x that updates an existing product in DynamoDB.
+Necesito implementar una función Lambda en Node.js 18.x que actualice un producto existente en DynamoDB.
 
-Requirements:
-- Function name: UpdateItem
+Requisitos:
+- Nombre de función: UpdateItem
 - Runtime: Node.js 18.x
-- Trigger: API Gateway (PUT /products/{id} with JSON body)
-- Path parameter: id (productId)
-- Database: DynamoDB table (name from environment variable PRODUCTS_TABLE)
-- Check if product exists before updating
-- Update only provided fields (partial update)
-- Update timestamp: updatedAt (ISO 8601 format)
-- Response: Updated product with HTTP 200
-- Response: Error with HTTP 404 if product not found
-- Error handling: 500 for DynamoDB errors
-- CORS: Include Access-Control-Allow-Origin: * header
+- Trigger: API Gateway (PUT /products/{id} con cuerpo JSON)
+- Parámetro de ruta: id (productId)
+- Base de datos: Tabla DynamoDB (nombre de variable de entorno PRODUCTS_TABLE)
+- Verificar si el producto existe antes de actualizar
+- Actualizar solo campos proporcionados (actualización parcial)
+- Actualizar timestamp: updatedAt (formato ISO 8601)
+- Respuesta: Producto actualizado con HTTP 200
+- Respuesta: Error con HTTP 404 si el producto no se encuentra
+- Manejo de errores: 500 para errores de DynamoDB
+- CORS: Incluir encabezado Access-Control-Allow-Origin: *
 
-Input JSON body (partial):
+Cuerpo JSON de entrada (parcial):
 {
   "price": 69.99,
-  "description": "Updated description"
+  "description": "Descripción actualizada"
 }
 
-Please generate:
-1. Complete index.js with exports.handler
-2. Extract productId from path parameters
-3. Parse update fields from body
-4. Check product exists (GetItem first)
-5. Update timestamp
-6. AWS SDK v3 DynamoDB UpdateItem
-7. Return 404 if not found
-8. API Gateway response format
+Por favor genera:
+1. Archivo index.js completo con exports.handler
+2. Extraer productId desde parámetros de ruta
+3. Parsear campos de actualización desde el cuerpo
+4. Verificar que el producto existe (GetItem primero)
+5. Actualizar timestamp
+6. UpdateItem de DynamoDB con AWS SDK v3
+7. Retornar 404 si no se encuentra
+8. Formato de respuesta API Gateway
 ```
 
-## Implementation Notes
+## Notas de Implementación
 
-### Dynamic UpdateExpression
+### UpdateExpression Dinámico
 
-Build UpdateExpression based on provided fields:
+Construye UpdateExpression basado en campos proporcionados:
 
 ```javascript
 const updateFields = [];
@@ -382,7 +382,7 @@ if (body.description) {
   expressionAttributeValues[':description'] = body.description;
 }
 
-// Always update timestamp
+// Siempre actualizar timestamp
 updateFields.push('updatedAt = :updatedAt');
 expressionAttributeValues[':updatedAt'] = new Date().toISOString();
 
@@ -391,7 +391,7 @@ const updateExpression = 'SET ' + updateFields.join(', ');
 
 ### ReturnValues: ALL_NEW
 
-Request DynamoDB to return the updated item:
+Solicita a DynamoDB que retorne el item actualizado:
 
 ```javascript
 const result = await docClient.send(new UpdateCommand({
@@ -405,88 +405,88 @@ const result = await docClient.send(new UpdateCommand({
 const updatedProduct = result.Attributes;
 ```
 
-**Alternative**: `ReturnValues: 'UPDATED_NEW'` returns only modified attributes (not recommended for this use case).
+**Alternativa**: `ReturnValues: 'UPDATED_NEW'` retorna solo atributos modificados (no recomendado para este caso de uso).
 
-### Preventing productId Updates
+### Prevenir Actualizaciones de productId
 
-Do NOT allow updating the primary key:
+NO permitir actualizar la clave primaria:
 
 ```javascript
-// Remove productId from update body if present
+// Eliminar productId del cuerpo de actualización si está presente
 delete body.productId;
-delete body.createdAt; // Also protect createdAt
+delete body.createdAt; // También proteger createdAt
 ```
 
-### Timestamp Management
+### Gestión de Timestamps
 
-- **createdAt**: Never updated (set only on create)
-- **updatedAt**: Updated on every modification
+- **createdAt**: Nunca se actualiza (solo se establece en creación)
+- **updatedAt**: Se actualiza en cada modificación
 
-## Common Errors and Solutions
+## Errores Comunes y Soluciones
 
 ### Error: "ValidationException: Invalid UpdateExpression"
 
-**Cause**: Syntax error in UpdateExpression
+**Causa**: Error de sintaxis en UpdateExpression
 
-**Solution**: Ensure proper format:
+**Solución**: Asegura formato apropiado:
 ```javascript
 "SET price = :price, name = :name"
 ```
 
-Not:
+No:
 ```javascript
-"SET price = 69.99" // Wrong: can't use literal values
+"SET price = 69.99" // Incorrecto: no se pueden usar valores literales
 ```
 
-### Error: "Product not found" (but product exists)
+### Error: "Product not found" (pero el producto existe)
 
-**Cause**: GetItem check not properly implemented
+**Causa**: Verificación GetItem no implementada apropiadamente
 
-**Solution**: Verify GetItem returns Item before proceeding to UpdateItem
+**Solución**: Verifica que GetItem retorna Item antes de proceder a UpdateItem
 
 ### Error: "Cannot read property 'Attributes' of undefined"
 
-**Cause**: UpdateItem failed or didn't return Attributes
+**Causa**: UpdateItem falló o no retornó Attributes
 
-**Solution**: Check `ReturnValues: 'ALL_NEW'` is set and operation succeeded
+**Solución**: Verifica que `ReturnValues: 'ALL_NEW'` esté configurado y la operación haya tenido éxito
 
 ### Error: "ExpressionAttributeValues contains invalid key"
 
-**Cause**: Attribute names start with `:` but provided names don't
+**Causa**: Nombres de atributos comienzan con `:` pero los nombres proporcionados no
 
-**Solution**: Use `:` prefix in ExpressionAttributeValues:
+**Solución**: Usa prefijo `:` en ExpressionAttributeValues:
 ```javascript
 {
-  ':price': 69.99,  // Correct
-  'price': 69.99    // Wrong
+  ':price': 69.99,  // Correcto
+  'price': 69.99    // Incorrecto
 }
 ```
 
-## Validation Criteria
+## Criterios de Validación
 
-Your UpdateItem function is correctly implemented when:
+Tu función UpdateItem está correctamente implementada cuando:
 
-✅ PUT /products/{id} with valid data returns 200 OK
-✅ Response contains updated product with new values
-✅ `updatedAt` timestamp is newer than `createdAt`
-✅ Unchanged fields remain the same
-✅ Partial updates work (can update just one field)
-✅ PUT to non-existent ID returns 404 Not Found
-✅ Subsequent GET verifies updates persisted
-✅ CloudWatch Logs show GetItem and UpdateItem operations
-✅ X-Ray trace displays two DynamoDB segments
-✅ CORS headers present in all responses
+✅ PUT /products/{id} con datos válidos retorna 200 OK
+✅ La respuesta contiene producto actualizado con nuevos valores
+✅ El timestamp `updatedAt` es más reciente que `createdAt`
+✅ Los campos no modificados permanecen iguales
+✅ Las actualizaciones parciales funcionan (se puede actualizar solo un campo)
+✅ PUT a ID no existente retorna 404 Not Found
+✅ Subsecuente GET verifica que las actualizaciones persistieron
+✅ CloudWatch Logs muestra operaciones GetItem y UpdateItem
+✅ La traza X-Ray muestra dos segmentos de DynamoDB
+✅ Los encabezados CORS están presentes en todas las respuestas
 
-## Next Steps
+## Próximos Pasos
 
-After implementing UpdateItem:
+Después de implementar UpdateItem:
 
-1. Deploy with `sam build && sam deploy`
-2. Create a product with POST /products
-3. Save the productId
-4. Update with PUT /products/{id}
-5. Verify response shows updated values
-6. GET the product to confirm persistence
-7. Try updating non-existent ID (verify 404)
-8. Check CloudWatch Logs
-9. Proceed to implement DeleteItem function
+1. Desplegar con `sam build && sam deploy`
+2. Crear un producto con POST /products
+3. Guardar el productId
+4. Actualizar con PUT /products/{id}
+5. Verificar que la respuesta muestra valores actualizados
+6. Hacer GET del producto para confirmar persistencia
+7. Probar actualizar ID no existente (verificar 404)
+8. Revisar CloudWatch Logs
+9. Proceder a implementar la función DeleteItem

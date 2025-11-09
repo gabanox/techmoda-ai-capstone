@@ -1,35 +1,35 @@
-# Lambda Function Specification: DeleteItem
+# Especificación de Función Lambda: DeleteItem
 
-## Purpose
+## Propósito
 
-Remove a product from the TechModa fashion catalog using DynamoDB DeleteItem operation.
+Eliminar un producto del catálogo de moda TechModa usando la operación DeleteItem de DynamoDB.
 
-## API Endpoint
+## Endpoint API
 
-**Method**: `DELETE`
+**Método**: `DELETE`
 
-**Path**: `/products/{id}`
+**Ruta**: `/products/{id}`
 
-**Trigger**: API Gateway REST API event with path parameter
+**Trigger**: Evento de API Gateway REST API con parámetro de ruta
 
-## Input Schema
+## Esquema de Entrada
 
-### Path Parameters
+### Parámetros de Ruta
 
-**Required**: `id` (productId)
+**Requerido**: `id` (productId)
 
-**Example**: `/products/123e4567-e89b-12d3-a456-426614174000`
+**Ejemplo**: `/products/123e4567-e89b-12d3-a456-426614174000`
 
-### Query Parameters
-None
+### Parámetros de Consulta
+Ninguno
 
-### Request Headers
-None required
+### Encabezados de Solicitud
+Ninguno requerido
 
-### Request Body
-None
+### Cuerpo de Solicitud
+Ninguno
 
-### API Gateway Event Structure
+### Estructura de Evento API Gateway
 ```javascript
 {
   "httpMethod": "DELETE",
@@ -42,13 +42,13 @@ None
 }
 ```
 
-## Output Schema
+## Esquema de Salida
 
-### Success Response (200 OK)
+### Respuesta Exitosa (200 OK)
 
-**HTTP Status Code**: 200
+**Código de Estado HTTP**: 200
 
-**Headers**:
+**Encabezados**:
 ```javascript
 {
   "Content-Type": "application/json",
@@ -56,7 +56,7 @@ None
 }
 ```
 
-**Body**:
+**Cuerpo**:
 ```json
 {
   "message": "Product deleted successfully",
@@ -64,13 +64,13 @@ None
 }
 ```
 
-### Error Responses
+### Respuestas de Error
 
-#### 404 Not Found (Optional)
+#### 404 Not Found (Opcional)
 
-**HTTP Status Code**: 404
+**Código de Estado HTTP**: 404
 
-**Body**:
+**Cuerpo**:
 ```json
 {
   "error": "Not Found",
@@ -78,13 +78,13 @@ None
 }
 ```
 
-**Note**: This is only returned if you implement an existence check. DynamoDB DeleteItem is idempotent and succeeds even if the item doesn't exist.
+**Nota**: Esto solo se retorna si implementas una verificación de existencia. DeleteItem de DynamoDB es idempotente y tiene éxito incluso si el item no existe.
 
 #### 500 Internal Server Error
 
-**HTTP Status Code**: 500
+**Código de Estado HTTP**: 500
 
-**Body**:
+**Cuerpo**:
 ```json
 {
   "error": "Internal server error",
@@ -92,15 +92,15 @@ None
 }
 ```
 
-## DynamoDB Operations
+## Operaciones DynamoDB
 
-### Operation: DeleteItem
+### Operación: DeleteItem
 
-**Purpose**: Remove item from table by primary key
+**Propósito**: Eliminar item de la tabla por clave primaria
 
-**AWS SDK v3 Command**: `DeleteCommand`
+**Comando AWS SDK v3**: `DeleteCommand`
 
-**Parameters**:
+**Parámetros**:
 ```javascript
 {
   TableName: process.env.PRODUCTS_TABLE,
@@ -110,19 +110,19 @@ None
 }
 ```
 
-**Response**:
+**Respuesta**:
 ```javascript
 {
-  // Empty response on success
-  // DynamoDB DeleteItem does not return the deleted item by default
+  // Respuesta vacía en caso de éxito
+  // DeleteItem de DynamoDB no retorna el item eliminado por defecto
 }
 ```
 
-**Idempotent Behavior**: DeleteItem succeeds even if the item doesn't exist. This is by design for idempotent operations.
+**Comportamiento Idempotente**: DeleteItem tiene éxito incluso si el item no existe. Esto es por diseño para operaciones idempotentes.
 
-### Optional: ReturnValues for Verification
+### Opcional: ReturnValues para Verificación
 
-If you want to verify the item existed before deletion:
+Si deseas verificar que el item existía antes de la eliminación:
 
 ```javascript
 {
@@ -134,124 +134,124 @@ If you want to verify the item existed before deletion:
 }
 ```
 
-**Response if item existed**:
+**Respuesta si el item existía**:
 ```javascript
 {
   Attributes: {
     productId: "123e4567-e89b-12d3-a456-426614174000",
     name: "Classic Denim Jacket",
-    // ... all attributes before deletion
+    // ... todos los atributos antes de la eliminación
   }
 }
 ```
 
-**Response if item didn't exist**:
+**Respuesta si el item no existía**:
 ```javascript
 {
-  // Attributes property is undefined
+  // La propiedad Attributes es undefined
 }
 ```
 
-## Implementation Steps (Pseudocode)
+## Pasos de Implementación (Pseudocódigo)
 
-### Basic Implementation (No Existence Check)
+### Implementación Básica (Sin Verificación de Existencia)
 
 ```
-1. Initialize DynamoDB client
-   - Import DynamoDBClient from @aws-sdk/client-dynamodb
-   - Import DynamoDBDocumentClient and DeleteCommand from @aws-sdk/lib-dynamodb
-   - Create and wrap client
+1. Inicializar cliente DynamoDB
+   - Importar DynamoDBClient desde @aws-sdk/client-dynamodb
+   - Importar DynamoDBDocumentClient y DeleteCommand desde @aws-sdk/lib-dynamodb
+   - Crear y envolver cliente
 
-2. Define Lambda handler function
-   - Async function: exports.handler = async (event)
+2. Definir función handler de Lambda
+   - Función async: exports.handler = async (event)
 
-3. Extract productId from path parameters
+3. Extraer productId de parámetros de ruta
    - const productId = event.pathParameters.id
 
-4. Prepare DynamoDB DeleteItem parameters
+4. Preparar parámetros DeleteItem de DynamoDB
    - TableName: process.env.PRODUCTS_TABLE
    - Key: { productId }
 
-5. Execute DeleteItem operation
-   - Use try/catch for error handling
-   - Send DeleteCommand to DynamoDB
+5. Ejecutar operación DeleteItem
+   - Usar try/catch para manejo de errores
+   - Enviar DeleteCommand a DynamoDB
 
-6. Handle success case
-   - Return API Gateway response:
+6. Manejar caso exitoso
+   - Retornar respuesta API Gateway:
      * statusCode: 200
-     * headers: Content-Type and CORS
+     * headers: Content-Type y CORS
      * body: JSON.stringify({ message: "Product deleted successfully", productId })
 
-7. Handle error case
-   - Log error to CloudWatch (console.error)
-   - Return 500 response
+7. Manejar caso de error
+   - Registrar error en CloudWatch (console.error)
+   - Retornar respuesta 500
 ```
 
-### Advanced Implementation (With Existence Check)
+### Implementación Avanzada (Con Verificación de Existencia)
 
 ```
-1-3. Same as basic implementation
+1-3. Igual que implementación básica
 
-4. Check if product exists
-   - Execute GetItem with productId
-   - If Item is undefined, return 404 Not Found
+4. Verificar si el producto existe
+   - Ejecutar GetItem con productId
+   - Si Item es undefined, retornar 404 Not Found
 
-5. Execute DeleteItem operation
-   - Use try/catch for error handling
-   - Send DeleteCommand to DynamoDB
+5. Ejecutar operación DeleteItem
+   - Usar try/catch para manejo de errores
+   - Enviar DeleteCommand a DynamoDB
 
-6-7. Same as basic implementation
+6-7. Igual que implementación básica
 ```
 
-## Testing Curl Command
+## Comando Curl de Prueba
 
-### Delete Existing Product
+### Eliminar Producto Existente
 
-First, create a product:
+Primero, crea un producto:
 
 ```bash
-# Create product
+# Crear producto
 RESPONSE=$(curl -s -X POST $API_URL/products \
   -H "Content-Type: application/json" \
   -d '{"name": "Product To Delete", "price": 99.99}')
 
-# Extract productId
+# Extraer productId
 PRODUCT_ID=$(echo $RESPONSE | jq -r '.productId')
 echo "Created product: $PRODUCT_ID"
 
-# Delete the product
+# Eliminar el producto
 curl -X DELETE $API_URL/products/$PRODUCT_ID
 ```
 
-### Direct Test (with known ID)
+### Prueba Directa (con ID conocido)
 
 ```bash
 curl -X DELETE https://{api-id}.execute-api.us-east-1.amazonaws.com/Prod/products/123e4567-e89b-12d3-a456-426614174000
 ```
 
-### Verify Deletion
+### Verificar Eliminación
 
 ```bash
-# Try to get the deleted product (should return 404)
+# Intentar obtener el producto eliminado (debería retornar 404)
 curl -X GET $API_URL/products/$PRODUCT_ID
 ```
 
-### Test Idempotency (Delete Twice)
+### Probar Idempotencia (Eliminar Dos Veces)
 
 ```bash
-# Delete once
+# Eliminar una vez
 curl -X DELETE $API_URL/products/$PRODUCT_ID
 
-# Delete again (should still return 200 if no existence check)
+# Eliminar nuevamente (debería retornar 200 si no hay verificación de existencia)
 curl -X DELETE $API_URL/products/$PRODUCT_ID
 ```
 
-### Complete Test Workflow
+### Flujo de Prueba Completo
 
 ```bash
 #!/bin/bash
 
-# 1. Create product
+# 1. Crear producto
 echo "1. Creating product..."
 RESPONSE=$(curl -s -X POST $API_URL/products \
   -H "Content-Type: application/json" \
@@ -259,24 +259,24 @@ RESPONSE=$(curl -s -X POST $API_URL/products \
 PRODUCT_ID=$(echo $RESPONSE | jq -r '.productId')
 echo "Created: $PRODUCT_ID"
 
-# 2. Verify product exists
+# 2. Verificar que el producto existe
 echo "2. Verifying product exists..."
 curl -s -X GET $API_URL/products/$PRODUCT_ID | jq .
 
-# 3. Delete product
+# 3. Eliminar producto
 echo "3. Deleting product..."
 curl -s -X DELETE $API_URL/products/$PRODUCT_ID | jq .
 
-# 4. Verify deletion (should return 404)
+# 4. Verificar eliminación (debería retornar 404)
 echo "4. Verifying deletion..."
 curl -s -X GET $API_URL/products/$PRODUCT_ID | jq .
 
-# 5. List products (deleted product should not appear)
+# 5. Listar productos (el producto eliminado no debería aparecer)
 echo "5. Listing products..."
 curl -s -X GET $API_URL/products | jq .
 ```
 
-### Expected Success Response
+### Respuesta Exitosa Esperada
 
 ```json
 {
@@ -285,50 +285,50 @@ curl -s -X GET $API_URL/products | jq .
 }
 ```
 
-## Claude Code Prompt
+## Prompt para Claude Code
 
 ```
-I need to implement a Lambda function in Node.js 18.x that deletes a product from DynamoDB.
+Necesito implementar una función Lambda en Node.js 18.x que elimine un producto de DynamoDB.
 
-Requirements:
-- Function name: DeleteItem
+Requisitos:
+- Nombre de función: DeleteItem
 - Runtime: Node.js 18.x
 - Trigger: API Gateway (DELETE /products/{id})
-- Path parameter: id (productId)
-- Database: DynamoDB table (name from environment variable PRODUCTS_TABLE)
-- Operation: DeleteItem by productId
-- Response: Success message with HTTP 200
-- Note: DynamoDB DeleteItem is idempotent (succeeds even if item doesn't exist)
-- Optional: Check existence first to return accurate 404
-- Error handling: 500 for DynamoDB errors
-- CORS: Include Access-Control-Allow-Origin: * header
+- Parámetro de ruta: id (productId)
+- Base de datos: Tabla DynamoDB (nombre de variable de entorno PRODUCTS_TABLE)
+- Operación: DeleteItem por productId
+- Respuesta: Mensaje de éxito con HTTP 200
+- Nota: DeleteItem de DynamoDB es idempotente (tiene éxito incluso si el item no existe)
+- Opcional: Verificar existencia primero para retornar 404 preciso
+- Manejo de errores: 500 para errores de DynamoDB
+- CORS: Incluir encabezado Access-Control-Allow-Origin: *
 
-Please generate:
-1. Complete index.js with exports.handler
-2. Extract productId from path parameters
-3. AWS SDK v3 DynamoDB DeleteItem
-4. Success response with confirmation message
-5. Error handling with try/catch
-6. API Gateway response format
+Por favor genera:
+1. Archivo index.js completo con exports.handler
+2. Extraer productId desde parámetros de ruta
+3. DeleteItem de DynamoDB con AWS SDK v3
+4. Respuesta de éxito con mensaje de confirmación
+5. Manejo de errores con try/catch
+6. Formato de respuesta API Gateway
 ```
 
-## Implementation Notes
+## Notas de Implementación
 
-### Idempotent Operations
+### Operaciones Idempotentes
 
-DynamoDB DeleteItem always succeeds, even if the item doesn't exist. This is intentional:
+DeleteItem de DynamoDB siempre tiene éxito, incluso si el item no existe. Esto es intencional:
 
-**Benefit**: Simplifies error handling and supports retries
-**Trade-off**: Can't distinguish between "deleted existing item" and "item already gone"
+**Beneficio**: Simplifica el manejo de errores y soporta reintentos
+**Compensación**: No puede distinguir entre "eliminó item existente" e "item ya no existe"
 
-**Decision**: For this capstone, simple implementation without existence check is acceptable.
+**Decisión**: Para este capstone, la implementación simple sin verificación de existencia es aceptable.
 
-### Optional Existence Check
+### Verificación de Existencia Opcional
 
-If you want to return 404 for non-existent products:
+Si deseas retornar 404 para productos no existentes:
 
 ```javascript
-// Check if product exists
+// Verificar si el producto existe
 const getResult = await docClient.send(new GetCommand({
   TableName: process.env.PRODUCTS_TABLE,
   Key: { productId }
@@ -345,15 +345,15 @@ if (!getResult.Item) {
   };
 }
 
-// Proceed with deletion
+// Proceder con la eliminación
 await docClient.send(new DeleteCommand({...}));
 ```
 
-**Trade-off**: Adds latency (extra DynamoDB call) but provides better error reporting.
+**Compensación**: Agrega latencia (llamada extra a DynamoDB) pero proporciona mejor reporte de errores.
 
 ### ReturnValues
 
-Use `ReturnValues: "ALL_OLD"` to get deleted item data:
+Usa `ReturnValues: "ALL_OLD"` para obtener datos del item eliminado:
 
 ```javascript
 const result = await docClient.send(new DeleteCommand({
@@ -363,11 +363,11 @@ const result = await docClient.send(new DeleteCommand({
 }));
 
 if (!result.Attributes) {
-  // Item didn't exist
+  // El item no existía
   return { statusCode: 404, ... };
 }
 
-// Item was deleted, return it
+// El item fue eliminado, retornarlo
 return {
   statusCode: 200,
   headers: {...},
@@ -378,9 +378,9 @@ return {
 };
 ```
 
-### CORS Headers
+### Encabezados CORS
 
-Include in all responses:
+Incluir en todas las respuestas:
 
 ```javascript
 const headers = {
@@ -389,13 +389,13 @@ const headers = {
 };
 ```
 
-## Common Errors and Solutions
+## Errores Comunes y Soluciones
 
 ### Error: "Cannot read property 'id' of undefined"
 
-**Cause**: Path parameter not passed correctly
+**Causa**: Parámetro de ruta no pasado correctamente
 
-**Solution**: Verify API Gateway route in template.yaml:
+**Solución**: Verifica la ruta de API Gateway en template.yaml:
 ```yaml
 Path: /products/{id}
 Method: delete
@@ -403,45 +403,45 @@ Method: delete
 
 ### Error: "ValidationException: One or more parameter values were invalid"
 
-**Cause**: Missing or invalid Key
+**Causa**: Key faltante o inválido
 
-**Solution**: Ensure Key matches table schema:
+**Solución**: Asegura que Key coincida con el esquema de la tabla:
 ```javascript
 Key: {
   productId: "the-uuid"
 }
 ```
 
-### No Error, But Item Still Exists
+### Sin Error, Pero el Item Aún Existe
 
-**Cause**: Wrong productId or DynamoDB operation failed silently
+**Causa**: productId incorrecto u operación DynamoDB falló silenciosamente
 
-**Solution**:
-- Verify productId matches exactly
-- Check CloudWatch Logs for errors
-- Use AWS CLI to verify deletion:
+**Solución**:
+- Verifica que productId coincida exactamente
+- Revisa CloudWatch Logs para errores
+- Usa AWS CLI para verificar eliminación:
 ```bash
 aws dynamodb get-item \
   --table-name techmoda-capstone-Products \
   --key '{"productId": {"S": "the-uuid"}}'
 ```
 
-## Validation Criteria
+## Criterios de Validación
 
-Your DeleteItem function is correctly implemented when:
+Tu función DeleteItem está correctamente implementada cuando:
 
-✅ DELETE /products/{id} returns 200 OK
-✅ Response includes success message and productId
-✅ Deleted product no longer appears in GET /products
-✅ GET /products/{id} for deleted product returns 404
-✅ CORS headers present in response
-✅ CloudWatch Logs show DeleteItem operation
-✅ X-Ray trace displays DynamoDB DeleteItem segment
-✅ Deleting non-existent ID still returns 200 (or 404 if existence check implemented)
+✅ DELETE /products/{id} retorna 200 OK
+✅ La respuesta incluye mensaje de éxito y productId
+✅ El producto eliminado ya no aparece en GET /products
+✅ GET /products/{id} para producto eliminado retorna 404
+✅ Los encabezados CORS están presentes en la respuesta
+✅ CloudWatch Logs muestra operación DeleteItem
+✅ La traza X-Ray muestra segmento DeleteItem de DynamoDB
+✅ Eliminar ID no existente retorna 200 (o 404 si se implementó verificación de existencia)
 
-### Additional Verification
+### Verificación Adicional
 
-**Verify in DynamoDB**:
+**Verificar en DynamoDB**:
 ```bash
 aws dynamodb scan \
   --table-name techmoda-capstone-Products \
@@ -449,31 +449,31 @@ aws dynamodb scan \
   --expression-attribute-values '{":id": {"S": "the-uuid"}}'
 ```
 
-**Expected**: Empty Items array
+**Esperado**: Array Items vacío
 
-## Next Steps
+## Próximos Pasos
 
-After implementing DeleteItem:
+Después de implementar DeleteItem:
 
-1. Deploy with `sam build && sam deploy`
-2. Create a test product with POST /products
-3. Save the productId
-4. Delete with DELETE /products/{id}
-5. Verify 200 response
-6. Try GET /products/{id} (should return 404)
-7. Try GET /products (deleted product shouldn't appear)
-8. Test deleting non-existent ID
-9. Check CloudWatch Logs
-10. Celebrate completing all 5 CRUD operations!
+1. Desplegar con `sam build && sam deploy`
+2. Crear un producto de prueba con POST /products
+3. Guardar el productId
+4. Eliminar con DELETE /products/{id}
+5. Verificar respuesta 200
+6. Intentar GET /products/{id} (debería retornar 404)
+7. Intentar GET /products (el producto eliminado no debería aparecer)
+8. Probar eliminar ID no existente
+9. Revisar CloudWatch Logs
+10. ¡Celebrar haber completado las 5 operaciones CRUD!
 
-## Congratulations!
+## ¡Felicitaciones!
 
-With DeleteItem implemented, you now have a complete serverless REST API with:
+Con DeleteItem implementado, ahora tienes un API REST serverless completo con:
 
-✅ List all products (GET /products)
-✅ Create product (POST /products)
-✅ Get product by ID (GET /products/{id})
-✅ Update product (PUT /products/{id})
-✅ Delete product (DELETE /products/{id})
+✅ Listar todos los productos (GET /products)
+✅ Crear producto (POST /products)
+✅ Obtener producto por ID (GET /products/{id})
+✅ Actualizar producto (PUT /products/{id})
+✅ Eliminar producto (DELETE /products/{id})
 
-**Next**: Test end-to-end workflow, document in README, and prepare for submission!
+**Siguiente**: Probar el flujo de extremo a extremo, documentar en README, ¡y prepararse para la entrega!

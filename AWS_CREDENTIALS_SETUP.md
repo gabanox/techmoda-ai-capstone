@@ -1,81 +1,81 @@
-# AWS Credentials Setup for GitHub Codespaces
+# Configuración de Credenciales AWS para GitHub Codespaces
 
-This guide explains how to configure AWS credentials for the TechModa Serverless Capstone project when using GitHub Codespaces.
+Esta guía explica cómo configurar las credenciales de AWS para el proyecto TechModa Serverless Capstone al utilizar GitHub Codespaces.
 
-## Prerequisites
+## Prerrequisitos
 
-Before starting, you need:
+Antes de comenzar, necesita:
 - AWS Access Key ID
 - AWS Secret Access Key
-- AWS Region (e.g., `us-east-1`)
+- AWS Region (por ejemplo, `us-east-1`)
 
-If you don't have these credentials, ask your bootcamp instructor or AWS account administrator.
+Si no tiene estas credenciales, solicítelas a su instructor del bootcamp o administrador de la cuenta de AWS.
 
 ---
 
-## Method 1: Configure Repository Secrets (Recommended)
+## Método 1: Configurar Secrets del Repositorio (Recomendado)
 
-### Step 1: Navigate to Repository Settings
+### Paso 1: Navegar a la Configuración del Repositorio
 
-1. Go to your repository on GitHub: `https://github.com/YOUR_USERNAME/techmoda-serverless-capstone-starter`
-2. Click on the **Settings** tab (requires repository admin access)
-3. In the left sidebar, expand **Secrets and variables**
-4. Click on **Codespaces**
+1. Vaya a su repositorio en GitHub: `https://github.com/YOUR_USERNAME/techmoda-serverless-capstone-starter`
+2. Haga clic en la pestaña **Settings** (requiere acceso de administrador del repositorio)
+3. En la barra lateral izquierda, expanda **Secrets and variables**
+4. Haga clic en **Codespaces**
 
-### Step 2: Add AWS Credentials as Secrets
+### Paso 2: Agregar Credenciales de AWS como Secrets
 
-Add the following three secrets:
+Agregue los siguientes tres secrets:
 
 #### Secret 1: AWS_ACCESS_KEY_ID
 
-1. Click **New repository secret**
+1. Haga clic en **New repository secret**
 2. **Name**: `AWS_ACCESS_KEY_ID`
-3. **Value**: Your AWS Access Key ID (e.g., `AKIAIOSFODNN7EXAMPLE`)
-4. Click **Add secret**
+3. **Value**: Su AWS Access Key ID (por ejemplo, `AKIAIOSFODNN7EXAMPLE`)
+4. Haga clic en **Add secret**
 
 #### Secret 2: AWS_SECRET_ACCESS_KEY
 
-1. Click **New repository secret**
+1. Haga clic en **New repository secret**
 2. **Name**: `AWS_SECRET_ACCESS_KEY`
-3. **Value**: Your AWS Secret Access Key (e.g., `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY`)
-4. Click **Add secret**
+3. **Value**: Su AWS Secret Access Key (por ejemplo, `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY`)
+4. Haga clic en **Add secret**
 
 #### Secret 3: AWS_DEFAULT_REGION
 
-1. Click **New repository secret**
+1. Haga clic en **New repository secret**
 2. **Name**: `AWS_DEFAULT_REGION`
-3. **Value**: Your preferred AWS region (e.g., `us-east-1`)
-4. Click **Add secret**
+3. **Value**: Su región preferida de AWS (por ejemplo, `us-east-1`)
+4. Haga clic en **Add secret**
 
-### Step 3: Apply Changes to Your Codespace
+### Paso 3: Aplicar Cambios a su Codespace
 
-**IMPORTANT**: After adding or modifying secrets, you must restart your Codespace:
+**IMPORTANTE**: Después de agregar o modificar secrets, debe reiniciar su Codespace:
 
-1. **If Codespace is running**:
-   - Click on the Codespace name at the bottom left of VS Code
-   - Select **Stop Current Codespace**
-   - Wait for it to stop completely
-   - Reopen the Codespace from GitHub
+1. **Si el Codespace está ejecutándose**:
+   - Haga clic en el nombre del Codespace en la parte inferior izquierda de VS Code
+   - Seleccione **Stop Current Codespace**
+   - Espere a que se detenga completamente
+   - Vuelva a abrir el Codespace desde GitHub
 
-2. **If creating a new Codespace**:
-   - The secrets will be available automatically
+2. **Si está creando un nuevo Codespace**:
+   - Los secrets estarán disponibles automáticamente
 
-**Note**: Simply reloading the window is NOT sufficient. You must fully stop and restart the Codespace for the new secrets to be loaded.
+**Nota**: Simplemente recargar la ventana NO es suficiente. Debe detener y reiniciar completamente el Codespace para que los nuevos secrets se carguen.
 
-### Step 4: Verify Secrets Configuration
+### Paso 4: Verificar la Configuración de Secrets
 
-After restarting your Codespace, verify the secrets were loaded:
+Después de reiniciar su Codespace, verifique que los secrets se hayan cargado:
 
 ```bash
-# Check if environment variables are set
+# Verificar si las variables de entorno están configuradas
 echo $AWS_ACCESS_KEY_ID
 echo $AWS_DEFAULT_REGION
 
-# Verify AWS credentials work
+# Verificar que las credenciales de AWS funcionen
 aws sts get-caller-identity
 ```
 
-**Expected output:**
+**Salida esperada:**
 
 ```json
 {
@@ -85,21 +85,21 @@ aws sts get-caller-identity
 }
 ```
 
-If you see an error like "Unable to locate credentials", the secrets were not loaded. Make sure you **stopped and restarted** the Codespace (not just reloaded).
+Si ve un error como "Unable to locate credentials", los secrets no se cargaron. Asegúrese de haber **detenido y reiniciado** el Codespace (no solo recargado).
 
 ---
 
-## Method 2: Manual Configuration with AWS CLI (Alternative)
+## Método 2: Configuración Manual con AWS CLI (Alternativo)
 
-If you prefer not to use GitHub secrets or need temporary credentials:
+Si prefiere no usar secrets de GitHub o necesita credenciales temporales:
 
-### Step 1: Open Codespace Terminal
+### Paso 1: Abrir Terminal de Codespace
 
 ```bash
 aws configure
 ```
 
-### Step 2: Enter Credentials
+### Paso 2: Ingresar Credenciales
 
 ```
 AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
@@ -108,61 +108,61 @@ Default region name [None]: us-east-1
 Default output format [None]: json
 ```
 
-### Step 3: Verify Configuration
+### Paso 3: Verificar Configuración
 
 ```bash
 aws sts get-caller-identity
 ```
 
-**Note**: Manually configured credentials are stored in `~/.aws/credentials`. These will persist while your Codespace exists but will be lost if the Codespace is deleted or rebuilt.
+**Nota**: Las credenciales configuradas manualmente se almacenan en `~/.aws/credentials`. Estas persistirán mientras su Codespace exista, pero se perderán si el Codespace se elimina o reconstruye.
 
 ---
 
-## Test AWS Access
+## Probar Acceso a AWS
 
-After configuring credentials with either method, test your AWS access:
+Después de configurar las credenciales con cualquiera de los métodos, pruebe su acceso a AWS:
 
 ```bash
-# Verify identity
+# Verificar identidad
 aws sts get-caller-identity
 
-# Test DynamoDB access
+# Probar acceso a DynamoDB
 aws dynamodb list-tables
 
-# Check current region
+# Verificar región actual
 aws configure get region
 
-# List S3 buckets (if you have permission)
+# Listar buckets de S3 (si tiene permiso)
 aws s3 ls
 ```
 
-If all commands work without errors, your AWS credentials are configured correctly!
+Si todos los comandos funcionan sin errores, sus credenciales de AWS están configuradas correctamente.
 
 ---
 
-## Security Best Practices
+## Mejores Prácticas de Seguridad
 
-### ✅ DO
+### ✅ SÍ HACER
 
-- **Use IAM user credentials** with limited permissions (not root account)
-- **Rotate access keys regularly** (every 90 days recommended)
-- **Delete secrets** after the bootcamp if using temporary credentials
-- **Keep credentials private** - never share with anyone
-- **Use repository secrets** for bootcamp projects
-- **Delete your CloudFormation stack** after testing to avoid charges
+- **Usar credenciales de usuario IAM** con permisos limitados (no cuenta root)
+- **Rotar las claves de acceso regularmente** (se recomienda cada 90 días)
+- **Eliminar secrets** después del bootcamp si usa credenciales temporales
+- **Mantener las credenciales privadas** - nunca las comparta con nadie
+- **Usar secrets del repositorio** para proyectos del bootcamp
+- **Eliminar su stack de CloudFormation** después de las pruebas para evitar cargos
 
-### ❌ DON'T
+### ❌ NO HACER
 
-- **Never commit AWS credentials to Git** (already protected by .gitignore)
-- **Never share your access keys** with other students
-- **Never use root account credentials** for development
-- **Never post credentials** in Slack, Discord, or public forums
-- **Never leave credentials** in code comments or documentation
-- **Never screenshot** or share your AWS_SECRET_ACCESS_KEY
+- **Nunca hacer commit de credenciales de AWS en Git** (ya está protegido por .gitignore)
+- **Nunca compartir sus claves de acceso** con otros estudiantes
+- **Nunca usar credenciales de cuenta root** para desarrollo
+- **Nunca publicar credenciales** en Slack, Discord o foros públicos
+- **Nunca dejar credenciales** en comentarios de código o documentación
+- **Nunca hacer captura de pantalla** ni compartir su AWS_SECRET_ACCESS_KEY
 
-### Recommended IAM Permissions
+### Permisos IAM Recomendados
 
-Your AWS user should have the following permissions for this capstone:
+Su usuario de AWS debe tener los siguientes permisos para este capstone:
 
 ```json
 {
@@ -190,44 +190,44 @@ Your AWS user should have the following permissions for this capstone:
 }
 ```
 
-**Note**: Your bootcamp instructor may have already configured appropriate permissions. Contact them if you encounter permission errors.
+**Nota**: Su instructor del bootcamp puede haber configurado ya los permisos apropiados. Contáctelo si encuentra errores de permisos.
 
 ---
 
-## Common Issues
+## Problemas Comunes
 
-### Problem: "Unable to locate credentials"
+### Problema: "Unable to locate credentials"
 
-**Solution**: You didn't restart your Codespace after adding secrets
-1. Stop your Codespace completely
-2. Reopen it from GitHub
-3. Verify with `aws sts get-caller-identity`
+**Solución**: No reinició su Codespace después de agregar los secrets
+1. Detenga su Codespace completamente
+2. Vuelva a abrirlo desde GitHub
+3. Verifique con `aws sts get-caller-identity`
 
-### Problem: "An error occurred (UnauthorizedOperation)"
+### Problema: "An error occurred (UnauthorizedOperation)"
 
-**Solution**: Insufficient IAM permissions
-- Contact your bootcamp instructor
-- Verify you're using the correct AWS account
+**Solución**: Permisos IAM insuficientes
+- Contacte a su instructor del bootcamp
+- Verifique que está usando la cuenta de AWS correcta
 
-### Problem: Secrets not working after restart
+### Problema: Los secrets no funcionan después del reinicio
 
-**Solution**: Check secret names (case-sensitive)
-- Must be exactly: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`
-- Delete and recreate if needed
+**Solución**: Verifique los nombres de los secrets (sensibles a mayúsculas)
+- Deben ser exactamente: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`
+- Elimine y vuelva a crear si es necesario
 
 ---
 
-## Next Steps
+## Siguientes Pasos
 
-Once credentials are configured and verified:
+Una vez que las credenciales estén configuradas y verificadas:
 
-1. ✅ Test with `aws sts get-caller-identity`
-2. ✅ Review the [README.md](README.md) for implementation guide
-3. ✅ Start implementing Lambda functions
-4. ✅ Deploy with `./scripts/deploy.sh`
-5. ✅ Test your API with curl commands
+1. ✅ Pruebe con `aws sts get-caller-identity`
+2. ✅ Revise el [README.md](README.md) para la guía de implementación
+3. ✅ Comience a implementar las funciones Lambda
+4. ✅ Despliegue con `./scripts/deploy.sh`
+5. ✅ Pruebe su API con comandos curl
 
-**Remember**: Delete your CloudFormation stack after completing the capstone to avoid AWS charges:
+**Recuerde**: Elimine su stack de CloudFormation después de completar el capstone para evitar cargos de AWS:
 
 ```bash
 ./scripts/delete.sh

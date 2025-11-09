@@ -1,8 +1,8 @@
-# Prompt Templates: Deployment
+# Plantillas de Prompts: Despliegue
 
-These prompts guide you through building and deploying your TechModa serverless application using AWS SAM.
+Estos prompts le guían a través de la construcción y el despliegue de su aplicación serverless de TechModa usando AWS SAM.
 
-## Prompt 3.1: Build SAM Application
+## Prompt 3.1: Construir Aplicación SAM
 
 ```
 I have implemented all Lambda functions and need to build the SAM application before deployment.
@@ -22,7 +22,7 @@ Please provide:
 4. Common build errors and solutions
 ```
 
-## Prompt 3.2: Deploy SAM Application (Guided)
+## Prompt 3.2: Desplegar Aplicación SAM (Guiado)
 
 ```
 I have built my SAM application (sam build completed) and need to deploy it to AWS.
@@ -42,7 +42,7 @@ Please provide:
 4. How to retrieve API Gateway URL after deployment
 ```
 
-## Prompt 3.3: Deploy SAM Application (Subsequent Deploys)
+## Prompt 3.3: Desplegar Aplicación SAM (Despliegues Subsecuentes)
 
 ```
 I have already deployed my SAM application once and need to redeploy after code changes.
@@ -56,42 +56,42 @@ Please provide:
 4. How to rollback if deployment fails
 ```
 
-## Expected Outcomes
+## Resultados Esperados
 
-### After sam build
+### Después de sam build
 
-✅ `.aws-sam/build/` directory created
-✅ Lambda functions compiled and packaged
-✅ Dependencies resolved
-✅ Build artifacts ready for deployment
-✅ Success message displayed
+✅ Directorio `.aws-sam/build/` creado
+✅ Funciones Lambda compiladas y empaquetadas
+✅ Dependencias resueltas
+✅ Artefactos de construcción listos para el despliegue
+✅ Mensaje de éxito mostrado
 
-### After sam deploy
+### Después de sam deploy
 
-✅ CloudFormation stack created/updated
-✅ Lambda functions deployed
-✅ API Gateway endpoint created
-✅ DynamoDB table created
-✅ IAM roles configured
-✅ Outputs displayed (including API URL)
+✅ Stack de CloudFormation creado/actualizado
+✅ Funciones Lambda desplegadas
+✅ Endpoint de API Gateway creado
+✅ Tabla de DynamoDB creada
+✅ Roles IAM configurados
+✅ Outputs mostrados (incluyendo URL de API)
 
-## Detailed Guidance
+## Guía Detallada
 
-### Build Process
+### Proceso de Construcción
 
-**Command**:
+**Comando**:
 ```bash
 sam build
 ```
 
-**What Happens**:
-1. SAM reads `template.yaml`
-2. Validates template syntax
-3. Packages each Lambda function
-4. Resolves dependencies (if package.json exists)
-5. Creates build artifacts in `.aws-sam/build/`
+**Qué Sucede**:
+1. SAM lee `template.yaml`
+2. Valida la sintaxis de la plantilla
+3. Empaqueta cada función Lambda
+4. Resuelve las dependencias (si existe package.json)
+5. Crea artefactos de construcción en `.aws-sam/build/`
 
-**Success Output**:
+**Salida de Éxito**:
 ```
 Building codeuri: functions/list-items runtime: nodejs18.x ...
 Running NodejsNpmBuilder:NpmPack
@@ -102,14 +102,14 @@ Built Artifacts  : .aws-sam/build
 Built Template   : .aws-sam/build/template.yaml
 ```
 
-### Guided Deployment
+### Despliegue Guiado
 
-**Command**:
+**Comando**:
 ```bash
 sam deploy --guided
 ```
 
-**Prompts and Recommended Answers**:
+**Prompts y Respuestas Recomendadas**:
 
 ```
 Stack Name [sam-app]: techmoda-capstone
@@ -130,7 +130,7 @@ SAM configuration file [samconfig.toml]: samconfig.toml
 SAM configuration environment [default]: default
 ```
 
-**Deployment Progress**:
+**Progreso del Despliegue**:
 ```
 Deploying with following values
 ===============================
@@ -178,22 +178,22 @@ Value               https://abc123xyz.execute-api.us-east-1.amazonaws.com/Prod
 -------------------------------------------------
 ```
 
-**IMPORTANT**: Copy the API Gateway URL from the outputs!
+**IMPORTANTE**: ¡Copie la URL de API Gateway de los outputs!
 
-### Subsequent Deployments
+### Despliegues Subsecuentes
 
-After first deployment, use simpler command:
+Después del primer despliegue, use un comando más simple:
 
-**Command**:
+**Comando**:
 ```bash
 sam build && sam deploy
 ```
 
-No prompts - uses saved configuration from `samconfig.toml`.
+Sin prompts - usa la configuración guardada de `samconfig.toml`.
 
-## Troubleshooting Prompts
+## Prompts de Solución de Problemas
 
-### Build Failures
+### Fallos de Construcción
 
 ```
 My sam build command is failing with this error:
@@ -207,7 +207,7 @@ Please help me:
 4. Suggest fixes
 ```
 
-### Deployment Failures
+### Fallos de Despliegue
 
 ```
 My sam deploy command is failing.
@@ -224,7 +224,7 @@ Please help me:
 4. How to delete failed stack and retry
 ```
 
-### Missing API URL
+### URL de API Faltante
 
 ```
 My deployment succeeded but I don't see the API Gateway URL in the outputs.
@@ -235,7 +235,7 @@ Please help me:
 3. How to find API Gateway URL in AWS Console
 ```
 
-### Permission Errors
+### Errores de Permisos
 
 ```
 I'm getting permission errors during deployment:
@@ -248,9 +248,9 @@ Please help me:
 3. Contact bootcamp instructor if needed
 ```
 
-## Validation After Deployment
+## Validación Después del Despliegue
 
-### Check Stack Status
+### Verificar Estado del Stack
 
 ```bash
 aws cloudformation describe-stacks \
@@ -259,23 +259,23 @@ aws cloudformation describe-stacks \
   --output text
 ```
 
-**Expected**: `CREATE_COMPLETE` or `UPDATE_COMPLETE`
+**Esperado**: `CREATE_COMPLETE` o `UPDATE_COMPLETE`
 
-### List Stack Resources
+### Listar Recursos del Stack
 
 ```bash
 aws cloudformation list-stack-resources \
   --stack-name techmoda-capstone
 ```
 
-**Should See**:
-- 5 Lambda functions
+**Debería Ver**:
+- 5 funciones Lambda
 - 1 API Gateway
-- 1 DynamoDB table
-- IAM roles
-- CloudWatch Log Groups
+- 1 tabla DynamoDB
+- Roles IAM
+- Grupos de CloudWatch Logs
 
-### Get API URL
+### Obtener URL de API
 
 ```bash
 aws cloudformation describe-stacks \
@@ -284,21 +284,21 @@ aws cloudformation describe-stacks \
   --output text
 ```
 
-### Test API Endpoint
+### Probar Endpoint de API
 
 ```bash
 curl -X GET https://[your-api-id].execute-api.us-east-1.amazonaws.com/Prod/products
 ```
 
-**Expected**: 200 OK with `{"products": []}`
+**Esperado**: 200 OK con `{"products": []}`
 
-## Common Issues and Solutions
+## Problemas Comunes y Soluciones
 
-### Issue: "Stack already exists"
+### Problema: "Stack already exists"
 
-**Symptom**: Error during first deployment
+**Síntoma**: Error durante el primer despliegue
 
-**Solution Prompt**:
+**Prompt de Solución**:
 ```
 I'm getting "Stack techmoda-capstone already exists" error but this is my first deployment.
 
@@ -309,17 +309,17 @@ Please help me:
 4. Retry deployment
 ```
 
-### Issue: "CAPABILITY_IAM not provided"
+### Problema: "CAPABILITY_IAM not provided"
 
-**Symptom**: Deployment rejected
+**Síntoma**: Despliegue rechazado
 
-**Solution**: Answer "Y" to "Allow SAM CLI IAM role creation" prompt
+**Solución**: Responda "Y" al prompt "Allow SAM CLI IAM role creation"
 
-### Issue: "No changes to deploy"
+### Problema: "No changes to deploy"
 
-**Symptom**: SAM says no changes detected
+**Síntoma**: SAM dice que no se detectaron cambios
 
-**Solution Prompt**:
+**Prompt de Solución**:
 ```
 SAM deploy says "No changes to deploy" but I modified my Lambda function code.
 
@@ -329,10 +329,10 @@ Please help me:
 3. Force redeployment if needed
 ```
 
-### Issue: Long deployment time
+### Problema: Tiempo de despliegue largo
 
-**Normal**: First deployment takes 3-5 minutes
-**Concern**: If >10 minutes, check CloudFormation Events
+**Normal**: El primer despliegue toma 3-5 minutos
+**Preocupación**: Si >10 minutos, verifique los Eventos de CloudFormation
 
 **Prompt**:
 ```
@@ -344,21 +344,21 @@ Please help me:
 3. Determine if I should cancel and retry
 ```
 
-## Best Practices
+## Mejores Prácticas
 
-✅ Always run `sam build` before `sam deploy`
-✅ Save the API Gateway URL immediately after deployment
-✅ Check CloudFormation console if deployment seems stuck
-✅ Keep `samconfig.toml` in version control
-✅ Use same stack name for subsequent deployments
-✅ Verify deployment with simple curl test
+✅ Siempre ejecute `sam build` antes de `sam deploy`
+✅ Guarde la URL de API Gateway inmediatamente después del despliegue
+✅ Verifique la consola de CloudFormation si el despliegue parece atascado
+✅ Mantenga `samconfig.toml` en control de versiones
+✅ Use el mismo nombre de stack para despliegues subsecuentes
+✅ Verifique el despliegue con una prueba simple de curl
 
-## Next Steps
+## Próximos Pasos
 
-After successful deployment:
+Después de un despliegue exitoso:
 
-1. Save API Gateway URL
-2. Test all endpoints with curl
-3. Verify CloudWatch Logs are capturing execution
-4. Check X-Ray traces
-5. Proceed to [Testing Prompts](04_TESTING.md)
+1. Guarde la URL de API Gateway
+2. Pruebe todos los endpoints con curl
+3. Verifique que los CloudWatch Logs estén capturando la ejecución
+4. Revise los traces de X-Ray
+5. Proceda a [Prompts de Pruebas](04_TESTING.md)
