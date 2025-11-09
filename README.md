@@ -275,7 +275,63 @@ curl -X POST $API_URL/products \
 curl $API_URL/products
 ```
 
-### 7. Construir y Desplegar el Frontend (Opcional)
+### 7. Ver Logs de CloudWatch
+
+Para debugging y monitoreo, puedes ver los logs de tus funciones Lambda:
+
+#### Ver todos los logs (últimos 10 minutos)
+```bash
+./scripts/logs.sh
+```
+
+#### Ver logs de una función específica
+```bash
+./scripts/logs.sh list      # ListItemsFunction
+./scripts/logs.sh create    # CreateItemFunction
+./scripts/logs.sh get       # GetItemFunction
+./scripts/logs.sh update    # UpdateItemFunction
+./scripts/logs.sh delete    # DeleteItemFunction
+```
+
+#### Live tail (seguir logs en tiempo real)
+```bash
+./scripts/logs.sh --tail              # Todas las funciones
+./scripts/logs.sh create --tail       # Solo create-item
+```
+
+#### Ver solo errores
+```bash
+./scripts/logs.sh --errors            # Todos los errores
+./scripts/logs.sh --since 1h --errors # Errores de la última hora
+```
+
+#### Filtrar logs por patrón
+```bash
+./scripts/logs.sh --filter "product"
+./scripts/logs.sh list --filter "404"
+```
+
+**Ejemplos útiles para debugging:**
+
+```bash
+# Ver errores recientes
+./scripts/logs.sh --errors --since 30m
+
+# Monitorear en vivo mientras pruebas
+./scripts/logs.sh --tail
+
+# Buscar un producto específico en los logs
+./scripts/logs.sh --filter "productId"
+
+# Ver logs de una función problemática
+./scripts/logs.sh create --tail --errors
+```
+
+**Nota**: Presiona `Ctrl+C` para salir del modo tail.
+
+Consulta [scripts/README.md](scripts/README.md) para más opciones y ejemplos.
+
+### 8. Construir y Desplegar el Frontend (Opcional)
 
 El capstone incluye un frontend React para visualizar y gestionar productos.
 
@@ -390,7 +446,8 @@ Consulta [docs/COST_AND_CLEANUP.md](docs/COST_AND_CLEANUP.md) para estimaciones 
 - Revisa los eventos de CloudFormation en la Consola de AWS para errores específicos
 
 **Errores de API (404, 500)**
-- Verifica los CloudWatch Logs para errores de función Lambda
+- **Ver los logs**: `./scripts/logs.sh --errors --since 1h`
+- **Monitorear en vivo**: `./scripts/logs.sh --tail` mientras haces requests
 - Verifica que la variable de entorno `PRODUCTS_TABLE` esté configurada correctamente
 - Asegúrate de que la tabla DynamoDB exista: `aws dynamodb list-tables`
 - Revisa los rastros de X-Ray en la Consola de AWS

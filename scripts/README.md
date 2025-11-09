@@ -11,6 +11,7 @@ Este directorio contiene scripts para facilitar el despliegue y gestión de la a
 | `deploy-all.sh` | **Despliega TODO** (backend + frontend) en un solo comando | `./scripts/deploy-all.sh` |
 | `delete-all.sh` | **Elimina TODO** para evitar cargos de AWS | `./scripts/delete-all.sh` |
 | `status.sh` | **Muestra el estado** actual del despliegue con URLs | `./scripts/status.sh` |
+| `logs.sh` | **Ver logs de CloudWatch** en tiempo real o históricos | `./scripts/logs.sh [opciones]` |
 
 ### 🔧 Scripts Individuales (Para Control Detallado)
 
@@ -261,6 +262,137 @@ Stack: techmoda-capstone
 
 💰 El stack fue eliminado correctamente.
    No se generarán más cargos.
+```
+
+---
+
+### `logs.sh`
+
+**¿Qué hace?**
+1. Conecta con CloudWatch Logs
+2. Muestra logs de funciones Lambda específicas o todas
+3. Permite seguir logs en tiempo real (tail)
+4. Filtra por patrones o errores
+5. Configura el rango de tiempo
+
+**Ventajas:**
+- ✅ No necesitas acceder a la consola de AWS
+- ✅ Tail en tiempo real para debugging
+- ✅ Filtrado rápido de errores
+- ✅ Múltiples funciones simultáneamente
+- ✅ Configuración de tiempo flexible
+
+**Uso básico:**
+
+Ver todos los logs (últimos 10 minutos):
+```bash
+./scripts/logs.sh
+```
+
+Ver logs de una función específica:
+```bash
+./scripts/logs.sh list      # ListItemsFunction
+./scripts/logs.sh create    # CreateItemFunction
+./scripts/logs.sh get       # GetItemFunction
+./scripts/logs.sh update    # UpdateItemFunction
+./scripts/logs.sh delete    # DeleteItemFunction
+```
+
+**Opciones avanzadas:**
+
+Live tail (seguir en tiempo real):
+```bash
+./scripts/logs.sh --tail                # Todas las funciones
+./scripts/logs.sh list --tail           # Solo list-items
+./scripts/logs.sh create --tail         # Solo create-item
+```
+
+Ver solo errores:
+```bash
+./scripts/logs.sh --errors              # Errores de todas las funciones
+./scripts/logs.sh list --errors         # Solo errores de list
+./scripts/logs.sh --since 1h --errors   # Errores de la última hora
+```
+
+Filtrar por texto:
+```bash
+./scripts/logs.sh --filter "product"    # Logs que contengan "product"
+./scripts/logs.sh list --filter "404"   # Errores 404 en list
+```
+
+Cambiar rango de tiempo:
+```bash
+./scripts/logs.sh --since 30m           # Últimos 30 minutos
+./scripts/logs.sh --since 1h            # Última hora
+./scripts/logs.sh --since 1d            # Último día
+./scripts/logs.sh --since 2h --errors   # Errores de últimas 2 horas
+```
+
+**Combinaciones útiles:**
+
+```bash
+# Debug en tiempo real de una función específica
+./scripts/logs.sh create --tail
+
+# Ver todos los errores recientes
+./scripts/logs.sh --errors --since 1h
+
+# Buscar un producto específico en los logs
+./scripts/logs.sh --filter "productId: abc-123"
+
+# Monitorear todas las funciones en vivo
+./scripts/logs.sh --tail
+```
+
+**Salida ejemplo:**
+```
+==========================================
+  TechModa - CloudWatch Logs Viewer
+==========================================
+
+📊 Configuration:
+   Stack:    techmoda-capstone
+   Function: All functions
+   Since:    10m ago
+   Mode:     Historical
+
+==========================================
+
+2024/11/09/[$LATEST]abc123 2024-11-09T10:15:23.456Z START RequestId: abc-123
+2024/11/09/[$LATEST]abc123 2024-11-09T10:15:23.789Z INFO Listing products
+2024/11/09/[$LATEST]abc123 2024-11-09T10:15:24.012Z INFO Found 5 products
+2024/11/09/[$LATEST]abc123 2024-11-09T10:15:24.234Z END RequestId: abc-123
+
+==========================================
+
+💡 Useful commands:
+   Live tail:      ./scripts/logs.sh --tail
+   Show errors:    ./scripts/logs.sh --errors
+   Specific func:  ./scripts/logs.sh list --tail
+   Longer period:  ./scripts/logs.sh --since 1h
+```
+
+**Atajos de teclado:**
+- `Ctrl+C` - Detener tail mode
+- Las flechas funcionan normalmente para navegar historial
+
+**Troubleshooting:**
+
+Si no ves logs:
+1. Verifica que el stack esté desplegado: `./scripts/status.sh`
+2. Asegúrate de que las funciones hayan sido invocadas
+3. Amplía el rango de tiempo: `--since 1h`
+4. Verifica permisos de CloudWatch en tu cuenta AWS
+
+Si ves errores de permisos:
+```bash
+# Verificar credenciales
+aws sts get-caller-identity
+
+# Tu usuario/rol debe tener estos permisos:
+# - logs:FilterLogEvents
+# - logs:DescribeLogGroups
+# - logs:DescribeLogStreams
 ```
 
 ---
