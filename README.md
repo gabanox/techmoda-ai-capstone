@@ -14,6 +14,45 @@ API de Catálogo de Productos de E-commerce de Moda construida con Tecnologías 
 
 ---
 
+## 🎯 Scripts Simplificados para Alumnos
+
+Hemos creado scripts simplificados para hacer el despliegue y gestión más fácil:
+
+### Desplegar Todo (Backend + Frontend)
+```bash
+./scripts/deploy-all.sh
+```
+Este script hace TODO automáticamente:
+- ✅ Construye el backend (SAM)
+- ✅ Despliega el backend a AWS
+- ✅ Construye el frontend (React)
+- ✅ Despliega el frontend a S3/CloudFront
+- ✅ Te muestra las URLs al finalizar
+
+### Ver Estado del Despliegue
+```bash
+./scripts/status.sh
+```
+Muestra:
+- Estado actual del stack
+- URLs de API y Frontend
+- Número de productos en la base de datos
+- Comandos útiles
+
+### Eliminar Todos los Recursos
+```bash
+./scripts/delete-all.sh
+```
+Elimina TODO para evitar cargos:
+- API Gateway
+- Funciones Lambda
+- Tabla DynamoDB
+- Bucket S3 y CloudFront
+
+**💡 Recomendación**: Usa estos scripts para una experiencia más simple y directa.
+
+---
+
 ## Inicio Rápido con GitHub Codespaces
 
 **Recomendado**: Usa GitHub Codespaces para un entorno de desarrollo preconfigurado con AWS CLI, SAM CLI y Node.js 18.x ya instalados.
@@ -92,6 +131,10 @@ Antes de comenzar, asegúrate de tener:
 - **Conocimiento básico** de JavaScript, APIs REST y servicios de AWS
 
 ## Guía de Implementación
+
+**🚀 Opción Rápida**: Si quieres desplegar todo de una vez, usa `./scripts/deploy-all.sh` (ver [Scripts Simplificados](#-scripts-simplificados-para-alumnos) arriba)
+
+**📚 Opción Paso a Paso**: Sigue esta guía para entender cada paso del proceso
 
 ### 1. Clonar el Repositorio
 
@@ -295,10 +338,13 @@ Consulta [frontend/README.md](frontend/README.md) para más detalles.
 **IMPORTANTE**: Para evitar cargos de AWS, elimina tu stack después de probar:
 
 ```bash
-# Usando el script auxiliar
+# Opción 1: Script simplificado (RECOMENDADO)
+./scripts/delete-all.sh
+
+# Opción 2: Script original
 ./scripts/delete.sh
 
-# O directamente con SAM CLI
+# Opción 3: Directamente con SAM CLI
 sam delete --stack-name techmoda-capstone
 ```
 
