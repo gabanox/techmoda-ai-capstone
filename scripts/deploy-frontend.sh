@@ -31,7 +31,14 @@ echo "API URL: $API_URL"
 
 # Replace API URL placeholder in built files
 cd frontend/dist
-find . -type f -name "*.js" -exec sed -i '' "s|PLACEHOLDER_API_URL|$API_URL|g" {} \;
+# Detect OS for sed compatibility
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    find . -type f -name "*.js" -exec sed -i '' "s|PLACEHOLDER_API_URL|$API_URL|g" {} \;
+else
+    # Linux
+    find . -type f -name "*.js" -exec sed -i "s|PLACEHOLDER_API_URL|$API_URL|g" {} \;
+fi
 cd ../..
 
 # Sync to S3
