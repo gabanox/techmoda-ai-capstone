@@ -22,6 +22,12 @@ Este directorio contiene scripts para facilitar el despliegue y gestión de la a
 | `deploy-frontend.sh` | Despliega solo el frontend a S3 | `./scripts/deploy-frontend.sh` |
 | `delete.sh` | Elimina el stack (equivalente a delete-all.sh) | `./scripts/delete.sh` |
 
+### 🚨 Script de Recuperación
+
+| Script | Descripción | Uso |
+|--------|-------------|-----|
+| `fix-failed-delete.sh` | **Recupera eliminaciones fallidas** debido a buckets S3 llenos | `./scripts/fix-failed-delete.sh` |
+
 ---
 
 ## 🎯 Guía de Uso
@@ -65,6 +71,19 @@ Esto muestra:
 - Bucket S3
 - Distribución CloudFront
 - Roles y políticas IAM
+
+### ¿Falló la Eliminación?
+
+Si ves un error como `DELETE_FAILED` por buckets S3 llenos:
+
+```bash
+./scripts/fix-failed-delete.sh
+```
+
+Este script:
+- Identifica los buckets problemáticos
+- Los vacía automáticamente
+- Reintenta la eliminación del stack
 
 ---
 
@@ -173,6 +192,75 @@ Estado: CREATE_COMPLETE
    Productos: 5
 
 ==========================================
+```
+
+---
+
+### `fix-failed-delete.sh`
+
+**¿Qué hace?**
+1. Detecta si el stack está en estado `DELETE_FAILED`
+2. Identifica todos los buckets S3 asociados al stack
+3. Cuenta los objetos en cada bucket
+4. Vacía todos los buckets automáticamente
+5. Reintenta la eliminación del stack
+6. Espera a que se complete
+
+**Ventajas:**
+- ✅ Recuperación automática de errores
+- ✅ No requiere acceso a la consola de AWS
+- ✅ Muestra progreso detallado
+- ✅ Incluye wait automático
+
+**Cuándo usarlo:**
+- Cuando `delete-all.sh` falla con error `DELETE_FAILED`
+- Cuando ves el mensaje: "The following resource(s) failed to delete: [FrontendBucket]"
+- Cuando CloudFormation no puede eliminar buckets S3
+
+**Uso:**
+```bash
+./scripts/fix-failed-delete.sh
+```
+
+**Tiempo estimado:** 2-3 minutos
+
+**Salida ejemplo:**
+```
+==========================================
+  TechModa - Recuperación de Eliminación
+==========================================
+
+🔧 Intentando recuperar del error DELETE_FAILED
+Stack: techmoda-capstone
+
+📊 Estado actual del stack: DELETE_FAILED
+
+🔍 Paso 1: Identificando buckets S3 problemáticos...
+-------------------------------------------
+📦 Buckets encontrados:
+   • techmoda-capstone-frontend-abc123
+   • aws-sam-cli-managed-default-samclisourcebucket-xyz789
+
+🗑️  Paso 2: Vaciando buckets S3...
+-------------------------------------------
+🧹 Vaciando: techmoda-capstone-frontend-abc123
+   Eliminando 5 objetos...
+   ✅ Bucket vaciado
+🧹 Vaciando: aws-sam-cli-managed-default-samclisourcebucket-xyz789
+   Eliminando 10 objetos...
+   ✅ Bucket vaciado
+
+🔄 Paso 3: Reintentando eliminación del stack...
+-------------------------------------------
+⏳ Esperando a que el stack se elimine...
+   (Esto puede tardar 2-3 minutos)
+
+==========================================
+  ✅ ¡RECUPERACIÓN EXITOSA!
+==========================================
+
+💰 El stack fue eliminado correctamente.
+   No se generarán más cargos.
 ```
 
 ---

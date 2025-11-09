@@ -41,7 +41,46 @@ read -p "¿Estás seguro de eliminar todos los recursos? (escribe 'si' para conf
 
 if [ "$CONFIRM" = "si" ] || [ "$CONFIRM" = "SI" ] || [ "$CONFIRM" = "yes" ]; then
     echo ""
-    echo "🗑️  Eliminando stack..."
+
+    # Step 1: Empty S3 buckets first
+    echo "📦 Paso 1/2: Vaciando buckets S3..."
+    echo "-------------------------------------------"
+
+    # Get Frontend Bucket Name
+    FRONTEND_BUCKET=$(aws cloudformation describe-stacks \
+        --stack-name "$STACK_NAME" \
+        --query 'Stacks[0].Outputs[?OutputKey==`FrontendBucketName`].OutputValue' \
+        --output text 2>/dev/null || echo "")
+
+    if [ -n "$FRONTEND_BUCKET" ] && [ "$FRONTEND_BUCKET" != "None" ]; then
+        echo "🗑️  Vaciando bucket del frontend: $FRONTEND_BUCKET"
+        aws s3 rm s3://$FRONTEND_BUCKET/ --recursive 2>/dev/null || echo "   ⚠️  Bucket ya estaba vacío o no existe"
+    fi
+
+    # Get SAM deployment bucket (artifacts)
+    SAM_BUCKET=$(aws cloudformation describe-stacks \
+        --stack-name "$STACK_NAME" \
+        --query 'Stacks[0].Outputs[?contains(OutputKey, `Bucket`)].OutputValue' \
+        --output text 2>/dev/null | awk '{print $1}' || echo "")
+
+    # Also try to get deployment bucket from stack resources
+    DEPLOYMENT_BUCKETS=$(aws cloudformation list-stack-resources \
+        --stack-name "$STACK_NAME" \
+        --query 'StackResourceSummaries[?ResourceType==`AWS::S3::Bucket`].PhysicalResourceId' \
+        --output text 2>/dev/null || echo "")
+
+    for BUCKET in $DEPLOYMENT_BUCKETS; do
+        if [ -n "$BUCKET" ] && [ "$BUCKET" != "$FRONTEND_BUCKET" ]; then
+            echo "🗑️  Vaciando bucket: $BUCKET"
+            aws s3 rm s3://$BUCKET/ --recursive 2>/dev/null || echo "   ⚠️  Bucket ya estaba vacío o no existe"
+        fi
+    done
+
+    echo "✅ Buckets vaciados"
+    echo ""
+
+    # Step 2: Delete the stack
+    echo "🗑️  Paso 2/2: Eliminando stack..."
     echo "-------------------------------------------"
     sam delete --stack-name "$STACK_NAME" --no-prompts
 
