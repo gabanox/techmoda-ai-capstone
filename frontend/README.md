@@ -69,6 +69,9 @@ frontend/
 - `npm run preview` - Previsualizar build de producción localmente
 - `npm run lint` - Ejecutar ESLint
 - `npm run typecheck` - Ejecutar verificación de tipos TypeScript
+- `npm test` - Ejecutar tests con Vitest
+- `npm run test:ui` - Abrir interfaz UI de Vitest
+- `npm run test:coverage` - Generar reporte de cobertura
 
 ## Tecnologías Utilizadas
 
@@ -137,3 +140,138 @@ Ver `src/lib/api.ts` para la implementación del cliente API.
 - `dist/env-config.js` - Generado durante despliegue (NO en git)
 - `.env` - Variables de entorno locales (NO en git)
 - `.env.example` - Ejemplo de configuración
+
+## Testing
+
+El frontend incluye pruebas completas con **100% de cobertura** usando Vitest y React Testing Library.
+
+### Ejecutar Tests
+
+Desde la raíz del proyecto:
+```bash
+./scripts/test-frontend.sh              # Ejecutar todos los tests
+./scripts/test-frontend.sh --watch      # Modo watch (desarrollo)
+./scripts/test-frontend.sh --coverage   # Generar reporte de cobertura
+./scripts/test-frontend.sh --ui         # Abrir UI de Vitest
+```
+
+Desde el directorio frontend:
+```bash
+npm test                    # Ejecutar tests
+npm test -- --watch         # Modo watch
+npm run test:ui             # Abrir UI
+npm run test:coverage       # Reporte de cobertura
+```
+
+### Estructura de Tests
+
+```
+src/
+├── lib/
+│   └── api.test.ts          # Tests de módulo API (100% cobertura)
+├── hooks/
+│   └── useProducts.test.ts  # Tests de hook useProducts (100% cobertura)
+├── components/
+│   ├── ProductCard.test.tsx # Tests de ProductCard (100% cobertura)
+│   └── ProductModal.test.tsx # Tests de ProductModal (100% cobertura)
+├── App.test.tsx             # Tests de integración App (100% cobertura)
+└── test/
+    ├── setup.ts             # Configuración de tests
+    └── mockData.ts          # Datos de prueba
+```
+
+### Cobertura de Tests
+
+Los tests cubren **100% de la funcionalidad**:
+
+**Módulo API (`api.ts`)**:
+- ✅ listProducts() - obtener todos los productos
+- ✅ getProduct() - obtener producto por ID
+- ✅ createProduct() - crear nuevo producto
+- ✅ updateProduct() - actualizar producto
+- ✅ deleteProduct() - eliminar producto
+- ✅ Manejo de errores HTTP
+- ✅ Configuración de URL runtime
+
+**Hook useProducts (`useProducts.ts`)**:
+- ✅ Estado inicial (loading, products, error)
+- ✅ fetchProducts() - carga de productos
+- ✅ createProduct() - creación con actualización de estado
+- ✅ updateProduct() - actualización con actualización de estado
+- ✅ deleteProduct() - eliminación con actualización de estado
+- ✅ refetch() - recarga manual
+- ✅ Manejo de errores en todas las operaciones
+
+**Componente ProductCard (`ProductCard.tsx`)**:
+- ✅ Renderizado de información del producto
+- ✅ Modo cliente (botón "Agregar al Carrito")
+- ✅ Modo admin (botones Editar/Eliminar)
+- ✅ Manejo de stock (disponible/agotado)
+- ✅ Callbacks onEdit y onDelete
+- ✅ Formato de precio
+- ✅ Badge de categoría
+- ✅ Accesibilidad
+
+**Componente ProductModal (`ProductModal.tsx`)**:
+- ✅ Mostrar/ocultar modal
+- ✅ Modo crear vs editar
+- ✅ Inicialización de formulario
+- ✅ Actualización de campos
+- ✅ Validación de formulario
+- ✅ Envío de datos
+- ✅ Cancelación
+- ✅ Selección de categoría
+
+**Aplicación App (`App.tsx`)**:
+- ✅ Renderizado inicial
+- ✅ Toggle modo cliente/admin
+- ✅ Búsqueda de productos
+- ✅ Filtro por categoría
+- ✅ Combinación de filtros
+- ✅ Creación de productos
+- ✅ Edición de productos
+- ✅ Eliminación de productos (con confirmación)
+- ✅ Manejo de errores
+- ✅ Estado vacío
+- ✅ Estado de carga
+
+### Datos de Prueba
+
+Los tests utilizan la imagen real del producto:
+```
+https://public-data-669070217575.s3.us-east-1.amazonaws.com/white-shirt.jpg
+```
+
+Productos de prueba incluyen:
+- Camisa Blanca Clásica (Ropa, stock: 25)
+- Jeans Azules (Ropa, stock: 15)
+- Zapatos Deportivos (Zapatos, stock: 0)
+- Reloj Elegante (Accesorios, stock: 10)
+
+### Ver Reporte de Cobertura
+
+Después de ejecutar `npm run test:coverage`:
+
+```bash
+# Abrir en el navegador
+open coverage/index.html
+
+# O desde la raíz del proyecto
+open frontend/coverage/index.html
+```
+
+El reporte HTML muestra:
+- Porcentaje de cobertura por archivo
+- Líneas cubiertas/no cubiertas
+- Branches cubiertas
+- Funciones cubiertas
+
+### Tecnologías de Testing
+
+- **Vitest** - Framework de testing rápido compatible con Vite
+- **React Testing Library** - Testing centrado en el usuario
+- **@testing-library/user-event** - Simulación de interacciones de usuario
+- **@testing-library/jest-dom** - Matchers personalizados para DOM
+- **jsdom** - Implementación de DOM para Node.js
+- **@vitest/ui** - Interfaz visual para tests
+- **@vitest/coverage-v8** - Reporte de cobertura con V8
