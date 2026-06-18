@@ -70,3 +70,21 @@ Desplegado y probado endpoint-por-endpoint en el sandbox `879652687082`:
 Pista A (S00, S01, S02, S03, S05, S10) **funciona** end-to-end; Pista B (S04, S06–S09)
 **bloqueada por el LabRole** como se documenta arriba. Detalle de la matriz empírica de
 servicios en `docs/SANDBOX-COMPAT.md`.
+
+## Verificación Pista B en cuenta Bootcamp (2026-06-18)
+
+Las sesiones de Bedrock/Translate, bloqueadas en el sandbox re/Start, fueron
+verificadas en la cuenta AWS de Bootcamp Institute (`281248178297`, us-east-1),
+que sí tiene Bedrock habilitado:
+
+| Sesión | Capacidad | Resultado |
+|---|---|---|
+| S04 | `translate:TranslateText` | ✅ traducción correcta ES→EN |
+| S06 | Bedrock Converse `anthropic.claude-3-haiku-20240307-v1:0` | ✅ descripción generada |
+| S07/S08 | Bedrock `amazon.titan-embed-text-v2:0` (InvokeModel) | ✅ embedding de 1024 dims |
+| S09 | Bedrock Guardrails | ✅ API con acceso |
+
+Conclusión: la Pista B funciona end-to-end en una cuenta con Bedrock habilitado y
+un rol de ejecución con `bedrock:InvokeModel`/`translate:TranslateText`. En el
+sandbox re/Start no corre por la política del LabRole (ver matriz en
+`docs/SANDBOX-COMPAT.md`), por eso se imparte como demo guiada del instructor.
