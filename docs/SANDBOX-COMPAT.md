@@ -167,3 +167,32 @@ curl -X POST "${API%/}/products" -H 'Content-Type: application/json' \
 - [ ] El handler extrae sus parámetros del `rawPath`/`queryStringParameters`/body
       (no asume `pathParameters` de API Gateway).
 - [ ] `sam validate --lint` pasa para `template.yaml` y `template.full.yaml`.
+
+---
+
+## Matriz de disponibilidad de servicios IA (empírica — verificada 2026-06-18)
+
+Probado en el sandbox AWS re/Start (cuenta `879652687082`, us-west-2) ejecutando
+las Lambdas con el `LabRole`. El LabRole trae `ReadOnlyAccess` + `VocLabPolicy1/2`
+y **no es modificable** (sin `iam:CreateRole`/`PutRolePolicy`).
+
+| Servicio · acción | ¿LabRole lo permite? | Sesión | Nota |
+|---|---|---|---|
+| `rekognition:DetectLabels` | ✅ Sí | S01 | acción "read" |
+| `rekognition:DetectModerationLabels` | ✅ Sí | S02 | acción "read" |
+| `comprehend:DetectSentiment` | ✅ Sí | S03 | acción "read" |
+| `polly:SynthesizeSpeech` | ✅ Sí | S05 | + `s3:PutObject` para el mp3 |
+| `s3:GetObject` / `dynamodb:*` | ✅ Sí | S00–S10 | base |
+| `translate:TranslateText` | ❌ **No** | S04 | `AccessDeniedException` — no está en ReadOnlyAccess ni VocLabPolicy |
+| `bedrock:InvokeModel` | ❌ **No** | S06, S07, S08 | `AccessDeniedException` — *"no identity-based policy allows the action"* (no es model-access, es la política del rol) |
+| `bedrock:CreateGuardrail` / `ApplyGuardrail` | ❌ **No** | S09 | depende de Bedrock |
+
+**Consecuencia:** las sesiones de Bedrock/Translate (Pista B) NO corren en el sandbox.
+Se demuestran en una cuenta AWS de Bootcamp con Bedrock habilitado y un rol de ejecución
+con `bedrock:InvokeModel`/`translate:TranslateText`. Ver `sessions/README.md` (dos pistas).
+
+### Gotcha de código encontrado (S01)
+DynamoDB **no acepta `float`** vía el resource de boto3: hay que convertir los
+`Confidence` de Rekognition a `Decimal` (`Decimal(str(valor))`) antes del `update_item`,
+o el handler crashea con `TypeError: Float types are not supported`. Corregido en
+`sessions/S01-rekognition-labels/functions/enrich-labels/app.py`.

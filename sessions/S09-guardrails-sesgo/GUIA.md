@@ -1,3 +1,9 @@
+> ⚠️ **Pista B — Demo guiada del instructor.** Esta sesión usa Bedrock/Translate y
+> **NO corre en el sandbox AWS re/Start**: el `LabRole` deniega `bedrock:InvokeModel` /
+> `translate:TranslateText` y no es modificable. Se ejecuta en una cuenta AWS de Bootcamp
+> con Bedrock habilitado y un rol con esos permisos. Ver `sessions/README.md` (dos pistas)
+> y `docs/SANDBOX-COMPAT.md` (matriz de servicios).
+
 # S9 · Guardrails, sesgo y privacidad en las features de IA (Bedrock Guardrails)
 
 **Duración:** ~60 min · **Servicio:** Amazon Bedrock Guardrails · **Dominio AIF-C01:** **D4 — Responsible AI (14%)**

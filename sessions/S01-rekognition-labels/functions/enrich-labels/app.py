@@ -19,6 +19,7 @@ Dominio AIF-C01: D1 — Fundamentals of AI and ML (percepción / clasificación)
 import json
 import os
 import urllib.request
+from decimal import Decimal
 from urllib.parse import urlparse
 
 import boto3
@@ -112,12 +113,17 @@ def lambda_handler(event, context):
         for l in result.get("Labels", [])
     ]
 
-    # 3. Guardar en DynamoDB (las etiquetas como lista de strings para búsqueda simple)
+    # 3. Guardar en DynamoDB (las etiquetas como lista de strings para búsqueda simple).
+    #    DynamoDB NO acepta float -> los Confidence van como Decimal.
     label_names = [l["name"] for l in labels]
+    labels_ddb = [
+        {"name": l["name"], "confidence": Decimal(str(l["confidence"]))}
+        for l in labels
+    ]
     table.update_item(
         Key={"productId": product_id},
         UpdateExpression="SET aiLabels = :labels, aiLabelsRaw = :raw",
-        ExpressionAttributeValues={":labels": label_names, ":raw": labels},
+        ExpressionAttributeValues={":labels": label_names, ":raw": labels_ddb},
     )
 
     # 4. Responder

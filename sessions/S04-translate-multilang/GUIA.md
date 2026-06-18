@@ -1,3 +1,9 @@
+> ⚠️ **Pista B — Demo guiada del instructor.** Esta sesión usa Bedrock/Translate y
+> **NO corre en el sandbox AWS re/Start**: el `LabRole` deniega `bedrock:InvokeModel` /
+> `translate:TranslateText` y no es modificable. Se ejecuta en una cuenta AWS de Bootcamp
+> con Bedrock habilitado y un rol con esos permisos. Ver `sessions/README.md` (dos pistas)
+> y `docs/SANDBOX-COMPAT.md` (matriz de servicios).
+
 # S4 · Catálogo multilingüe ES↔EN (Amazon Translate)
 
 **Duración:** ~60 min · **Servicio:** Amazon Translate · **Dominio AIF-C01:** **D1 — Fundamentals of AI and ML (20%)**

@@ -1,3 +1,9 @@
+> ⚠️ **Pista B — Demo guiada del instructor.** Esta sesión usa Bedrock/Translate y
+> **NO corre en el sandbox AWS re/Start**: el `LabRole` deniega `bedrock:InvokeModel` /
+> `translate:TranslateText` y no es modificable. Se ejecuta en una cuenta AWS de Bootcamp
+> con Bedrock habilitado y un rol con esos permisos. Ver `sessions/README.md` (dos pistas)
+> y `docs/SANDBOX-COMPAT.md` (matriz de servicios).
+
 # S7 · Búsqueda semántica / RAG sobre el catálogo (Bedrock embeddings)
 
 **Duración:** ~60 min · **Servicio:** Amazon Bedrock (embeddings) · **Dominio AIF-C01:** **D3 — Applications of Foundation Models (28%)**
