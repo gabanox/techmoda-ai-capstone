@@ -1,5 +1,25 @@
 Transform: AWS::Serverless-2016-10-31
-Description: TechModa Serverless Capstone - Fashion E-commerce Product Catalog API
+Description: TechModa Serverless Capstone - Fashion E-commerce Product Catalog API (sandbox AWS re/Start compatible)
+
+# ============================================================================
+# COMPATIBILIDAD CON EL SANDBOX AWS re/Start (vocareum) — ver docs/SANDBOX-COMPAT.md
+#   1. SIN API Gateway: el LabRole no permite apigateway:* -> usamos UNA Lambda
+#      Function URL (AuthType NONE) + un router interno (functions/router).
+#   2. SIN iam:CreateRole: cada función referencia el LabRole preexistente; NO se
+#      usan `Policies:` (SAM las traduce a roles nuevos). Role y Policies son
+#      mutuamente excluyentes en SAM.
+#   3. Deploy: sam build && sam deploy --stack-name techmoda-ai --region us-west-2 \
+#                --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
+#                --resolve-s3 --no-confirm-changeset
+# ============================================================================
+
+Parameters:
+  LabRoleArn:
+    Type: String
+    Default: arn:aws:iam::879652687082:role/LabRole
+    Description: >-
+      Rol de ejecución preexistente del sandbox (LabRole). El sandbox no permite
+      iam:CreateRole, así que TODAS las Lambdas reusan este rol.
 
 Globals:
   Function:
@@ -10,67 +30,8 @@ Globals:
     Environment:
       Variables:
         PRODUCTS_TABLE: !Ref ProductsTable
-  Api:
-    Cors:
-      AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
-      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-      AllowOrigin: "'*'"
 
 Resources:
-  # API Gateway REST API
-  ProductsApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      Name: !Sub
-        - ${ResourceName} From Stack ${AWS::StackName}
-        - ResourceName: ProductsApi
-      StageName: Prod
-      DefinitionBody:
-        openapi: '3.0'
-        info:
-          title: TechModa Products API
-          version: '1.0'
-        paths:
-          /products:
-            get:
-              summary: List all products
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ListItemsFunction.Arn}/invocations
-              responses: {}
-            post:
-              summary: Create a new product
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateItemFunction.Arn}/invocations
-              responses: {}
-          /products/{id}:
-            get:
-              summary: Get a product by ID
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetItemFunction.Arn}/invocations
-              responses: {}
-            put:
-              summary: Update a product
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateItemFunction.Arn}/invocations
-              responses: {}
-            delete:
-              summary: Delete a product
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteItemFunction.Arn}/invocations
-              responses: {}
-      EndpointConfiguration: REGIONAL
-      TracingEnabled: true
-
   # DynamoDB Table
   ProductsTable:
     Type: AWS::DynamoDB::Table
@@ -84,108 +45,32 @@ Resources:
         - AttributeName: productId
           KeyType: HASH
 
-  # Lambda Functions
-  ListItemsFunction:
+  # ---------------------------------------------------------------------------
+  # Router CRUD — una sola Lambda, una sola Function URL (reemplaza API Gateway).
+  # CodeUri: functions/  +  Handler: router/index.handler  => el router puede
+  # require('../list-items') etc. porque todo functions/ va en el mismo paquete.
+  # ---------------------------------------------------------------------------
+  RouterFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-ListItems
-      Description: !Sub
-        - Stack ${AWS::StackName} Function ${ResourceName}
-        - ResourceName: ListItems
-      CodeUri: functions/list-items
-      Handler: index.handler
-      Events:
-        ApiGETProducts:
-          Type: Api
-          Properties:
-            Path: /products
-            Method: GET
-            RestApiId: !Ref ProductsApi
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref ProductsTable
+      FunctionName: !Sub ${AWS::StackName}-Router
+      Description: Router CRUD de /products via Lambda Function URL (sandbox-compatible)
+      CodeUri: functions/
+      Handler: router/index.handler
+      Role: !Ref LabRoleArn
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins:
+            - "*"
+          AllowMethods:
+            - "*"
+          AllowHeaders:
+            - "*"
 
-  CreateItemFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub ${AWS::StackName}-CreateItem
-      Description: !Sub
-        - Stack ${AWS::StackName} Function ${ResourceName}
-        - ResourceName: CreateItem
-      CodeUri: functions/create-item
-      Handler: index.handler
-      Events:
-        ApiPOSTProducts:
-          Type: Api
-          Properties:
-            Path: /products
-            Method: POST
-            RestApiId: !Ref ProductsApi
-      Policies:
-        - DynamoDBWritePolicy:
-            TableName: !Ref ProductsTable
-
-  GetItemFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub ${AWS::StackName}-GetItem
-      Description: !Sub
-        - Stack ${AWS::StackName} Function ${ResourceName}
-        - ResourceName: GetItem
-      CodeUri: functions/get-item
-      Handler: index.handler
-      Events:
-        ApiGETProductsId:
-          Type: Api
-          Properties:
-            Path: /products/{id}
-            Method: GET
-            RestApiId: !Ref ProductsApi
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref ProductsTable
-
-  UpdateItemFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub ${AWS::StackName}-UpdateItem
-      Description: !Sub
-        - Stack ${AWS::StackName} Function ${ResourceName}
-        - ResourceName: UpdateItem
-      CodeUri: functions/update-item
-      Handler: index.handler
-      Events:
-        ApiPUTProductsId:
-          Type: Api
-          Properties:
-            Path: /products/{id}
-            Method: PUT
-            RestApiId: !Ref ProductsApi
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref ProductsTable
-
-  DeleteItemFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub ${AWS::StackName}-DeleteItem
-      Description: !Sub
-        - Stack ${AWS::StackName} Function ${ResourceName}
-        - ResourceName: DeleteItem
-      CodeUri: functions/delete-item
-      Handler: index.handler
-      Events:
-        ApiDELETEProductsId:
-          Type: Api
-          Properties:
-            Path: /products/{id}
-            Method: DELETE
-            RestApiId: !Ref ProductsApi
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref ProductsTable
-
-  # S3 Bucket for Static Website Hosting
+  # ---------------------------------------------------------------------------
+  # Frontend estático (S3 + CloudFront). Permitido por el LabRole.
+  # ---------------------------------------------------------------------------
   FrontendBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -210,7 +95,6 @@ Resources:
             Resource: !Sub ${FrontendBucket.Arn}/*
             Principal: '*'
 
-  # CloudFront Distribution
   FrontendDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -246,8 +130,8 @@ Resources:
 
 Outputs:
   ApiUrl:
-    Description: URL of the Products API
-    Value: !Sub 'https://${ProductsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod'
+    Description: Base API URL (Lambda Function URL del router CRUD). Termina en '/'.
+    Value: !GetAtt RouterFunctionUrl.FunctionUrl
   ProductsTableName:
     Description: Name of the DynamoDB Products table
     Value: !Ref ProductsTable
@@ -266,8 +150,4 @@ Metadata:
     Group:
       Label: API Compute
       Members:
-        - ListItemsFunction
-        - CreateItemFunction
-        - GetItemFunction
-        - UpdateItemFunction
-        - DeleteItemFunction
+        - RouterFunction

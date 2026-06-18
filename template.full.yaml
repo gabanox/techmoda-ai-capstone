@@ -1,13 +1,22 @@
 Transform: AWS::Serverless-2016-10-31
-Description: TechModa AI Capstone - version ENSAMBLADA (base S0 + todas las sesiones S1-S10 cableadas)
+Description: TechModa AI Capstone - version ENSAMBLADA (base S0 + sesiones S1-S10), sandbox AWS re/Start compatible
 
 # ============================================================================
-# Este archivo es la version "todo junto" del capstone, util para:
-#   - desplegar todo de una (sam deploy --template template.full.yaml), o
-#   - verificar que los snippets de cada sesion componen correctamente.
-# El flujo pedagogico recomendado sigue siendo ir pegando los snippets de cada
-# sesion en template.yaml, uno por hora. Ambos llegan al mismo resultado.
+# Version "todo junto" del capstone. Compatible con el sandbox AWS re/Start:
+#   1. SIN API Gateway -> cada Lambda HTTP-facing expone su propia Function URL
+#      (AuthType NONE). El CRUD usa UN router (functions/router) con UNA Function URL.
+#   2. SIN iam:CreateRole -> todas las funciones reusan el LabRole (parametro).
+#      NO se usan `Policies:` (Role y Policies son mutuamente excluyentes en SAM).
+#   3. Servicios IA (rekognition/comprehend/translate/polly/bedrock) ya están
+#      permitidos por el LabRole.
+# Detalle y justificación: docs/SANDBOX-COMPAT.md
 # ============================================================================
+
+Parameters:
+  LabRoleArn:
+    Type: String
+    Default: arn:aws:iam::879652687082:role/LabRole
+    Description: Rol de ejecución preexistente del sandbox (no se permite iam:CreateRole).
 
 Globals:
   Function:
@@ -22,124 +31,8 @@ Globals:
       Project: techmoda-ai-capstone
       Module: ai-practitioner
       Environment: sandbox
-  Api:
-    Cors:
-      AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
-      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-      AllowOrigin: "'*'"
 
 Resources:
-  ProductsApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      Name: !Sub
-        - ${ResourceName} From Stack ${AWS::StackName}
-        - ResourceName: ProductsApi
-      StageName: Prod
-      DefinitionBody:
-        openapi: '3.0'
-        info:
-          title: TechModa AI Products API
-          version: '1.0'
-        paths:
-          /products:
-            get:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ListItemsFunction.Arn}/invocations
-              responses: {}
-            post:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateItemFunction.Arn}/invocations
-              responses: {}
-          /products/{id}:
-            get:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetItemFunction.Arn}/invocations
-              responses: {}
-            put:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateItemFunction.Arn}/invocations
-              responses: {}
-            delete:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteItemFunction.Arn}/invocations
-              responses: {}
-          /products/{id}/labels:        # S1
-            post:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EnrichLabelsFunction.Arn}/invocations
-              responses: {}
-          /products/{id}/moderate:      # S2
-            post:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ModerateImageFunction.Arn}/invocations
-              responses: {}
-          /sentiment:                   # S3
-            post:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AnalyzeSentimentFunction.Arn}/invocations
-              responses: {}
-          /products/{id}/translate:     # S4
-            post:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TranslateCatalogFunction.Arn}/invocations
-              responses: {}
-          /products/{id}/voice:         # S5
-            post:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SynthesizeVoiceFunction.Arn}/invocations
-              responses: {}
-          /products/{id}/describe:      # S6
-            post:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GenerateDescriptionFunction.Arn}/invocations
-              responses: {}
-          /search/index:                # S7
-            post:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${IndexEmbeddingsFunction.Arn}/invocations
-              responses: {}
-          /search:                      # S7
-            get:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SemanticSearchFunction.Arn}/invocations
-              responses: {}
-          /assistant:                   # S8
-            post:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ShoppingAssistantFunction.Arn}/invocations
-              responses: {}
-      EndpointConfiguration: REGIONAL
-      TracingEnabled: true
-
   ProductsTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -152,71 +45,21 @@ Resources:
         - AttributeName: productId
           KeyType: HASH
 
-  # ---- CRUD base (S0) ----
-  ListItemsFunction:
+  # ---- CRUD base (S0): router + 1 Function URL ----
+  RouterFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-ListItems
-      CodeUri: functions/list-items
-      Handler: index.handler
-      Events:
-        ApiGETProducts:
-          Type: Api
-          Properties: { Path: /products, Method: GET, RestApiId: !Ref ProductsApi }
-      Policies:
-        - DynamoDBReadPolicy: { TableName: !Ref ProductsTable }
-
-  CreateItemFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub ${AWS::StackName}-CreateItem
-      CodeUri: functions/create-item
-      Handler: index.handler
-      Events:
-        ApiPOSTProducts:
-          Type: Api
-          Properties: { Path: /products, Method: POST, RestApiId: !Ref ProductsApi }
-      Policies:
-        - DynamoDBWritePolicy: { TableName: !Ref ProductsTable }
-
-  GetItemFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub ${AWS::StackName}-GetItem
-      CodeUri: functions/get-item
-      Handler: index.handler
-      Events:
-        ApiGETProductsId:
-          Type: Api
-          Properties: { Path: "/products/{id}", Method: GET, RestApiId: !Ref ProductsApi }
-      Policies:
-        - DynamoDBReadPolicy: { TableName: !Ref ProductsTable }
-
-  UpdateItemFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub ${AWS::StackName}-UpdateItem
-      CodeUri: functions/update-item
-      Handler: index.handler
-      Events:
-        ApiPUTProductsId:
-          Type: Api
-          Properties: { Path: "/products/{id}", Method: PUT, RestApiId: !Ref ProductsApi }
-      Policies:
-        - DynamoDBCrudPolicy: { TableName: !Ref ProductsTable }
-
-  DeleteItemFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub ${AWS::StackName}-DeleteItem
-      CodeUri: functions/delete-item
-      Handler: index.handler
-      Events:
-        ApiDELETEProductsId:
-          Type: Api
-          Properties: { Path: "/products/{id}", Method: DELETE, RestApiId: !Ref ProductsApi }
-      Policies:
-        - DynamoDBCrudPolicy: { TableName: !Ref ProductsTable }
+      FunctionName: !Sub ${AWS::StackName}-Router
+      Description: Router CRUD de /products via Lambda Function URL (sandbox-compatible)
+      CodeUri: functions/
+      Handler: router/index.handler
+      Role: !Ref LabRoleArn
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
 
   # ---- S1 · Rekognition DetectLabels ----
   EnrichLabelsFunction:
@@ -226,24 +69,17 @@ Resources:
       CodeUri: sessions/S01-rekognition-labels/functions/enrich-labels
       Handler: app.lambda_handler
       Runtime: python3.12
+      Role: !Ref LabRoleArn
       Environment:
         Variables:
           LABEL_MIN_CONFIDENCE: "80"
           LABEL_MAX_LABELS: "15"
-      Events:
-        ApiPOSTProductLabels:
-          Type: Api
-          Properties: { Path: "/products/{id}/labels", Method: POST, RestApiId: !Ref ProductsApi }
-      Policies:
-        - DynamoDBCrudPolicy: { TableName: !Ref ProductsTable }
-        - Statement:
-            - Effect: Allow
-              Action: [ rekognition:DetectLabels ]
-              Resource: "*"
-        - Statement:
-            - Effect: Allow
-              Action: [ s3:GetObject ]
-              Resource: !Sub arn:${AWS::Partition}:s3:::${AWS::StackName}-frontend/*
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
 
   # ---- S2 · Rekognition Moderation + alt-text ----
   ModerateImageFunction:
@@ -253,23 +89,16 @@ Resources:
       CodeUri: sessions/S02-moderation-alttext/functions/moderate-image
       Handler: app.lambda_handler
       Runtime: python3.12
+      Role: !Ref LabRoleArn
       Environment:
         Variables:
           MODERATION_MIN_CONFIDENCE: "60"
-      Events:
-        ApiPOSTProductModerate:
-          Type: Api
-          Properties: { Path: "/products/{id}/moderate", Method: POST, RestApiId: !Ref ProductsApi }
-      Policies:
-        - DynamoDBCrudPolicy: { TableName: !Ref ProductsTable }
-        - Statement:
-            - Effect: Allow
-              Action: [ rekognition:DetectModerationLabels, rekognition:DetectLabels ]
-              Resource: "*"
-        - Statement:
-            - Effect: Allow
-              Action: [ s3:GetObject ]
-              Resource: !Sub arn:${AWS::Partition}:s3:::${AWS::StackName}-frontend/*
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
 
   # ---- S3 · Comprehend Sentiment ----
   AnalyzeSentimentFunction:
@@ -279,16 +108,13 @@ Resources:
       CodeUri: sessions/S03-comprehend-sentiment/functions/analyze-sentiment
       Handler: app.lambda_handler
       Runtime: python3.12
-      Events:
-        ApiPOSTSentiment:
-          Type: Api
-          Properties: { Path: /sentiment, Method: POST, RestApiId: !Ref ProductsApi }
-      Policies:
-        - DynamoDBCrudPolicy: { TableName: !Ref ProductsTable }
-        - Statement:
-            - Effect: Allow
-              Action: [ comprehend:DetectSentiment, comprehend:DetectDominantLanguage ]
-              Resource: "*"
+      Role: !Ref LabRoleArn
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
 
   # ---- S4 · Translate ----
   TranslateCatalogFunction:
@@ -298,16 +124,13 @@ Resources:
       CodeUri: sessions/S04-translate-multilang/functions/translate-catalog
       Handler: app.lambda_handler
       Runtime: python3.12
-      Events:
-        ApiPOSTProductTranslate:
-          Type: Api
-          Properties: { Path: "/products/{id}/translate", Method: POST, RestApiId: !Ref ProductsApi }
-      Policies:
-        - DynamoDBCrudPolicy: { TableName: !Ref ProductsTable }
-        - Statement:
-            - Effect: Allow
-              Action: [ translate:TranslateText, comprehend:DetectDominantLanguage ]
-              Resource: "*"
+      Role: !Ref LabRoleArn
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
 
   # ---- S5 · Polly + audio bucket ----
   AudioBucket:
@@ -332,20 +155,16 @@ Resources:
       CodeUri: sessions/S05-polly-voice/functions/synthesize-voice
       Handler: app.lambda_handler
       Runtime: python3.12
+      Role: !Ref LabRoleArn
       Environment:
         Variables:
           AUDIO_BUCKET: !Ref AudioBucket
-      Events:
-        ApiPOSTProductVoice:
-          Type: Api
-          Properties: { Path: "/products/{id}/voice", Method: POST, RestApiId: !Ref ProductsApi }
-      Policies:
-        - DynamoDBCrudPolicy: { TableName: !Ref ProductsTable }
-        - Statement:
-            - Effect: Allow
-              Action: [ polly:SynthesizeSpeech ]
-              Resource: "*"
-        - S3CrudPolicy: { BucketName: !Sub "${AWS::StackName}-audio" }
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
 
   # ---- S6 · Bedrock generacion ----
   GenerateDescriptionFunction:
@@ -355,24 +174,19 @@ Resources:
       CodeUri: sessions/S06-bedrock-descripciones/functions/generate-description
       Handler: app.lambda_handler
       Runtime: python3.12
+      Role: !Ref LabRoleArn
       Timeout: 60
       Environment:
         Variables:
           BEDROCK_MODEL_ID: anthropic.claude-3-haiku-20240307-v1:0
           BEDROCK_MAX_TOKENS: "300"
           BEDROCK_TEMPERATURE: "0.7"
-      Events:
-        ApiPOSTProductDescribe:
-          Type: Api
-          Properties: { Path: "/products/{id}/describe", Method: POST, RestApiId: !Ref ProductsApi }
-      Policies:
-        - DynamoDBCrudPolicy: { TableName: !Ref ProductsTable }
-        - Statement:
-            - Effect: Allow
-              Action: [ bedrock:InvokeModel ]
-              Resource:
-                - !Sub arn:${AWS::Partition}:bedrock:us-*::foundation-model/anthropic.claude-3-haiku-20240307-v1:0
-                - !Sub arn:${AWS::Partition}:bedrock:us-*:${AWS::AccountId}:inference-profile/us.anthropic.claude-3-haiku-20240307-v1:0
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
 
   # ---- S7 · Bedrock embeddings ----
   IndexEmbeddingsFunction:
@@ -382,21 +196,17 @@ Resources:
       CodeUri: sessions/S07-bedrock-rag-busqueda/functions/index-embeddings
       Handler: app.lambda_handler
       Runtime: python3.12
+      Role: !Ref LabRoleArn
       Timeout: 120
       Environment:
         Variables:
           EMBED_MODEL_ID: amazon.titan-embed-text-v2:0
-      Events:
-        ApiPOSTSearchIndex:
-          Type: Api
-          Properties: { Path: /search/index, Method: POST, RestApiId: !Ref ProductsApi }
-      Policies:
-        - DynamoDBCrudPolicy: { TableName: !Ref ProductsTable }
-        - Statement:
-            - Effect: Allow
-              Action: [ bedrock:InvokeModel ]
-              Resource:
-                - !Sub arn:${AWS::Partition}:bedrock:us-*::foundation-model/amazon.titan-embed-text-v2:0
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
 
   SemanticSearchFunction:
     Type: AWS::Serverless::Function
@@ -405,22 +215,18 @@ Resources:
       CodeUri: sessions/S07-bedrock-rag-busqueda/functions/semantic-search
       Handler: app.lambda_handler
       Runtime: python3.12
+      Role: !Ref LabRoleArn
       Timeout: 60
       Environment:
         Variables:
           EMBED_MODEL_ID: amazon.titan-embed-text-v2:0
           SEARCH_TOP_K: "5"
-      Events:
-        ApiGETSearch:
-          Type: Api
-          Properties: { Path: /search, Method: GET, RestApiId: !Ref ProductsApi }
-      Policies:
-        - DynamoDBReadPolicy: { TableName: !Ref ProductsTable }
-        - Statement:
-            - Effect: Allow
-              Action: [ bedrock:InvokeModel ]
-              Resource:
-                - !Sub arn:${AWS::Partition}:bedrock:us-*::foundation-model/amazon.titan-embed-text-v2:0
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
 
   # ---- S8 · Bedrock RAG chatbot ----
   ShoppingAssistantFunction:
@@ -430,6 +236,7 @@ Resources:
       CodeUri: sessions/S08-bedrock-chatbot/functions/shopping-assistant
       Handler: app.lambda_handler
       Runtime: python3.12
+      Role: !Ref LabRoleArn
       Timeout: 60
       Environment:
         Variables:
@@ -437,19 +244,12 @@ Resources:
           BEDROCK_MODEL_ID: anthropic.claude-3-haiku-20240307-v1:0
           ASSISTANT_TOP_K: "3"
           BEDROCK_MAX_TOKENS: "400"
-      Events:
-        ApiPOSTAssistant:
-          Type: Api
-          Properties: { Path: /assistant, Method: POST, RestApiId: !Ref ProductsApi }
-      Policies:
-        - DynamoDBReadPolicy: { TableName: !Ref ProductsTable }
-        - Statement:
-            - Effect: Allow
-              Action: [ bedrock:InvokeModel ]
-              Resource:
-                - !Sub arn:${AWS::Partition}:bedrock:us-*::foundation-model/amazon.titan-embed-text-v2:0
-                - !Sub arn:${AWS::Partition}:bedrock:us-*::foundation-model/anthropic.claude-3-haiku-20240307-v1:0
-                - !Sub arn:${AWS::Partition}:bedrock:us-*:${AWS::AccountId}:inference-profile/us.anthropic.claude-3-haiku-20240307-v1:0
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
 
   # ---- S10 · gobernanza (log group de invocacion) ----
   # La alarma de billing va en us-east-1 (metrica AWS/Billing) -> crear en consola/Budgets.
@@ -513,8 +313,35 @@ Resources:
 
 Outputs:
   ApiUrl:
-    Description: URL of the Products API
-    Value: !Sub 'https://${ProductsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod'
+    Description: Base API URL (Function URL del router CRUD). Termina en '/'.
+    Value: !GetAtt RouterFunctionUrl.FunctionUrl
+  EnrichLabelsUrl:
+    Description: S1 Function URL (POST /products/{id}/labels)
+    Value: !GetAtt EnrichLabelsFunctionUrl.FunctionUrl
+  ModerateImageUrl:
+    Description: S2 Function URL (POST /products/{id}/moderate)
+    Value: !GetAtt ModerateImageFunctionUrl.FunctionUrl
+  AnalyzeSentimentUrl:
+    Description: S3 Function URL (POST /sentiment)
+    Value: !GetAtt AnalyzeSentimentFunctionUrl.FunctionUrl
+  TranslateCatalogUrl:
+    Description: S4 Function URL (POST /products/{id}/translate)
+    Value: !GetAtt TranslateCatalogFunctionUrl.FunctionUrl
+  SynthesizeVoiceUrl:
+    Description: S5 Function URL (POST /products/{id}/voice)
+    Value: !GetAtt SynthesizeVoiceFunctionUrl.FunctionUrl
+  GenerateDescriptionUrl:
+    Description: S6 Function URL (POST /products/{id}/describe)
+    Value: !GetAtt GenerateDescriptionFunctionUrl.FunctionUrl
+  IndexEmbeddingsUrl:
+    Description: S7 Function URL (POST /search/index)
+    Value: !GetAtt IndexEmbeddingsFunctionUrl.FunctionUrl
+  SemanticSearchUrl:
+    Description: S7 Function URL (GET /search?q=...)
+    Value: !GetAtt SemanticSearchFunctionUrl.FunctionUrl
+  ShoppingAssistantUrl:
+    Description: S8 Function URL (POST /assistant)
+    Value: !GetAtt ShoppingAssistantFunctionUrl.FunctionUrl
   ProductsTableName:
     Value: !Ref ProductsTable
   Region:
