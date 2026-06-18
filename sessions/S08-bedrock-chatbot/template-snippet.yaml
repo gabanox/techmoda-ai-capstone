@@ -1,0 +1,52 @@
+# ============================================================================
+# S8 · Bedrock chatbot RAG (asistente de compras)  —  pegar en template.yaml
+# ============================================================================
+# Reusa los embeddings de S7. Necesita InvokeModel sobre DOS modelos:
+# el de embeddings (retrieval) y el de generacion (chat).
+
+  ShoppingAssistantFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-ShoppingAssistant
+      Description: S8 - Asistente de compras conversacional (Bedrock RAG)
+      CodeUri: sessions/S08-bedrock-chatbot/functions/shopping-assistant
+      Handler: app.lambda_handler
+      Runtime: python3.12
+      Timeout: 60
+      Environment:
+        Variables:
+          EMBED_MODEL_ID: amazon.titan-embed-text-v2:0
+          BEDROCK_MODEL_ID: anthropic.claude-3-haiku-20240307-v1:0
+          ASSISTANT_TOP_K: "3"
+          BEDROCK_MAX_TOKENS: "400"
+      Events:
+        ApiPOSTAssistant:
+          Type: Api
+          Properties:
+            Path: /assistant
+            Method: POST
+            RestApiId: !Ref ProductsApi
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ProductsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource:
+                - !Sub arn:${AWS::Partition}:bedrock:us-*::foundation-model/amazon.titan-embed-text-v2:0
+                - !Sub arn:${AWS::Partition}:bedrock:us-*::foundation-model/anthropic.claude-3-haiku-20240307-v1:0
+                - !Sub arn:${AWS::Partition}:bedrock:us-*:${AWS::AccountId}:inference-profile/us.anthropic.claude-3-haiku-20240307-v1:0
+
+# ----------------------------------------------------------------------------
+# API ROUTE — dentro de ProductsApi.DefinitionBody.paths añadir:
+#
+#   /assistant:
+#     post:
+#       summary: Asistente de compras conversacional (Bedrock RAG)
+#       x-amazon-apigateway-integration:
+#         httpMethod: POST
+#         type: aws_proxy
+#         uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ShoppingAssistantFunction.Arn}/invocations
+#       responses: {}
+# ----------------------------------------------------------------------------

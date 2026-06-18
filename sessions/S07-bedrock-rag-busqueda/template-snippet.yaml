@@ -1,0 +1,84 @@
+# ============================================================================
+# S7 · Bedrock embeddings (busqueda semantica / RAG)  —  pegar en template.yaml
+# ============================================================================
+# Dos Lambdas: indexador (escribe embeddings) y buscador (lee y rankea).
+
+  IndexEmbeddingsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-IndexEmbeddings
+      Description: S7 - Construye el indice de embeddings del catalogo (Bedrock Titan)
+      CodeUri: sessions/S07-bedrock-rag-busqueda/functions/index-embeddings
+      Handler: app.lambda_handler
+      Runtime: python3.12
+      Timeout: 120   # recorre todo el catalogo
+      Environment:
+        Variables:
+          EMBED_MODEL_ID: amazon.titan-embed-text-v2:0
+      Events:
+        ApiPOSTSearchIndex:
+          Type: Api
+          Properties:
+            Path: /search/index
+            Method: POST
+            RestApiId: !Ref ProductsApi
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource:
+                - !Sub arn:${AWS::Partition}:bedrock:us-*::foundation-model/amazon.titan-embed-text-v2:0
+
+  SemanticSearchFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-SemanticSearch
+      Description: S7 - Busqueda semantica del catalogo (Bedrock Titan)
+      CodeUri: sessions/S07-bedrock-rag-busqueda/functions/semantic-search
+      Handler: app.lambda_handler
+      Runtime: python3.12
+      Timeout: 60
+      Environment:
+        Variables:
+          EMBED_MODEL_ID: amazon.titan-embed-text-v2:0
+          SEARCH_TOP_K: "5"
+      Events:
+        ApiGETSearch:
+          Type: Api
+          Properties:
+            Path: /search
+            Method: GET
+            RestApiId: !Ref ProductsApi
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ProductsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource:
+                - !Sub arn:${AWS::Partition}:bedrock:us-*::foundation-model/amazon.titan-embed-text-v2:0
+
+# ----------------------------------------------------------------------------
+# API ROUTES — dentro de ProductsApi.DefinitionBody.paths añadir:
+#
+#   /search/index:
+#     post:
+#       summary: Construir el indice de embeddings
+#       x-amazon-apigateway-integration:
+#         httpMethod: POST
+#         type: aws_proxy
+#         uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${IndexEmbeddingsFunction.Arn}/invocations
+#       responses: {}
+#   /search:
+#     get:
+#       summary: Busqueda semantica (?q=...)
+#       x-amazon-apigateway-integration:
+#         httpMethod: POST
+#         type: aws_proxy
+#         uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SemanticSearchFunction.Arn}/invocations
+#       responses: {}
+# ----------------------------------------------------------------------------
