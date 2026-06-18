@@ -1,0 +1,178 @@
+Transform: AWS::Serverless-2016-10-31
+Description: >-
+  TechModa AI Capstone — TEMPLATE DE BOOTSTRAP (Pista A · sandbox AWS re/Start).
+  Solo las sesiones que corren en el sandbox (S00 base + S01/S02/S03 Rekognition·Comprehend,
+  S05 Polly, S10 gobernanza). SIN CloudFront a propósito: el bootstrap debe levantar
+  el entorno en ~2-3 min aunque el sandbox se haya reciclado. El frontend (S3+CloudFront)
+  vive en template.yaml / template.full.yaml; aquí no se necesita porque las features se
+  prueban por Function URL. Las sesiones de Bedrock/Translate (Pista B) NO van aquí: el
+  LabRole no las permite (ver docs/SANDBOX-COMPAT.md) — se demuestran en cuenta Bootcamp.
+
+Parameters:
+  LabRoleArn:
+    Type: String
+    Default: arn:aws:iam::879652687082:role/LabRole
+    Description: Rol de ejecución preexistente del sandbox (el sandbox no permite iam:CreateRole).
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 1024
+    Runtime: nodejs22.x
+    Tracing: Active
+    Environment:
+      Variables:
+        PRODUCTS_TABLE: !Ref ProductsTable
+
+Resources:
+  # ---- S00 · base: catálogo CRUD (router + Function URL) + DynamoDB ----
+  ProductsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${AWS::StackName}-Products
+      AttributeDefinitions:
+        - AttributeName: productId
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: productId
+          KeyType: HASH
+
+  RouterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-Router
+      Description: Router CRUD de /products via Lambda Function URL (sandbox-compatible)
+      CodeUri: functions/
+      Handler: router/index.handler
+      Role: !Ref LabRoleArn
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
+
+  # ---- S01 · Rekognition DetectLabels ----
+  EnrichLabelsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-EnrichLabels
+      Description: S1 - Auto-etiquetado de imagenes de producto (Rekognition DetectLabels)
+      CodeUri: sessions/S01-rekognition-labels/functions/enrich-labels
+      Handler: app.lambda_handler
+      Runtime: python3.12
+      Role: !Ref LabRoleArn
+      Environment:
+        Variables:
+          LABEL_MIN_CONFIDENCE: "80"
+          LABEL_MAX_LABELS: "15"
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
+
+  # ---- S02 · Rekognition DetectModerationLabels + alt-text ----
+  ModerateImageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-ModerateImage
+      Description: S2 - Moderacion de imagen + alt-text accesible (Rekognition)
+      CodeUri: sessions/S02-moderation-alttext/functions/moderate-image
+      Handler: app.lambda_handler
+      Runtime: python3.12
+      Role: !Ref LabRoleArn
+      Environment:
+        Variables:
+          MODERATION_MIN_CONFIDENCE: "60"
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
+
+  # ---- S03 · Comprehend DetectSentiment ----
+  AnalyzeSentimentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-AnalyzeSentiment
+      Description: S3 - Sentimiento de resenas (Amazon Comprehend)
+      CodeUri: sessions/S03-comprehend-sentiment/functions/analyze-sentiment
+      Handler: app.lambda_handler
+      Runtime: python3.12
+      Role: !Ref LabRoleArn
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
+
+  # ---- S05 · Polly SynthesizeSpeech (+ bucket de audio efímero) ----
+  AudioBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-audio
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireAudio
+            Status: Enabled
+            ExpirationInDays: 7
+
+  SynthesizeVoiceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-SynthesizeVoice
+      Description: S5 - Descripcion por voz / accesibilidad (Amazon Polly)
+      CodeUri: sessions/S05-polly-voice/functions/synthesize-voice
+      Handler: app.lambda_handler
+      Runtime: python3.12
+      Role: !Ref LabRoleArn
+      Environment:
+        Variables:
+          AUDIO_BUCKET: !Ref AudioBucket
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
+
+  # ---- S10 · gobernanza: log group de invocación ----
+  # (La alarma de billing va en us-east-1 — métrica AWS/Billing; ver GUIA de S10.)
+  BedrockInvocationLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /techmoda/${AWS::StackName}/bedrock-invocations
+      RetentionInDays: 30
+
+Outputs:
+  ApiUrl:
+    Description: Base API URL (Function URL del router CRUD). Termina en '/'.
+    Value: !GetAtt RouterFunctionUrl.FunctionUrl
+  EnrichLabelsUrl:
+    Description: S1 Function URL
+    Value: !GetAtt EnrichLabelsFunctionUrl.FunctionUrl
+  ModerateImageUrl:
+    Description: S2 Function URL
+    Value: !GetAtt ModerateImageFunctionUrl.FunctionUrl
+  AnalyzeSentimentUrl:
+    Description: S3 Function URL
+    Value: !GetAtt AnalyzeSentimentFunctionUrl.FunctionUrl
+  SynthesizeVoiceUrl:
+    Description: S5 Function URL
+    Value: !GetAtt SynthesizeVoiceFunctionUrl.FunctionUrl
+  ProductsTableName:
+    Description: Tabla DynamoDB de productos
+    Value: !Ref ProductsTable
+  Region:
+    Description: AWS Region
+    Value: !Ref AWS::Region

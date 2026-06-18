@@ -1,3 +1,8 @@
+> ⚡ **Paso 0 — Bootstrap del entorno.** El sandbox de re/Start es efímero: si se
+> recicló desde tu última sesión, el stack y los datos ya no existen. Antes de
+> empezar, corré `bash scripts/bootstrap.sh` (~2-3 min) para dejar el entorno listo.
+> Es idempotente y seguro de correr siempre. Detalle en `SESSION-PLAN.md`.
+
 # S2 · Moderación de imágenes + alt-text accesible (Rekognition DetectModerationLabels)
 
 **Duración:** ~60 min · **Servicio:** Amazon Rekognition · **Dominio AIF-C01:** **D4 — Responsible AI (14%)**

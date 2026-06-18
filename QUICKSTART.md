@@ -230,3 +230,7 @@ techmoda-serverless-capstone-starter/
 ---
 
 **¡Éxito con tu proyecto capstone!** 🚀
+
+## Continuidad en el sandbox (efímero)
+
+El sandbox de AWS re/Start se recicla entre sesiones. **Paso 0 de cada sesión:** `bash scripts/bootstrap.sh` (reconstruye el entorno de la Pista A en ~2-3 min). Plan día por día y modelo de continuidad: ver [`SESSION-PLAN.md`](SESSION-PLAN.md).

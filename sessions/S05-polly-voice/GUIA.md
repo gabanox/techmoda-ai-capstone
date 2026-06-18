@@ -1,3 +1,8 @@
+> ⚡ **Paso 0 — Bootstrap del entorno.** El sandbox de re/Start es efímero: si se
+> recicló desde tu última sesión, el stack y los datos ya no existen. Antes de
+> empezar, corré `bash scripts/bootstrap.sh` (~2-3 min) para dejar el entorno listo.
+> Es idempotente y seguro de correr siempre. Detalle en `SESSION-PLAN.md`.
+
 # S5 · Descripción por voz / accesibilidad (Amazon Polly)
 
 **Duración:** ~60 min · **Servicio:** Amazon Polly · **Dominio AIF-C01:** **D1 (capacidad) + D4 (accesibilidad)**
