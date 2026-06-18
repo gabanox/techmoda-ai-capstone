@@ -11,10 +11,17 @@ declare global {
 
 // Get API URL from runtime config (priority) or build-time env variable
 // Priority: window.__ENV (runtime) > import.meta.env (build-time) > fallback
-const API_URL =
+//
+// En el sandbox AWS re/Start NO hay API Gateway: la base es una Lambda Function
+// URL (https://<id>.lambda-url.<region>.on.aws/). Esa URL termina en '/', así que
+// la normalizamos quitando el slash final para que `${API_URL}/products` no genere
+// un doble slash. (El router tolera el doble slash igual, pero mantenemos URLs limpias.)
+const RAW_API_URL =
   window.__ENV?.VITE_API_URL ||
   import.meta.env.VITE_API_URL ||
-  'https://your-api-id.execute-api.us-east-1.amazonaws.com/Prod';
+  'https://your-function-url-id.lambda-url.us-west-2.on.aws';
+
+const API_URL = RAW_API_URL.replace(/\/+$/, '');
 
 // Log the API URL for debugging (only in development)
 if (import.meta.env.DEV) {
