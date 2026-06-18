@@ -1,0 +1,21 @@
+# AWS SAM Configuration — TechModa AI Capstone (sandbox AWS re/Start)
+#
+# Uso:  cp samconfig.us-west-2.example samconfig.toml
+#
+# samconfig.toml está en .gitignore para no comitear settings específicos de tu cuenta.
+# Región fija del sandbox re/Start: us-west-2 (Oregón).
+
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "techmoda-ai"
+region = "us-west-2"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+resolve_s3 = true
+parameter_overrides = []
+image_repositories = []
+
+[default.build.parameters]
+cached = true
+parallel = true
