@@ -1,0 +1,41 @@
+# ============================================================================
+# S3 · Comprehend DetectSentiment  —  pegar en template.yaml
+# ============================================================================
+
+  AnalyzeSentimentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-AnalyzeSentiment
+      Description: S3 - Sentimiento de resenas (Amazon Comprehend)
+      CodeUri: sessions/S03-comprehend-sentiment/functions/analyze-sentiment
+      Handler: app.lambda_handler
+      Runtime: python3.12
+      Events:
+        ApiPOSTSentiment:
+          Type: Api
+          Properties:
+            Path: /sentiment
+            Method: POST
+            RestApiId: !Ref ProductsApi
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - comprehend:DetectSentiment
+                - comprehend:DetectDominantLanguage
+              Resource: "*"   # APIs Detect de Comprehend: sin ARN a nivel de recurso
+
+# ----------------------------------------------------------------------------
+# API ROUTE — dentro de ProductsApi.DefinitionBody.paths añadir:
+#
+#   /sentiment:
+#     post:
+#       summary: Analizar sentimiento de texto/resenas (Comprehend)
+#       x-amazon-apigateway-integration:
+#         httpMethod: POST
+#         type: aws_proxy
+#         uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AnalyzeSentimentFunction.Arn}/invocations
+#       responses: {}
+# ----------------------------------------------------------------------------

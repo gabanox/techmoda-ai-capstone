@@ -1,0 +1,41 @@
+# ============================================================================
+# S4 · Amazon Translate  —  pegar en template.yaml
+# ============================================================================
+
+  TranslateCatalogFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-TranslateCatalog
+      Description: S4 - Catalogo multilingue ES/EN (Amazon Translate)
+      CodeUri: sessions/S04-translate-multilang/functions/translate-catalog
+      Handler: app.lambda_handler
+      Runtime: python3.12
+      Events:
+        ApiPOSTProductTranslate:
+          Type: Api
+          Properties:
+            Path: /products/{id}/translate
+            Method: POST
+            RestApiId: !Ref ProductsApi
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - translate:TranslateText
+                - comprehend:DetectDominantLanguage  # Translate usa Comprehend para source=auto
+              Resource: "*"
+
+# ----------------------------------------------------------------------------
+# API ROUTE — dentro de ProductsApi.DefinitionBody.paths añadir:
+#
+#   /products/{id}/translate:
+#     post:
+#       summary: Traducir producto ES<->EN (Amazon Translate)
+#       x-amazon-apigateway-integration:
+#         httpMethod: POST
+#         type: aws_proxy
+#         uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TranslateCatalogFunction.Arn}/invocations
+#       responses: {}
+# ----------------------------------------------------------------------------

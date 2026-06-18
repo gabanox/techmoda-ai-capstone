@@ -1,0 +1,63 @@
+# ============================================================================
+# S5 · Amazon Polly + bucket de audio  —  pegar en template.yaml
+# ============================================================================
+# Agrega 1 bucket S3 (audio) y 1 Lambda. Ruta POST /products/{id}/voice.
+
+  AudioBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-audio
+      # Sin acceso público: el audio se sirve por URL prefirmada (mejor práctica).
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireAudio
+            Status: Enabled
+            ExpirationInDays: 7   # FinOps: el audio de demo no se acumula
+
+  SynthesizeVoiceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-SynthesizeVoice
+      Description: S5 - Descripcion por voz / accesibilidad (Amazon Polly)
+      CodeUri: sessions/S05-polly-voice/functions/synthesize-voice
+      Handler: app.lambda_handler
+      Runtime: python3.12
+      Environment:
+        Variables:
+          AUDIO_BUCKET: !Ref AudioBucket
+      Events:
+        ApiPOSTProductVoice:
+          Type: Api
+          Properties:
+            Path: /products/{id}/voice
+            Method: POST
+            RestApiId: !Ref ProductsApi
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - polly:SynthesizeSpeech
+              Resource: "*"   # Polly SynthesizeSpeech no admite ARN a nivel de recurso
+        # Escribir y leer SOLO el bucket de audio de este stack.
+        - S3CrudPolicy:
+            BucketName: !Sub ${AWS::StackName}-audio
+
+# ----------------------------------------------------------------------------
+# API ROUTE — dentro de ProductsApi.DefinitionBody.paths añadir:
+#
+#   /products/{id}/voice:
+#     post:
+#       summary: Generar audio de la descripcion (Amazon Polly)
+#       x-amazon-apigateway-integration:
+#         httpMethod: POST
+#         type: aws_proxy
+#         uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SynthesizeVoiceFunction.Arn}/invocations
+#       responses: {}
+# ----------------------------------------------------------------------------

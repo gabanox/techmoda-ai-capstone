@@ -1,0 +1,60 @@
+# ============================================================================
+# S1 · Rekognition DetectLabels  —  pegar dentro de `Resources:` en template.yaml
+# ============================================================================
+# 1) Agregá este recurso Lambda.
+# 2) Agregá la ruta POST /products/{id}/labels en el DefinitionBody del ProductsApi
+#    (ver bloque "API ROUTE" más abajo).
+# ----------------------------------------------------------------------------
+
+  EnrichLabelsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-EnrichLabels
+      Description: S1 - Auto-etiquetado de imagenes de producto (Rekognition DetectLabels)
+      CodeUri: sessions/S01-rekognition-labels/functions/enrich-labels
+      Handler: app.lambda_handler
+      Runtime: python3.12          # override del Runtime global (nodejs18.x)
+      Environment:
+        Variables:
+          LABEL_MIN_CONFIDENCE: "80"
+          LABEL_MAX_LABELS: "15"
+      Events:
+        ApiPOSTProductLabels:
+          Type: Api
+          Properties:
+            Path: /products/{id}/labels
+            Method: POST
+            RestApiId: !Ref ProductsApi
+      Policies:
+        # --- IAM de MÍNIMO PRIVILEGIO ---
+        # 1) Leer/escribir SOLO la tabla de productos.
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+        # 2) Una sola accion de Rekognition. Resource "*" porque las APIs de
+        #    deteccion de Rekognition NO operan sobre un recurso persistente y
+        #    no admiten ARN a nivel de recurso (lo acotamos por ACCION, no por ARN).
+        - Statement:
+            - Effect: Allow
+              Action:
+                - rekognition:DetectLabels
+              Resource: "*"
+        # 3) Si la imagen viene como s3://, leer SOLO el bucket de frontend/assets.
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+              Resource: !Sub arn:${AWS::Partition}:s3:::${AWS::StackName}-frontend/*
+
+# ----------------------------------------------------------------------------
+# API ROUTE — agregar bajo paths -> /products/{id} NO; crear /products/{id}/labels
+# Dentro de  ProductsApi.Properties.DefinitionBody.paths:  añadir:
+#
+#   /products/{id}/labels:
+#     post:
+#       summary: Auto-etiquetar la imagen del producto (Rekognition)
+#       x-amazon-apigateway-integration:
+#         httpMethod: POST
+#         type: aws_proxy
+#         uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EnrichLabelsFunction.Arn}/invocations
+#       responses: {}
+# ----------------------------------------------------------------------------
