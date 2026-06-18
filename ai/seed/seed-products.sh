@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Carga productos de ejemplo en TechModa vía la API REST (S0).
+# Carga productos de ejemplo en TechModa vía la Function URL del router (S0).
 #
 # Uso:
 #   bash ai/seed/seed-products.sh
-#   API_URL=https://xxxx.execute-api.us-west-2.amazonaws.com/Prod bash ai/seed/seed-products.sh
+#   API_URL=https://xxxx.lambda-url.us-west-2.on.aws bash ai/seed/seed-products.sh
 #
 # Si no pasás API_URL, intenta leerlo de la salida del stack CloudFormation.
 set -euo pipefail

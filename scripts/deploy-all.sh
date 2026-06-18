@@ -11,29 +11,18 @@ echo "  TechModa - Despliegue Completo"
 echo "=========================================="
 echo ""
 
-# Get stack name from samconfig.toml or use default
-STACK_NAME="techmoda-capstone"
+# Get stack name from samconfig.toml or use default (sandbox AWS re/Start)
+STACK_NAME="${STACK_NAME:-techmoda-ai}"
 if [ -f "samconfig.toml" ]; then
-    STACK_NAME=$(grep 'stack_name' samconfig.toml | cut -d'"' -f2 || echo "techmoda-capstone")
+    STACK_NAME=$(grep 'stack_name' samconfig.toml | cut -d'"' -f2 || echo "techmoda-ai")
 fi
 
-echo "📦 Paso 1/4: Construyendo Backend..."
+echo "📦 Paso 1/3: Construyendo y desplegando Backend..."
 echo "-------------------------------------------"
-sam build
-echo "✅ Backend construido exitosamente"
-echo ""
-
-echo "🚀 Paso 2/4: Desplegando Backend..."
-echo "-------------------------------------------"
-# Check if samconfig.toml exists
-if [ ! -f "samconfig.toml" ]; then
-    echo "⚠️  Primera vez desplegando. Se te harán algunas preguntas..."
-    echo ""
-    sam deploy --guided
-else
-    echo "📝 Usando configuración existente en samconfig.toml"
-    sam deploy
-fi
+echo "    (Function URLs + LabRole, sin API Gateway — ver docs/SANDBOX-COMPAT.md)"
+# scripts/deploy.sh hace sam build + sam deploy con las capabilities correctas
+# (CAPABILITY_IAM CAPABILITY_AUTO_EXPAND) y sin pasos de API Gateway.
+STACK_NAME="$STACK_NAME" ./scripts/deploy.sh
 echo "✅ Backend desplegado exitosamente"
 echo ""
 
@@ -43,7 +32,7 @@ API_URL=$(aws cloudformation describe-stacks \
     --query 'Stacks[0].Outputs[?OutputKey==`ApiUrl`].OutputValue' \
     --output text 2>/dev/null || echo "")
 
-echo "🎨 Paso 3/4: Construyendo Frontend..."
+echo "🎨 Paso 2/3: Construyendo Frontend..."
 echo "-------------------------------------------"
 cd frontend
 if [ ! -d "node_modules" ]; then
@@ -56,7 +45,7 @@ cd ..
 echo "✅ Frontend construido exitosamente"
 echo ""
 
-echo "☁️  Paso 4/4: Desplegando Frontend a S3..."
+echo "☁️  Paso 3/3: Desplegando Frontend a S3..."
 echo "-------------------------------------------"
 ./scripts/deploy-frontend.sh
 echo ""
