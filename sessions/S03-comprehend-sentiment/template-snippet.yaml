@@ -1,6 +1,9 @@
 # ============================================================================
 # S3 · Comprehend DetectSentiment  —  pegar en template.yaml
 # ============================================================================
+# Patrón sandbox: Function URL propia + LabRole (sin API Gateway, sin Policies).
+# Ver docs/SANDBOX-COMPAT.md.
+# ----------------------------------------------------------------------------
 
   AnalyzeSentimentFunction:
     Type: AWS::Serverless::Function
@@ -10,32 +13,22 @@
       CodeUri: sessions/S03-comprehend-sentiment/functions/analyze-sentiment
       Handler: app.lambda_handler
       Runtime: python3.12
-      Events:
-        ApiPOSTSentiment:
-          Type: Api
-          Properties:
-            Path: /sentiment
-            Method: POST
-            RestApiId: !Ref ProductsApi
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref ProductsTable
-        - Statement:
-            - Effect: Allow
-              Action:
-                - comprehend:DetectSentiment
-                - comprehend:DetectDominantLanguage
-              Resource: "*"   # APIs Detect de Comprehend: sin ARN a nivel de recurso
+      Role: !Ref LabRoleArn
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
 
 # ----------------------------------------------------------------------------
-# API ROUTE — dentro de ProductsApi.DefinitionBody.paths añadir:
+# FUNCTION URL — Outputs:
+#   AnalyzeSentimentUrl:
+#     Value: !GetAtt AnalyzeSentimentFunctionUrl.FunctionUrl
 #
-#   /sentiment:
-#     post:
-#       summary: Analizar sentimiento de texto/resenas (Comprehend)
-#       x-amazon-apigateway-integration:
-#         httpMethod: POST
-#         type: aws_proxy
-#         uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AnalyzeSentimentFunction.Arn}/invocations
-#       responses: {}
+# Invocación (el texto va en el body; este endpoint NO usa productId en el path):
+#   curl -X POST "$URL" -H 'Content-Type: application/json' \
+#        -d '{"text":"Me encantó la calidad de la tela"}'
+#
+# El LabRole ya permite comprehend:DetectSentiment/DetectDominantLanguage.
 # ----------------------------------------------------------------------------

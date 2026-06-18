@@ -1,6 +1,9 @@
 # ============================================================================
 # S2 · Rekognition DetectModerationLabels + alt-text  —  pegar en template.yaml
 # ============================================================================
+# Patrón sandbox: Function URL propia + LabRole (sin API Gateway, sin Policies).
+# Ver docs/SANDBOX-COMPAT.md.
+# ----------------------------------------------------------------------------
 
   ModerateImageFunction:
     Type: AWS::Serverless::Function
@@ -10,40 +13,24 @@
       CodeUri: sessions/S02-moderation-alttext/functions/moderate-image
       Handler: app.lambda_handler
       Runtime: python3.12
+      Role: !Ref LabRoleArn
       Environment:
         Variables:
           MODERATION_MIN_CONFIDENCE: "60"
-      Events:
-        ApiPOSTProductModerate:
-          Type: Api
-          Properties:
-            Path: /products/{id}/moderate
-            Method: POST
-            RestApiId: !Ref ProductsApi
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref ProductsTable
-        - Statement:
-            - Effect: Allow
-              Action:
-                - rekognition:DetectModerationLabels
-                - rekognition:DetectLabels   # para construir el alt-text
-              Resource: "*"   # APIs Detect: no admiten ARN a nivel de recurso
-        - Statement:
-            - Effect: Allow
-              Action:
-                - s3:GetObject
-              Resource: !Sub arn:${AWS::Partition}:s3:::${AWS::StackName}-frontend/*
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
 
 # ----------------------------------------------------------------------------
-# API ROUTE — dentro de ProductsApi.DefinitionBody.paths añadir:
+# FUNCTION URL — Outputs:
+#   ModerateImageUrl:
+#     Value: !GetAtt ModerateImageFunctionUrl.FunctionUrl
 #
-#   /products/{id}/moderate:
-#     post:
-#       summary: Moderar imagen y generar alt-text (Rekognition)
-#       x-amazon-apigateway-integration:
-#         httpMethod: POST
-#         type: aws_proxy
-#         uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ModerateImageFunction.Arn}/invocations
-#       responses: {}
+# Invocación (id por path o body):
+#   curl -X POST "${URL%/}/products/<PRODUCT_ID>/moderate"
+#
+# El LabRole ya permite rekognition:DetectModerationLabels/DetectLabels y s3:GetObject.
 # ----------------------------------------------------------------------------

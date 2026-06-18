@@ -1,6 +1,9 @@
 # ============================================================================
 # S6 · Amazon Bedrock (generacion)  —  pegar en template.yaml
 # ============================================================================
+# Patrón sandbox: Function URL propia + LabRole (sin API Gateway, sin Policies).
+# Ver docs/SANDBOX-COMPAT.md.
+# ----------------------------------------------------------------------------
 
   GenerateDescriptionFunction:
     Type: AWS::Serverless::Function
@@ -10,46 +13,30 @@
       CodeUri: sessions/S06-bedrock-descripciones/functions/generate-description
       Handler: app.lambda_handler
       Runtime: python3.12
+      Role: !Ref LabRoleArn
       Timeout: 60   # los modelos generativos pueden tardar varios segundos
       Environment:
         Variables:
           BEDROCK_MODEL_ID: anthropic.claude-3-haiku-20240307-v1:0
           BEDROCK_MAX_TOKENS: "300"
           BEDROCK_TEMPERATURE: "0.7"
-      Events:
-        ApiPOSTProductDescribe:
-          Type: Api
-          Properties:
-            Path: /products/{id}/describe
-            Method: POST
-            RestApiId: !Ref ProductsApi
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref ProductsTable
-        # --- Bedrock con MÍNIMO PRIVILEGIO ---
-        # A diferencia de Rekognition/Comprehend, Bedrock SÍ admite ARN a nivel de
-        # recurso: acotamos a modelos foundation y al inference profile, con region
-        # wildcard us-* (los inference profiles cross-region invocan en varias regiones).
-        - Statement:
-            - Effect: Allow
-              Action:
-                - bedrock:InvokeModel
-              Resource:
-                - !Sub arn:${AWS::Partition}:bedrock:us-*::foundation-model/anthropic.claude-3-haiku-20240307-v1:0
-                - !Sub arn:${AWS::Partition}:bedrock:us-*:${AWS::AccountId}:inference-profile/us.anthropic.claude-3-haiku-20240307-v1:0
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
 
 # ----------------------------------------------------------------------------
-# API ROUTE — dentro de ProductsApi.DefinitionBody.paths añadir:
+# FUNCTION URL — Outputs:
+#   GenerateDescriptionUrl:
+#     Value: !GetAtt GenerateDescriptionFunctionUrl.FunctionUrl
 #
-#   /products/{id}/describe:
-#     post:
-#       summary: Generar descripcion del producto (Bedrock)
-#       x-amazon-apigateway-integration:
-#         httpMethod: POST
-#         type: aws_proxy
-#         uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GenerateDescriptionFunction.Arn}/invocations
-#       responses: {}
+# Invocación (id por path o body):
+#   curl -X POST "${URL%/}/products/<PRODUCT_ID>/describe" \
+#        -H 'Content-Type: application/json' -d '{"tone":"elegante","save":true}'
 #
-# NOTA: si usás un inference profile (modelId con prefijo "us."), ajustá BEDROCK_MODEL_ID
-#       y verificá que ambos ARNs (foundation-model e inference-profile) estén en Resource.
+# El LabRole ya permite bedrock:InvokeModel. Habilitá el modelo en
+# Bedrock > Model access (us-west-2) antes de invocar.
+# NOTA: si usás un inference profile, ajustá BEDROCK_MODEL_ID (prefijo "us.").
 # ----------------------------------------------------------------------------

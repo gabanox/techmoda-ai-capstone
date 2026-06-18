@@ -1,7 +1,8 @@
 # ============================================================================
 # S5 · Amazon Polly + bucket de audio  —  pegar en template.yaml
 # ============================================================================
-# Agrega 1 bucket S3 (audio) y 1 Lambda. Ruta POST /products/{id}/voice.
+# Agrega 1 bucket S3 (audio) y 1 Lambda con Function URL propia (patrón sandbox:
+# LabRole, sin API Gateway, sin Policies). Ver docs/SANDBOX-COMPAT.md.
 
   AudioBucket:
     Type: AWS::S3::Bucket
@@ -27,37 +28,25 @@
       CodeUri: sessions/S05-polly-voice/functions/synthesize-voice
       Handler: app.lambda_handler
       Runtime: python3.12
+      Role: !Ref LabRoleArn
       Environment:
         Variables:
           AUDIO_BUCKET: !Ref AudioBucket
-      Events:
-        ApiPOSTProductVoice:
-          Type: Api
-          Properties:
-            Path: /products/{id}/voice
-            Method: POST
-            RestApiId: !Ref ProductsApi
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref ProductsTable
-        - Statement:
-            - Effect: Allow
-              Action:
-                - polly:SynthesizeSpeech
-              Resource: "*"   # Polly SynthesizeSpeech no admite ARN a nivel de recurso
-        # Escribir y leer SOLO el bucket de audio de este stack.
-        - S3CrudPolicy:
-            BucketName: !Sub ${AWS::StackName}-audio
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
 
 # ----------------------------------------------------------------------------
-# API ROUTE — dentro de ProductsApi.DefinitionBody.paths añadir:
+# FUNCTION URL — Outputs:
+#   SynthesizeVoiceUrl:
+#     Value: !GetAtt SynthesizeVoiceFunctionUrl.FunctionUrl
 #
-#   /products/{id}/voice:
-#     post:
-#       summary: Generar audio de la descripcion (Amazon Polly)
-#       x-amazon-apigateway-integration:
-#         httpMethod: POST
-#         type: aws_proxy
-#         uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SynthesizeVoiceFunction.Arn}/invocations
-#       responses: {}
+# Invocación (id por path o body; lang en el body):
+#   curl -X POST "${URL%/}/products/<PRODUCT_ID>/voice" \
+#        -H 'Content-Type: application/json' -d '{"lang":"es"}'
+#
+# El LabRole ya permite polly:SynthesizeSpeech y s3:* sobre el bucket de audio.
 # ----------------------------------------------------------------------------

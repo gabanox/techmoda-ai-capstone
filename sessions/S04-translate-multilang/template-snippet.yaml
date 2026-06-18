@@ -1,6 +1,9 @@
 # ============================================================================
 # S4 · Amazon Translate  —  pegar en template.yaml
 # ============================================================================
+# Patrón sandbox: Function URL propia + LabRole (sin API Gateway, sin Policies).
+# Ver docs/SANDBOX-COMPAT.md.
+# ----------------------------------------------------------------------------
 
   TranslateCatalogFunction:
     Type: AWS::Serverless::Function
@@ -10,32 +13,22 @@
       CodeUri: sessions/S04-translate-multilang/functions/translate-catalog
       Handler: app.lambda_handler
       Runtime: python3.12
-      Events:
-        ApiPOSTProductTranslate:
-          Type: Api
-          Properties:
-            Path: /products/{id}/translate
-            Method: POST
-            RestApiId: !Ref ProductsApi
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref ProductsTable
-        - Statement:
-            - Effect: Allow
-              Action:
-                - translate:TranslateText
-                - comprehend:DetectDominantLanguage  # Translate usa Comprehend para source=auto
-              Resource: "*"
+      Role: !Ref LabRoleArn
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [ "*" ]
+          AllowMethods: [ "*" ]
+          AllowHeaders: [ "*" ]
 
 # ----------------------------------------------------------------------------
-# API ROUTE — dentro de ProductsApi.DefinitionBody.paths añadir:
+# FUNCTION URL — Outputs:
+#   TranslateCatalogUrl:
+#     Value: !GetAtt TranslateCatalogFunctionUrl.FunctionUrl
 #
-#   /products/{id}/translate:
-#     post:
-#       summary: Traducir producto ES<->EN (Amazon Translate)
-#       x-amazon-apigateway-integration:
-#         httpMethod: POST
-#         type: aws_proxy
-#         uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TranslateCatalogFunction.Arn}/invocations
-#       responses: {}
+# Invocación (id por path o body; target en el body):
+#   curl -X POST "${URL%/}/products/<PRODUCT_ID>/translate" \
+#        -H 'Content-Type: application/json' -d '{"target":"en"}'
+#
+# El LabRole ya permite translate:TranslateText y comprehend:DetectDominantLanguage.
 # ----------------------------------------------------------------------------

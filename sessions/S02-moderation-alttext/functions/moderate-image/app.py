@@ -54,9 +54,31 @@ def _build_alt_text(labels, product_name):
     return f"Imagen de producto que muestra: {', '.join(top)}."
 
 
+def _path_id(event):
+    """Extrae el productId tanto de eventos API Gateway (pathParameters) como de
+    Lambda Function URL (rawPath: /products/<id>/...). Fallback: query string o body."""
+    pp = event.get("pathParameters") or {}
+    if pp.get("id"):
+        return pp["id"]
+    raw = event.get("rawPath") or ((event.get("requestContext") or {}).get("http") or {}).get("path") or ""
+    parts = [p for p in raw.split("/") if p]
+    if "products" in parts:
+        i = parts.index("products")
+        if i + 1 < len(parts):
+            return parts[i + 1]
+    qs = event.get("queryStringParameters") or {}
+    if qs.get("id"):
+        return qs["id"]
+    try:
+        b = json.loads(event.get("body") or "{}")
+        return b.get("productId") or b.get("id")
+    except (TypeError, json.JSONDecodeError):
+        return None
+
+
 def lambda_handler(event, context):
     print("Event:", json.dumps(event))
-    product_id = (event.get("pathParameters") or {}).get("id")
+    product_id = _path_id(event)
     if not product_id:
         return _response(400, {"error": "Falta el productId en la ruta."})
 
