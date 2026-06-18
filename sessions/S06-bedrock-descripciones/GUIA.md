@@ -4,6 +4,10 @@
 
 > 🔥 **Sesión clave.** D2 + D3 (generativa) = **52%** del examen. Acá entrás de lleno a foundation models.
 
+> 🏖️ **Sandbox:** esta función se expone con su propia **Lambda Function URL** (no API Gateway) y usa el
+> **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). Su URL es el output
+> **`GenerateDescriptionUrl`** del stack.
+
 ---
 
 ## 🎯 Objetivo
@@ -52,11 +56,13 @@ entrenar/alojar tus propios modelos**. Para "generar texto sin entrenar nada" �
 ## 🚶 Paso a paso
 
 1. Habilitá el acceso al modelo en la consola de Bedrock (ver prerequisitos).
-2. Pegá `GenerateDescriptionFunction` + la ruta `POST /products/{id}/describe` desde el snippet.
+2. Pegá `GenerateDescriptionFunction` (con `Role: !Ref LabRoleArn` + su `FunctionUrlConfig`) + el output `GenerateDescriptionUrl` desde el snippet.
 3. `sam build && sam deploy`.
-4. Generá una descripción:
+4. Generá una descripción (Function URL de esta función; el productId va en path o body):
 ```bash
-curl -s -X POST "$ApiUrl/products/PRODUCT_ID/describe" \
+URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+  --query "Stacks[0].Outputs[?OutputKey=='GenerateDescriptionUrl'].OutputValue" --output text)
+curl -s -X POST "${URL%/}/products/PRODUCT_ID/describe" \
   -H "Content-Type: application/json" \
   -d '{"tone":"elegante y aspiracional","save":true}' | python3 -m json.tool
 ```

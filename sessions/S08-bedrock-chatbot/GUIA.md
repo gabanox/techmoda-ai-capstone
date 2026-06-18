@@ -4,6 +4,10 @@
 
 > 🔥 **Sesión cumbre.** Junta todo lo generativo: prompt engineering (D2) + RAG (D3) = el **52%** del examen en una sola feature.
 
+> 🏖️ **Sandbox:** esta función se expone con su propia **Lambda Function URL** (no API Gateway) y usa el
+> **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). Su URL es el output
+> **`ShoppingAssistantUrl`** del stack.
+
 ---
 
 ## 🎯 Objetivo
@@ -49,12 +53,14 @@ precios de hoy. Si le preguntás por productos, **alucinaría**. RAG resuelve es
 
 ## 🚶 Paso a paso
 
-1. Asegurate de tener el índice de S7 (`POST /search/index`).
-2. Pegá `ShoppingAssistantFunction` + la ruta `POST /assistant` desde el snippet.
+1. Asegurate de tener el índice de S7 (`POST /search/index` vía la Function URL de `IndexEmbeddings`).
+2. Pegá `ShoppingAssistantFunction` (con `Role: !Ref LabRoleArn` + su `FunctionUrlConfig`) + el output `ShoppingAssistantUrl` desde el snippet.
 3. `sam build && sam deploy`.
-4. Conversá:
+4. Conversá (Function URL de esta función):
 ```bash
-curl -s -X POST "$ApiUrl/assistant" \
+URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+  --query "Stacks[0].Outputs[?OutputKey=='ShoppingAssistantUrl'].OutputValue" --output text)
+curl -s -X POST "${URL%/}/assistant" \
   -H "Content-Type: application/json" \
   -d '{"message":"Busco algo cómodo y blanco para caminar todo el día"}' | python3 -m json.tool
 ```

@@ -2,6 +2,11 @@
 
 Estos prompts le ayudan a instalar y configurar las herramientas necesarias para desplegar su API serverless de TechModa.
 
+> 🏖️ **Sandbox AWS re/Start (Vocareum):** el deploy se ejecuta con el **LabRole** preexistente, que
+> no permite API Gateway ni `iam:CreateRole`. Por eso TechModa usa **Lambda Function URLs** + router
+> y reusa el LabRole. No necesitás crear roles ni usuarios IAM adicionales. Ver
+> [../SANDBOX-COMPAT.md](../SANDBOX-COMPAT.md).
+
 ## Prompt 1.1: Instalación de AWS CLI (macOS)
 
 ```

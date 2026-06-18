@@ -2,6 +2,10 @@
 
 **Duración:** ~60 min · **Servicio:** Amazon Rekognition · **Dominio AIF-C01:** **D4 — Responsible AI (14%)**
 
+> 🏖️ **Sandbox:** esta función se expone con su propia **Lambda Function URL** (no API Gateway) y usa el
+> **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). Su URL es el output
+> **`ModerateImageUrl`** del stack.
+
 ---
 
 ## 🎯 Objetivo
@@ -50,11 +54,13 @@ imágenes, y aquí lo automatizamos.
 
 ## 🚶 Paso a paso
 
-1. Pegá `ModerateImageFunction` y la ruta `POST /products/{id}/moderate` desde `template-snippet.yaml`.
+1. Pegá `ModerateImageFunction` (con `Role: !Ref LabRoleArn` + su `FunctionUrlConfig`) y el output `ModerateImageUrl` desde `template-snippet.yaml`.
 2. `sam build && sam deploy`.
-3. Ejecutá:
+3. Ejecutá (usá la Function URL de esta función; el productId va en el path o en el body):
 ```bash
-curl -s -X POST "$ApiUrl/products/PRODUCT_ID/moderate" | python3 -m json.tool
+URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+  --query "Stacks[0].Outputs[?OutputKey=='ModerateImageUrl'].OutputValue" --output text)
+curl -s -X POST "${URL%/}/products/PRODUCT_ID/moderate" | python3 -m json.tool
 ```
 Respuesta esperada para una foto de moda normal:
 ```json

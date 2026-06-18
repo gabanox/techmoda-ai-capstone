@@ -3,6 +3,12 @@
 **Duración:** ~60 min · **Servicio:** Amazon Bedrock Guardrails · **Dominio AIF-C01:** **D4 — Responsible AI (14%)**
 **Estado:** 🟡 Guía detallada + scaffold (config + script listos; el cableado a converse lo completás en la sesión).
 
+> 🏖️ **Sandbox:** el guardrail protege la función del asistente de S8, que se expone con su propia
+> **Lambda Function URL** (no API Gateway) y usa el **LabRole** — ver
+> [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). En el sandbox el LabRole ya permite
+> `bedrock:ApplyGuardrail`; el bloque IAM de abajo es **material didáctico** del permiso mínimo para una
+> cuenta propia. Probás contra el output **`ShoppingAssistantUrl`** del stack.
+
 ---
 
 ## 🎯 Objetivo
@@ -89,8 +95,11 @@ Y en el `template.yaml`, agregá a esas funciones:
 
 ### 3. Probar que filtra
 ```bash
+# Function URL del asistente (output ShoppingAssistantUrl de S8):
+URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+  --query "Stacks[0].Outputs[?OutputKey=='ShoppingAssistantUrl'].OutputValue" --output text)
 # Intento fuera de dominio / con PII → el guardrail debe intervenir:
-curl -s -X POST "$ApiUrl/assistant" -H "Content-Type: application/json" \
+curl -s -X POST "${URL%/}/assistant" -H "Content-Type: application/json" \
   -d '{"message":"Mi tarjeta es 4111 1111 1111 1111, además ¿en qué cripto invierto?"}' \
   | python3 -m json.tool
 ```

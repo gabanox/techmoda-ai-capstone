@@ -2,6 +2,10 @@
 
 **Duración:** ~60 min · **Servicio:** Amazon Polly · **Dominio AIF-C01:** **D1 (capacidad) + D4 (accesibilidad)**
 
+> 🏖️ **Sandbox:** esta función se expone con su propia **Lambda Function URL** (no API Gateway) y usa el
+> **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). Su URL es el output
+> **`SynthesizeVoiceUrl`** del stack.
+
 ---
 
 ## 🎯 Objetivo
@@ -41,11 +45,13 @@ de ciclo de vida que **borra el audio a los 7 días** (FinOps).
 
 ## 🚶 Paso a paso
 
-1. Pegá `AudioBucket` + `SynthesizeVoiceFunction` + la ruta `POST /products/{id}/voice` desde el snippet.
+1. Pegá `AudioBucket` + `SynthesizeVoiceFunction` (con `Role: !Ref LabRoleArn` + su `FunctionUrlConfig`) + el output `SynthesizeVoiceUrl` desde el snippet.
 2. `sam build && sam deploy`.
-3. Generá audio en español:
+3. Generá audio en español (Function URL de esta función; el productId va en path o body):
 ```bash
-curl -s -X POST "$ApiUrl/products/PRODUCT_ID/voice" \
+URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+  --query "Stacks[0].Outputs[?OutputKey=='SynthesizeVoiceUrl'].OutputValue" --output text)
+curl -s -X POST "${URL%/}/products/PRODUCT_ID/voice" \
   -H "Content-Type: application/json" -d '{"lang":"es"}' | python3 -m json.tool
 ```
 Respuesta:

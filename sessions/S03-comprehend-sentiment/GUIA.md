@@ -2,6 +2,10 @@
 
 **Duración:** ~60 min · **Servicio:** Amazon Comprehend · **Dominio AIF-C01:** **D1 — Fundamentals of AI and ML (20%)**
 
+> 🏖️ **Sandbox:** esta función se expone con su propia **Lambda Function URL** (no API Gateway) y usa el
+> **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). Su URL es el output
+> **`AnalyzeSentimentUrl`** del stack.
+
 ---
 
 ## 🎯 Objetivo
@@ -43,18 +47,20 @@ Flujo de esta sesión (y por qué importa para el examen):
 
 ## 🚶 Paso a paso
 
-1. Pegá `AnalyzeSentimentFunction` y la ruta `POST /sentiment` desde `template-snippet.yaml`.
+1. Pegá `AnalyzeSentimentFunction` (con `Role: !Ref LabRoleArn` + su `FunctionUrlConfig`) y el output `AnalyzeSentimentUrl` desde `template-snippet.yaml`.
 2. `sam build && sam deploy`.
-3. Probá un texto suelto:
+3. Obtené la Function URL de esta función y probá un texto suelto:
 ```bash
-curl -s -X POST "$ApiUrl/sentiment" \
+URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+  --query "Stacks[0].Outputs[?OutputKey=='AnalyzeSentimentUrl'].OutputValue" --output text)
+curl -s -X POST "${URL%/}/sentiment" \
   -H "Content-Type: application/json" \
   -d '{"text":"Me encantó la tela y el corte, llegó rapidísimo. Lo volvería a comprar."}' \
   | python3 -m json.tool
 ```
 4. Probá varias reseñas y guardalas en un producto:
 ```bash
-curl -s -X POST "$ApiUrl/sentiment" \
+curl -s -X POST "${URL%/}/sentiment" \
   -H "Content-Type: application/json" \
   -d '{"productId":"PRODUCT_ID","reviews":[
         "Excelente calidad, súper recomendada.",

@@ -1,5 +1,13 @@
 # Arquitectura Serverless de TechModa
 
+> 🏖️ **Compatibilidad sandbox AWS re/Start (Vocareum).** Este capstone se despliega con el
+> **LabRole** del sandbox, que **no permite API Gateway** ni `iam:CreateRole`. Por eso el CRUD
+> se expone con **una Lambda Function URL** servida por un **router** (`functions/router/index.js`),
+> y cada función reusa el **LabRole** preexistente en lugar de un rol generado por SAM. Los conceptos
+> de API Gateway y privilegio mínimo IAM que aparecen abajo se conservan como **material didáctico**;
+> la realidad desplegada usa Function URLs. Detalles completos en
+> [`SANDBOX-COMPAT.md`](SANDBOX-COMPAT.md).
+
 ## Diagrama de Arquitectura
 
 ```
@@ -12,18 +20,20 @@
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                     Amazon API Gateway (REST API)                    │
+│            Lambda Function URL  (AuthType: NONE, CORS *)             │
+│            https://<id>.lambda-url.us-west-2.on.aws/                 │
 │  ┌────────────────────────────────────────────────────────────────┐ │
-│  │  Endpoints:                                                     │ │
+│  │  Router (functions/router/index.js) — parsea method + rawPath: │ │
 │  │  • GET  /products          → Lambda ListItems                  │ │
 │  │  • POST /products          → Lambda CreateItem                 │ │
 │  │  • GET  /products/{id}     → Lambda GetItem                    │ │
 │  │  • PUT  /products/{id}     → Lambda UpdateItem                 │ │
 │  │  • DELETE /products/{id}   → Lambda DeleteItem                 │ │
+│  │  (Cada función de IA S1–S8 tiene su PROPIA Function URL.)       │ │
 │  └────────────────────────────────────────────────────────────────┘ │
 └────────────────────────────┬─────────────────────────────────────────┘
                              │
-                             │ Invocación de Eventos
+                             │ require('../<handler>/index.js')
                              │
                 ┌────────────┴────────────┐
                 │                         │
@@ -78,24 +88,31 @@
 
 ## Descripciones de Componentes
 
-### Amazon API Gateway
+### Punto de entrada HTTP: Lambda Function URL + router
+
+> 🏖️ **Sandbox:** se usa **Function URL**, no API Gateway. La sección a continuación describe el
+> rol que cumple el punto de entrada; donde dice "API Gateway" como concepto didáctico, en el
+> sandbox lo cumple la **Function URL del router**. Ver [`SANDBOX-COMPAT.md`](SANDBOX-COMPAT.md).
 
 **Propósito**: Sirve como punto de entrada para todas las peticiones HTTP a la API del catálogo de productos.
 
 **Configuración**:
-- **Tipo**: REST API (no HTTP API)
-- **Stage**: Prod
-- **Tipo de Endpoint**: Regional
-- **CORS**: Habilitado para todos los endpoints
-- **Integración**: Integración Proxy Lambda (pasa la petición completa a Lambda)
+- **Tipo**: Lambda **Function URL** (`AWS::Serverless::Function` con `FunctionUrlConfig`)
+- **AuthType**: `NONE` (pública, demo)
+- **Sin stage** (`/Prod` no aplica — la URL termina en `/`)
+- **CORS**: `AllowOrigins/Methods/Headers: ["*"]`
+- **Router**: una sola Function URL apunta a `functions/router/index.js`, que parsea
+  `event.requestContext.http.method` + `event.rawPath` y reusa los 5 handlers CRUD vía `require('../...')`
 
 **Responsabilidades**:
-- Enrutar peticiones a las funciones Lambda apropiadas basándose en el método HTTP y la ruta
-- Manejar peticiones preflight de CORS
+- Enrutar peticiones a las funciones Lambda apropiadas basándose en el método HTTP y la ruta (lo hace el router)
+- Manejar CORS (configurado en `FunctionUrlConfig.Cors`)
 - Devolver respuestas Lambda a clientes con códigos de estado HTTP apropiados
 - Registrar peticiones en CloudWatch
 
-**Formato de URL Base**: `https://{api-id}.execute-api.us-east-1.amazonaws.com/Prod`
+**Formato de URL Base**: `https://<id>.lambda-url.us-west-2.on.aws/` (termina en `/`, sin `/Prod`).
+El output del stack se llama `ApiUrl`. Cada función de IA (S1–S8) expone **su propia** Function URL
+(p. ej. `EnrichLabelsUrl`, `ModerateImageUrl`, …).
 
 ### Funciones AWS Lambda
 
@@ -109,20 +126,28 @@
 - **Tracing X-Ray**: Activo
 - **Variables de Entorno**: `PRODUCTS_TABLE` (inyectado por SAM)
 
-**Permisos IAM**:
-Cada función tiene acceso de privilegio mínimo a DynamoDB:
-- ListItems: `dynamodb:Scan`
-- CreateItem: `dynamodb:PutItem`
-- GetItem: `dynamodb:GetItem`
-- UpdateItem: `dynamodb:GetItem`, `dynamodb:UpdateItem`
-- DeleteItem: `dynamodb:DeleteItem`
+**Permisos IAM (sandbox)**:
+Cada función usa `Role: !Ref LabRoleArn` — el **LabRole** preexistente del sandbox
+(`arn:aws:iam::879652687082:role/LabRole`) — y **no** lleva bloque `Policies:` (en SAM `Role` y
+`Policies` son mutuamente excluyentes, y el LabRole no puede crear roles nuevos). El LabRole ya trae
+permisos amplios sobre DynamoDB y los servicios de IA.
+
+> 📚 **Material didáctico (cuenta propia):** en una cuenta sin las restricciones del sandbox sí
+> escribirías políticas de **privilegio mínimo** por función — ese es el patrón correcto a aprender:
+> - ListItems: `dynamodb:Scan`
+> - CreateItem: `dynamodb:PutItem`
+> - GetItem: `dynamodb:GetItem`
+> - UpdateItem: `dynamodb:GetItem`, `dynamodb:UpdateItem`
+> - DeleteItem: `dynamodb:DeleteItem`
+>
+> El historial de git conserva estas versiones acotadas. Ver [`SANDBOX-COMPAT.md`](SANDBOX-COMPAT.md) §2.
 
 ### Amazon DynamoDB
 
 **Propósito**: Almacén de datos NoSQL persistente para el catálogo de productos.
 
 **Configuración de Tabla**:
-- **Nombre de Tabla**: `{StackName}-Products` (ej., `techmoda-capstone-Products`)
+- **Nombre de Tabla**: `{StackName}-Products` (ej., `techmoda-ai-Products`)
 - **Clave Primaria**: `productId` (String) - Solo clave de partición
 - **Modo de Facturación**: PAY_PER_REQUEST (bajo demanda)
 - **Protección de Eliminación**: Deshabilitada (para limpieza fácil)
@@ -172,12 +197,12 @@ Cada función Lambda crea automáticamente un grupo de logs:
 **Propósito**: Tracing distribuido para visualización del flujo de peticiones.
 
 **Configuración**:
-- Habilitado para API Gateway
 - Habilitado para todas las funciones Lambda (vía `Tracing: Active`)
 - Instrumentación automática de llamadas AWS SDK
+- *(Nota sandbox: sin API Gateway, la traza empieza en la invocación de la Function URL → Lambda.)*
 
 **Detalles de Traza**:
-- Latencia de invocación API Gateway → Lambda
+- Latencia de invocación Function URL → Lambda
 - Desglose del tiempo de ejecución Lambda
 - Duración de operación DynamoDB
 - Identificación de errores
@@ -185,34 +210,38 @@ Cada función Lambda crea automáticamente un grupo de logs:
 
 ### Roles IAM
 
-**Propósito**: Control de acceso seguro siguiendo el principio de privilegio mínimo.
+**Propósito**: Control de acceso siguiendo el principio de privilegio mínimo (concepto).
 
-**Roles de Ejecución Lambda**:
-SAM crea automáticamente roles de ejecución para cada función con:
-- `AWSLambdaBasicExecutionRole` (escritura CloudWatch Logs)
-- `AWSXRayDaemonWriteAccess` (tracing X-Ray)
-- Políticas DynamoDB personalizadas (específicas a las necesidades de la función)
+**Roles de Ejecución Lambda (sandbox)**:
+En el sandbox, **cada función referencia el LabRole preexistente** (`Role: !Ref LabRoleArn`); SAM
+**no** crea un rol por función porque el LabRole no permite `iam:CreateRole`. El LabRole ya incluye
+escritura a CloudWatch Logs, X-Ray, DynamoDB y los servicios de IA administrados.
 
-**Ejemplo de Política (ListItems)**:
-```yaml
-Policies:
-  - DynamoDBReadPolicy:
-      TableName: !Ref ProductsTable
-```
-
-Esto otorga solo `dynamodb:Scan` y `dynamodb:GetItem` en la tabla específica.
+> 📚 **Material didáctico (cuenta propia):** lo correcto en una cuenta propia es que SAM cree un rol
+> de ejecución por función con privilegio mínimo. Ejemplo (ListItems):
+> ```yaml
+> Policies:
+>   - DynamoDBReadPolicy:
+>       TableName: !Ref ProductsTable
+> ```
+> Esto otorga solo `dynamodb:Scan` y `dynamodb:GetItem` en la tabla específica. En el sandbox este
+> bloque `Policies:` se elimina (mutuamente excluyente con `Role:`). Ver
+> [`SANDBOX-COMPAT.md`](SANDBOX-COMPAT.md) §2.
 
 ## Diagramas de Flujo de Datos
+
+> 🏖️ **Sandbox:** la "Function URL del router" cumple el rol que en API Gateway tendría el front HTTP.
+> `{API_URL}` es la Function URL del stack (output `ApiUrl`), termina en `/` y **no** lleva `/Prod`.
 
 ### Flujo Crear Producto
 
 ```
 1. Cliente envía petición POST
-   └─> curl -X POST {API_URL}/products -H "Content-Type: application/json" -d '{...}'
+   └─> curl -X POST ${API_URL%/}/products -H "Content-Type: application/json" -d '{...}'
 
-2. API Gateway recibe petición
-   └─> Valida método HTTP, encabezados
-   └─> Enruta a Lambda CreateItem
+2. Function URL → router recibe petición
+   └─> Lee event.requestContext.http.method + event.rawPath
+   └─> Enruta a Lambda CreateItem (require('../create-item/index.js'))
 
 3. Lambda CreateItem procesa
    └─> Analiza cuerpo JSON (JSON.parse(event.body))
@@ -226,7 +255,7 @@ Esto otorga solo `dynamodb:Scan` y `dynamodb:GetItem` en la tabla específica.
    └─> Escribe en tabla TechModa-Products
    └─> Devuelve éxito
 
-5. API Gateway envía respuesta
+5. Router devuelve respuesta vía Function URL
    └─> HTTP 201 con cuerpo JSON
    └─> Incluye encabezados CORS
 ```
@@ -235,9 +264,9 @@ Esto otorga solo `dynamodb:Scan` y `dynamodb:GetItem` en la tabla específica.
 
 ```
 1. Cliente envía petición GET
-   └─> curl -X GET {API_URL}/products
+   └─> curl -X GET ${API_URL%/}/products
 
-2. API Gateway recibe petición
+2. Function URL → router recibe petición
    └─> Enruta a Lambda ListItems
 
 3. Lambda ListItems procesa
@@ -249,7 +278,7 @@ Esto otorga solo `dynamodb:Scan` y `dynamodb:GetItem` en la tabla específica.
    └─> Escanea tabla completa
    └─> Devuelve array Items
 
-5. API Gateway envía respuesta
+5. Router devuelve respuesta vía Function URL
    └─> HTTP 200 con array JSON
 ```
 
@@ -257,10 +286,10 @@ Esto otorga solo `dynamodb:Scan` y `dynamodb:GetItem` en la tabla específica.
 
 ```
 1. Cliente envía petición GET con ID
-   └─> curl -X GET {API_URL}/products/{productId}
+   └─> curl -X GET ${API_URL%/}/products/{productId}
 
-2. API Gateway recibe petición
-   └─> Extrae parámetro de ruta {id}
+2. Function URL → router recibe petición
+   └─> Extrae el id del rawPath y reconstruye pathParameters.id
    └─> Enruta a Lambda GetItem
 
 3. Lambda GetItem procesa
@@ -273,7 +302,7 @@ Esto otorga solo `dynamodb:Scan` y `dynamodb:GetItem` en la tabla específica.
    └─> Búsqueda directa por clave (rápido)
    └─> Devuelve Item o null
 
-5. API Gateway envía respuesta
+5. Router devuelve respuesta vía Function URL
    └─> HTTP 200 (encontrado) o 404 (no encontrado)
 ```
 
@@ -281,10 +310,10 @@ Esto otorga solo `dynamodb:Scan` y `dynamodb:GetItem` en la tabla específica.
 
 ```
 1. Cliente envía petición PUT con ID y cuerpo
-   └─> curl -X PUT {API_URL}/products/{productId} -H "Content-Type: application/json" -d '{...}'
+   └─> curl -X PUT ${API_URL%/}/products/{productId} -H "Content-Type: application/json" -d '{...}'
 
-2. API Gateway recibe petición
-   └─> Extrae parámetro de ruta {id}
+2. Function URL → router recibe petición
+   └─> Extrae el id del rawPath y reconstruye pathParameters.id
    └─> Enruta a Lambda UpdateItem
 
 3. Lambda UpdateItem procesa
@@ -300,7 +329,7 @@ Esto otorga solo `dynamodb:Scan` y `dynamodb:GetItem` en la tabla específica.
    └─> Modifica atributos especificados
    └─> Devuelve item actualizado
 
-5. API Gateway envía respuesta
+5. Router devuelve respuesta vía Function URL
    └─> HTTP 200 (actualizado) o 404 (no encontrado)
 ```
 
@@ -308,10 +337,10 @@ Esto otorga solo `dynamodb:Scan` y `dynamodb:GetItem` en la tabla específica.
 
 ```
 1. Cliente envía petición DELETE con ID
-   └─> curl -X DELETE {API_URL}/products/{productId}
+   └─> curl -X DELETE ${API_URL%/}/products/{productId}
 
-2. API Gateway recibe petición
-   └─> Extrae parámetro de ruta {id}
+2. Function URL → router recibe petición
+   └─> Extrae el id del rawPath y reconstruye pathParameters.id
    └─> Enruta a Lambda DeleteItem
 
 3. Lambda DeleteItem procesa
@@ -323,7 +352,7 @@ Esto otorga solo `dynamodb:Scan` y `dynamodb:GetItem` en la tabla específica.
    └─> Remueve item por clave primaria
    └─> Tiene éxito incluso si el item no existe (idempotente)
 
-5. API Gateway envía respuesta
+5. Router devuelve respuesta vía Function URL
    └─> HTTP 200 con confirmación de eliminación
 ```
 
@@ -332,10 +361,12 @@ Esto otorga solo `dynamodb:Scan` y `dynamodb:GetItem` en la tabla específica.
 ### URL Base
 
 ```
-https://{api-id}.execute-api.us-east-1.amazonaws.com/Prod
+https://<id>.lambda-url.us-west-2.on.aws/
 ```
 
-Reemplace `{api-id}` con su ID real de API Gateway de la salida de deployment.
+Es la **Function URL del router** (output `ApiUrl` del stack). Termina en `/` y **no** lleva sufijo
+`/Prod`. Reemplace `<id>` con el valor real de la salida de deployment. En los curl de abajo,
+elimine la barra final con `${API_URL%/}` antes de concatenar la ruta.
 
 ### Resumen de Endpoints
 
@@ -706,7 +737,7 @@ REPORT RequestId: abc-123  Duration: 150.00 ms  Billed Duration: 150 ms  Memory 
 
 **Mapa de Servicios**:
 Muestra representación visual de:
-- Cadena de llamadas API Gateway → Lambda → DynamoDB
+- Cadena de llamadas Function URL → Lambda → DynamoDB
 - Latencia para cada segmento
 - Tasas de error
 - Indicadores de cold start
@@ -729,10 +760,11 @@ Cada función Lambda tiene solo los permisos que necesita:
 
 ### Configuración CORS
 
-API Gateway permite peticiones de origen cruzado para compatibilidad del navegador:
+La **Function URL** (`FunctionUrlConfig.Cors`) permite peticiones de origen cruzado para
+compatibilidad del navegador:
 - `Access-Control-Allow-Origin: *`
-- `Access-Control-Allow-Headers: Content-Type`
-- `Access-Control-Allow-Methods: GET,POST,PUT,DELETE,OPTIONS`
+- `Access-Control-Allow-Headers: *`
+- `Access-Control-Allow-Methods: *`
 
 **Nota de Producción**: En aplicaciones reales, restringa `Allow-Origin` a dominios específicos.
 
@@ -764,14 +796,14 @@ API Gateway permite peticiones de origen cruzado para compatibilidad del navegad
 ### Escalabilidad
 
 - **Lambda**: Escalado automático hasta el límite de concurrencia de cuenta (predeterminado 1000)
-- **API Gateway**: Maneja 10,000 peticiones por segundo por defecto
+- **Lambda Function URL**: hereda el límite de concurrencia de Lambda (no hay capa intermedia)
 - **DynamoDB**: El modo PAY_PER_REQUEST escala automáticamente para manejar tráfico
 
 ### Límites de Throughput
 
 Para proyectos capstone de estudiantes, estos límites no son preocupación:
 - Lambda: 1000 ejecuciones concurrentes
-- API Gateway: 10,000 RPS por región
+- Function URL: limitada por la concurrencia de Lambda
 - DynamoDB: Sin límites de throughput en modo PAY_PER_REQUEST
 
 ## Decisiones de Arquitectura

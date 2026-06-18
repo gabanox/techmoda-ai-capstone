@@ -2,6 +2,10 @@
 
 Esta guía te ayudará a desplegar y probar el proyecto en 10 minutos.
 
+> 🏖️ **Sandbox AWS re/Start:** sin API Gateway (no permitido por el `LabRole`). La API es una
+> **Lambda Function URL** servida por un router, y cada Lambda reusa el `LabRole`. Región `us-west-2`,
+> stack `techmoda-ai`. Detalle: [`docs/SANDBOX-COMPAT.md`](docs/SANDBOX-COMPAT.md).
+
 ## Opción 1: Usar el Código Pre-implementado (Recomendado para empezar)
 
 Las funciones Lambda ya están implementadas y listas para usar. Solo necesitas desplegar.
@@ -18,23 +22,16 @@ Las funciones Lambda ya están implementadas y listas para usar. Solo necesitas 
 ./scripts/deploy.sh
 ```
 
-Cuando te pregunte, usa estos valores:
-```
-Stack Name: tu-nombre-apellido
-AWS Region: us-east-1
-Confirm changes: y
-Allow SAM CLI IAM role creation: y
-Disable rollback: y
-[5x] Function has no authentication: y
-Save arguments: y
-```
+`scripts/deploy.sh` corre `sam build && sam deploy` con las capabilities correctas para el sandbox
+(`CAPABILITY_IAM CAPABILITY_AUTO_EXPAND`, región `us-west-2`, stack `techmoda-ai`, sin API Gateway).
+No hace falta crear roles IAM: las funciones reusan el `LabRole`.
 
 ### Paso 3: Obtener tu API URL
 
-Después del despliegue, verás:
+Después del despliegue, verás (la base es una **Lambda Function URL**, no API Gateway):
 ```
 Outputs
-ApiUrl    https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/Prod
+ApiUrl    https://xxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-west-2.on.aws/
 ```
 
 **Copia esa URL** y guárdala.
@@ -42,8 +39,10 @@ ApiUrl    https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/Prod
 ### Paso 4: Probar el API
 
 ```bash
-# Configura tu API URL
-export API_URL="https://tu-api-url.execute-api.us-east-1.amazonaws.com/Prod"
+# Configura tu API URL (la Function URL del router). %/ quita el slash final.
+export API_URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai \
+  --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" --output text)
+API_URL="${API_URL%/}"
 
 # Crear un producto
 curl -X POST $API_URL/products \
@@ -198,7 +197,8 @@ O si usas Codespaces, ver [AWS_CREDENTIALS_SETUP.md](AWS_CREDENTIALS_SETUP.md).
 
 ```
 techmoda-serverless-capstone-starter/
-├── functions/                   # 5 funciones Lambda (implementadas)
+├── functions/                   # Lambdas CRUD (implementadas) + router
+│   ├── router/                 # router de la Function URL (despliega como 1 Lambda)
 │   ├── list-items/             # GET /products
 │   ├── create-item/            # POST /products
 │   ├── get-item/               # GET /products/{id}
@@ -225,7 +225,7 @@ techmoda-serverless-capstone-starter/
 
 - **AWS SAM Docs**: https://docs.aws.amazon.com/serverless-application-model/
 - **DynamoDB Developer Guide**: https://docs.aws.amazon.com/dynamodb/
-- **API Gateway REST API**: https://docs.aws.amazon.com/apigateway/
+- **Lambda Function URLs**: https://docs.aws.amazon.com/lambda/latest/dg/lambda-urls.html
 
 ---
 

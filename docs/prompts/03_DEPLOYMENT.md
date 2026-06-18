@@ -2,6 +2,18 @@
 
 Estos prompts le guían a través de la construcción y el despliegue de su aplicación serverless de TechModa usando AWS SAM.
 
+> 🏖️ **Sandbox AWS re/Start (importante):** este capstone **no usa API Gateway** (el `LabRole` no lo
+> permite). La API se expone con una **Lambda Function URL** (router CRUD) y cada Lambda reusa el
+> `LabRole` (no se crean roles IAM nuevos). Por eso:
+> - El comando real de deploy es:
+>   `sam deploy --stack-name techmoda-ai --region us-west-2 --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --resolve-s3 --no-confirm-changeset`
+>   (atajo: `bash scripts/deploy.sh`). **No** uses `--guided` interactivo en el sandbox.
+> - El output `ApiUrl` es una Function URL `https://<id>.lambda-url.us-west-2.on.aws/` (sin `/Prod`).
+> - Donde abajo veas "API Gateway", "TechModaApi", "execute-api", "/Prod", "us-east-1" o
+>   "techmoda-capstone", interpretá Function URL / `ApiUrl` / `us-west-2` / `techmoda-ai`.
+>
+> Las 3 restricciones y el patrón están en [`../SANDBOX-COMPAT.md`](../SANDBOX-COMPAT.md).
+
 ## Prompt 3.1: Construir Aplicación SAM
 
 ```
@@ -69,11 +81,10 @@ Please provide:
 ### Después de sam deploy
 
 ✅ Stack de CloudFormation creado/actualizado
-✅ Funciones Lambda desplegadas
-✅ Endpoint de API Gateway creado
+✅ Funciones Lambda desplegadas (con Function URLs)
 ✅ Tabla de DynamoDB creada
-✅ Roles IAM configurados
-✅ Outputs mostrados (incluyendo URL de API)
+✅ Funciones asociadas al `LabRole` (no se crean roles nuevos)
+✅ Outputs mostrados (incluyendo `ApiUrl` = Function URL del router)
 
 ## Guía Detallada
 
@@ -172,13 +183,13 @@ CloudFormation outputs from deployed stack
 -------------------------------------------------
 Outputs
 -------------------------------------------------
-Key                 TechModaApi
-Description         API Gateway endpoint URL
-Value               https://abc123xyz.execute-api.us-east-1.amazonaws.com/Prod
+Key                 ApiUrl
+Description         Base API URL (Lambda Function URL del router CRUD)
+Value               https://abc123xyz.lambda-url.us-west-2.on.aws/
 -------------------------------------------------
 ```
 
-**IMPORTANTE**: ¡Copie la URL de API Gateway de los outputs!
+**IMPORTANTE**: ¡Copie la `ApiUrl` (Function URL) de los outputs!
 
 ### Despliegues Subsecuentes
 
@@ -254,7 +265,7 @@ Please help me:
 
 ```bash
 aws cloudformation describe-stacks \
-  --stack-name techmoda-capstone \
+  --stack-name techmoda-ai \
   --query "Stacks[0].StackStatus" \
   --output text
 ```
@@ -265,29 +276,31 @@ aws cloudformation describe-stacks \
 
 ```bash
 aws cloudformation list-stack-resources \
-  --stack-name techmoda-capstone
+  --stack-name techmoda-ai
 ```
 
-**Debería Ver**:
-- 5 funciones Lambda
-- 1 API Gateway
+**Debería Ver** (base S0):
+- 1 función Lambda (router) + su `AWS::Lambda::Url`
 - 1 tabla DynamoDB
-- Roles IAM
+- S3 + CloudFront (frontend)
 - Grupos de CloudWatch Logs
+- (NO hay API Gateway ni roles IAM nuevos — las funciones usan el `LabRole`)
 
 ### Obtener URL de API
 
 ```bash
 aws cloudformation describe-stacks \
-  --stack-name techmoda-capstone \
-  --query "Stacks[0].Outputs[?OutputKey=='TechModaApi'].OutputValue" \
+  --stack-name techmoda-ai \
+  --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" \
   --output text
 ```
 
 ### Probar Endpoint de API
 
 ```bash
-curl -X GET https://[your-api-id].execute-api.us-east-1.amazonaws.com/Prod/products
+API_URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai \
+  --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" --output text)
+curl "${API_URL%/}/products"
 ```
 
 **Esperado**: 200 OK con `{"products": []}`

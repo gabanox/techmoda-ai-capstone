@@ -3,6 +3,12 @@
 **Duración:** ~60 min · **Servicio:** — (cierre) · **Dominio AIF-C01:** repaso de los 5 dominios
 **Estado:** 🟡 Guía detallada + scripts (`demo.sh` listo; `scripts/delete-all.sh` ya existe en el repo).
 
+> 🏖️ **Sandbox:** todas las features se exponen con **Lambda Function URLs** (no API Gateway) y usan el
+> **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). El CRUD usa la Function URL
+> del **router** (output `ApiUrl`); cada función de IA tiene su propia Function URL (`EnrichLabelsUrl`,
+> `ModerateImageUrl`, `AnalyzeSentimentUrl`, `TranslateCatalogUrl`, `SynthesizeVoiceUrl`,
+> `GenerateDescriptionUrl`, `IndexEmbeddingsUrl`, `SemanticSearchUrl`, `ShoppingAssistantUrl`).
+
 ---
 
 ## 🎯 Objetivo
@@ -48,7 +54,9 @@ Una solución de IA no es solo "que funcione el modelo". El examen evalúa que e
 
 ### 1. Demo end-to-end
 ```bash
-API_URL=https://xxxx.execute-api.us-west-2.amazonaws.com/Prod \
+# API_URL = Function URL del router (output ApiUrl). demo.sh resuelve por su cuenta las
+# Function URLs de cada feature de IA desde los outputs del stack techmoda-ai (us-west-2).
+API_URL=https://xxxx.lambda-url.us-west-2.on.aws/ \
   bash sessions/S11-integracion-demo-cleanup/demo.sh
 ```
 Recorre las 8 features en orden e imprime cada resultado. Ideal para grabar o presentar.

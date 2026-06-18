@@ -2,6 +2,10 @@
 
 **Duración:** ~60 min · **Servicio:** Amazon Rekognition · **Dominio AIF-C01:** **D1 — Fundamentals of AI and ML (20%)**
 
+> 🏖️ **Sandbox:** esta función se expone con su propia **Lambda Function URL** (no API Gateway) y usa el
+> **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). Su URL es el output
+> **`EnrichLabelsUrl`** del stack.
+
 ---
 
 ## 🎯 Objetivo
@@ -52,10 +56,10 @@ moda. Rekognition tiene además `DetectModerationLabels` (lo vemos en S2), `Dete
 
 ## 🚶 Paso a paso
 
-### 1. Agregar la Lambda y la ruta al `template.yaml`
+### 1. Agregar la Lambda (con su Function URL) al `template.yaml`
 Abrí `sessions/S01-rekognition-labels/template-snippet.yaml` y:
-1. Copiá el recurso `EnrichLabelsFunction` dentro de `Resources:` en `template.yaml`.
-2. Agregá la ruta `POST /products/{id}/labels` dentro de `ProductsApi → DefinitionBody → paths` (el bloque "API ROUTE" del snippet te muestra el YAML exacto).
+1. Copiá el recurso `EnrichLabelsFunction` dentro de `Resources:` en `template.yaml` (incluye `Role: !Ref LabRoleArn` y su `FunctionUrlConfig`).
+2. Copiá el output `EnrichLabelsUrl` dentro de `Outputs:` para obtener su Function URL tras el deploy.
 
 > El código de la Lambda ya está en `functions/enrich-labels/app.py`. No tenés que escribirlo.
 
@@ -66,8 +70,13 @@ sam build && sam deploy
 
 ### 3. Ejecutar
 ```bash
-# Reemplazá PRODUCT_ID por el productId de un producto con imagen real:
-curl -s -X POST "$ApiUrl/products/PRODUCT_ID/labels" | python3 -m json.tool
+# URL = Function URL de esta función (output EnrichLabelsUrl); ${URL%/} quita la barra final.
+URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+  --query "Stacks[0].Outputs[?OutputKey=='EnrichLabelsUrl'].OutputValue" --output text)
+
+# Reemplazá PRODUCT_ID por el productId de un producto con imagen real.
+# El productId puede ir en el path o en el body ({"productId":"..."}) — el handler soporta ambos:
+curl -s -X POST "${URL%/}/products/PRODUCT_ID/labels" | python3 -m json.tool
 ```
 
 Respuesta esperada (ejemplo):

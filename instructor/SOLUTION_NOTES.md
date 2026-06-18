@@ -2,6 +2,10 @@
 
 ## Propósito
 
+> 🏖️ **Sandbox AWS re/Start:** el frente HTTP es una **Lambda Function URL** + **router** (no API
+> Gateway), cada función usa el **LabRole** (sin `Policies:`), el stack es **`techmoda-ai`** y la región
+> **us-west-2**. Ver [../docs/SANDBOX-COMPAT.md](../docs/SANDBOX-COMPAT.md).
+
 Este documento proporciona patrones de implementación y orientación para instructores. NO contiene soluciones completas para evitar la tentación de compartirlas con los estudiantes. En su lugar, ofrece:
 
 - Patrones clave de implementación para cada función
@@ -27,9 +31,9 @@ const docClient = DynamoDBDocumentClient.from(client);
 
 **¿Por qué DocumentClient?**: Simplifica el marshalling/unmarshalling de JSON (no es necesario especificar tipos como `{S: "value"}`).
 
-### Formato de Respuesta de API Gateway
+### Formato de Respuesta HTTP (Lambda Function URL)
 
-Cada Lambda debe retornar esta estructura:
+Cada Lambda debe retornar esta estructura (válida para la Function URL):
 
 ```javascript
 return {
@@ -55,7 +59,7 @@ Siempre usar variable de entorno para el nombre de la tabla:
 const tableName = process.env.PRODUCTS_TABLE;
 ```
 
-**Nunca hardcodear**: `const tableName = "techmoda-capstone-Products";` (se rompe cuando se despliega en diferentes entornos)
+**Nunca hardcodear**: `const tableName = "techmoda-ai-Products";` (se rompe cuando se despliega en diferentes entornos)
 
 ## Patrones Específicos por Función
 
@@ -414,7 +418,7 @@ return {
 
 ## Errores Comunes que Cometen los Estudiantes
 
-### 1. Problemas de Formato de Respuesta de API Gateway
+### 1. Problemas de Formato de Respuesta HTTP (Lambda Function URL)
 
 **Error**:
 ```javascript
@@ -637,7 +641,7 @@ const updateCommand = new UpdateCommand({
 
 - Agregar autenticación (Cognito, claves API)
 - Implementar limitación de tasa
-- Agregar validación de solicitudes (validadores de solicitud de API Gateway)
+- Agregar validación de solicitudes (en una cuenta propia, p. ej. validadores de API Gateway o validación en el handler)
 - Usar AWS WAF para seguridad adicional
 - Cifrar datos sensibles en reposo
 - Habilitar CloudTrail para auditoría
@@ -686,16 +690,16 @@ Los estudiantes pueden notar que la primera solicitud después del despliegue es
 
 **Error 500 → Revisar Código Lambda**:
 ```bash
-aws logs tail /aws/lambda/techmoda-capstone-[FunctionName] --follow
+aws logs tail /aws/lambda/techmoda-ai-[FunctionName] --follow
 ```
 
-**403 Forbidden → Revisar Políticas IAM**:
-Verificar que template.yaml tiene políticas correctas:
+**403 Forbidden → Revisar el rol de la función (sandbox)**:
+Verificar que cada función use el LabRole y **no** un bloque `Policies:`:
 ```yaml
-Policies:
-  - DynamoDBCrudPolicy:
-      TableName: !Ref ProductsTable
+Role: !Ref LabRoleArn   # ← sandbox; NO agregar Policies: (mutuamente excluyentes)
 ```
+> 📚 **Cuenta propia (material didáctico):** ahí sí se usaría mínimo privilegio, p. ej.
+> `Policies: [ { DynamoDBCrudPolicy: { TableName: !Ref ProductsTable } } ]`.
 
 **502 Bad Gateway → Revisar Formato de Respuesta**:
 Asegurar que Lambda retorna:
@@ -708,16 +712,16 @@ Asegurar que Lambda retorna:
 ### Prueba Funcional Mínima
 
 ```bash
-# Establecer URL de API
-export API_URL="https://[api-id].execute-api.us-east-1.amazonaws.com/Prod"
+# Establecer la Function URL del router (output ApiUrl; sin barra final)
+export API_URL="https://[fn-id].lambda-url.us-west-2.on.aws"
 
 # Crear producto
-curl -X POST $API_URL/products \
+curl -X POST "${API_URL%/}/products" \
   -H "Content-Type: application/json" \
   -d '{"name":"Test","price":99.99}'
 
 # Listar productos
-curl -X GET $API_URL/products
+curl -X GET "${API_URL%/}/products"
 
 # Esperado: { "products": [ {...} ] }
 ```
@@ -744,25 +748,25 @@ Al revisar el código de los estudiantes, buscar:
 - [Guía del Desarrollador de AWS SAM](https://docs.aws.amazon.com/serverless-application-model/)
 - [SDK v3 de DynamoDB (JavaScript)](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/)
 - [Runtime de Lambda Node.js](https://docs.aws.amazon.com/lambda/latest/dg/lambda-nodejs.html)
-- [Integración Proxy de Lambda de API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html)
+- [Lambda Function URLs](https://docs.aws.amazon.com/lambda/latest/dg/lambda-urls.html)
 
 ### Comandos Útiles
 
 ```bash
 # Ver recursos del stack
-aws cloudformation list-stack-resources --stack-name techmoda-capstone
+aws cloudformation list-stack-resources --stack-name techmoda-ai --region us-west-2
 
-# Obtener URL de API
-aws cloudformation describe-stacks --stack-name techmoda-capstone --query "Stacks[0].Outputs"
+# Obtener la Function URL (output ApiUrl)
+aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 --query "Stacks[0].Outputs"
 
 # Escanear tabla DynamoDB
-aws dynamodb scan --table-name techmoda-capstone-Products
+aws dynamodb scan --table-name techmoda-ai-Products
 
 # Ver logs de Lambda
-aws logs tail /aws/lambda/techmoda-capstone-ListItems --follow
+aws logs tail /aws/lambda/techmoda-ai-ListItems --follow
 
 # Eliminar stack
-sam delete --stack-name techmoda-capstone
+sam delete --stack-name techmoda-ai --region us-west-2
 ```
 
 ---

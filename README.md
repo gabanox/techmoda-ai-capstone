@@ -2,9 +2,14 @@
 
 > **Bootcamp Institute · AWS re/Start**
 > Versión **AI Practitioner** del capstone serverless de e-commerce *TechModa*.
-> Tomamos una tienda de moda serverless ya funcional (API Gateway + Lambda + DynamoDB + React)
+> Tomamos una tienda de moda serverless ya funcional (Lambda Function URLs + DynamoDB + React)
 > y le agregamos, **una sesión de 1 hora a la vez**, capacidades de **IA preentrenada y generativa**
 > de AWS. Cada sesión es autocontenida: se despliega y se ve funcionar en ~60 minutos.
+
+> 🏖️ **Compatible con el sandbox AWS re/Start (Vocareum).** El rol de deploy (`LabRole`) no
+> permite API Gateway ni crear roles IAM, así que la API se expone con **Lambda Function URLs**
+> y cada función reusa el **LabRole**. Las 3 restricciones y el patrón están en
+> **[`docs/SANDBOX-COMPAT.md`](docs/SANDBOX-COMPAT.md)** — léelo antes de agregar funciones.
 
 > 📄 La documentación del **capstone serverless base** (sin IA) se conserva en
 > [`README-BASE-SERVERLESS.md`](README-BASE-SERVERLESS.md).
@@ -85,29 +90,30 @@ el **2026-06-17**:
                     │      Frontend React (S3 + CloudFront)        │
                     └───────────────────────┬──────────────────────┘
                                             │ HTTPS
-                              ┌─────────────▼─────────────┐
-                              │   API Gateway REST (Prod)  │
-                              └─────────────┬─────────────┘
-            ┌──────────────┬───────────────┼───────────────┬──────────────┐
-            ▼              ▼               ▼               ▼              ▼
-      CRUD Lambdas   AI Lambdas (S1–S8, Python + boto3)         (cada una con
-      (Node.js,      ├─ enrich-labels      → Rekognition         IAM de mínimo
-       base S0)      ├─ moderate-image     → Rekognition         privilegio por
-                     ├─ analyze-sentiment  → Comprehend          servicio de IA)
-                     ├─ translate-catalog  → Translate
-                     ├─ synthesize-voice   → Polly (+ S3 audio)
-                     ├─ generate-desc      → Bedrock
-                     ├─ semantic-search    → Bedrock (embeddings)
-                     └─ shopping-assistant → Bedrock (chat)
-                                            │
-                              ┌─────────────▼─────────────┐
-                              │   DynamoDB  (Products)     │
-                              └────────────────────────────┘
+              ┌─────────────────────────────┼──────────────────────────────┐
+              │ Lambda Function URLs (AuthType NONE, CORS *) — sin API GW   │
+              └──────┬───────────────────────────────────┬─────────────────┘
+                     ▼ (1 Function URL)                   ▼ (1 URL por función IA)
+        Router CRUD (Node.js, base S0)        AI Lambdas (S1–S8, Python + boto3)
+        functions/router/index.js             ├─ enrich-labels      → Rekognition
+          ├─ list/create/get/update/delete     ├─ moderate-image     → Rekognition
+          (reusa las 5 Lambdas CRUD)           ├─ analyze-sentiment  → Comprehend
+                     │                          ├─ translate-catalog  → Translate
+                     │                          ├─ synthesize-voice   → Polly (+ S3 audio)
+                     │                          ├─ generate-desc      → Bedrock
+                     │                          ├─ semantic-search    → Bedrock (embeddings)
+                     │                          └─ shopping-assistant → Bedrock (chat)
+                     │   (todas con Role: LabRole — sin crear roles IAM nuevos)
+                     ▼
+              ┌────────────────────────────┐
+              │   DynamoDB  (Products)     │
+              └────────────────────────────┘
 ```
 
-- **Base (S0):** API Gateway REST + 5 Lambdas Node.js (CRUD) + DynamoDB + Frontend React, vía **AWS SAM**.
-- **IA (S1–S8):** cada sesión agrega 1 Lambda **Python 3.12 + boto3** que llama a un servicio de IA administrado y **escribe el resultado de vuelta en DynamoDB** o lo retorna por la API.
-- **IaC:** todo es **AWS SAM** (`template.yaml`). Cada sesión trae un `template-snippet.yaml` con el recurso nuevo + su política IAM de mínimo privilegio, lista para pegar.
+- **Base (S0):** **Lambda Function URL** (router CRUD Node.js) + DynamoDB + Frontend React, vía **AWS SAM**. Sin API Gateway (no permitido por el LabRole del sandbox).
+- **IA (S1–S8):** cada sesión agrega 1 Lambda **Python 3.12 + boto3** (con su propia Function URL) que llama a un servicio de IA administrado y **escribe el resultado de vuelta en DynamoDB** o lo retorna.
+- **IaC:** todo es **AWS SAM** (`template.yaml`). Cada sesión trae un `template-snippet.yaml` con el recurso nuevo (Function URL + `Role: !Ref LabRoleArn`), listo para pegar.
+- **Sandbox:** sin API Gateway y sin `iam:CreateRole` → ver **[`docs/SANDBOX-COMPAT.md`](docs/SANDBOX-COMPAT.md)**.
 
 ---
 
@@ -134,9 +140,11 @@ git clone <este-repo> techmoda-ai-capstone && cd techmoda-ai-capstone
 # 2. Configurar SAM para us-west-2
 cp samconfig.us-west-2.example samconfig.toml
 
-# 3. Construir y desplegar
+# 3. Construir y desplegar (atajo: bash scripts/deploy.sh)
 sam build
-sam deploy --guided     # primera vez; luego: sam deploy
+sam deploy --stack-name techmoda-ai --region us-west-2 \
+  --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
+  --resolve-s3 --no-confirm-changeset
 
 # 4. (opcional) cargar productos de ejemplo CON imágenes para las sesiones de IA
 bash ai/seed/seed-products.sh
@@ -145,14 +153,17 @@ bash ai/seed/seed-products.sh
 bash scripts/deploy-frontend.sh
 ```
 
-La salida del stack te da `ApiUrl` y `FrontendUrl`. Ábrelos y verás el catálogo de TechModa.
+La salida del stack te da `ApiUrl` (la **Lambda Function URL** del router, formato
+`https://<id>.lambda-url.us-west-2.on.aws/`) y `FrontendUrl`. Ábrelos y verás el catálogo de TechModa.
 Detalle completo y validación en **[sessions/S00-base/GUIA.md](sessions/S00-base/GUIA.md)**.
 
 > 🧩 **Dos formas de llegar al mismo resultado:**
 > - **Progresiva (recomendada, pedagógica):** desplegás `template.yaml` (solo S0) y vas pegando el
 >   `template-snippet.yaml` de cada sesión, una por hora. Así "ves crecer" la arquitectura.
-> - **Todo junto:** `sam deploy --template template.full.yaml` despliega la base + las 8 features de IA
->   (S1–S8) + gobernanza (S10) ya cableadas. Útil para una demo rápida o para revisar el resultado final.
+> - **Todo junto:** `sam build -t template.full.yaml && sam deploy -t template.full.yaml --stack-name techmoda-ai
+>   --region us-west-2 --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --resolve-s3 --no-confirm-changeset`
+>   despliega la base + las 8 features de IA (S1–S8) + gobernanza (S10) ya cableadas, cada una con su
+>   Function URL. Útil para una demo rápida o para revisar el resultado final.
 >   Este archivo está **validado con `sam validate --lint`**.
 >
 > ℹ️ Las Lambdas CRUD base usan **`nodejs22.x`** (la `nodejs18.x` del starter original quedó deprecada y su
@@ -188,7 +199,7 @@ techmoda-ai-capstone/
 ├── README-BASE-SERVERLESS.md  # docs del capstone serverless base (sin IA)
 ├── template.yaml              # SAM base (S0). Cada sesión agrega su snippet aquí.
 ├── samconfig.us-west-2.example
-├── functions/                 # 5 Lambdas CRUD Node.js (base S0)
+├── functions/                 # 5 Lambdas CRUD Node.js + router/ (1 Function URL, base S0)
 ├── frontend/                  # React + Vite (base S0)
 ├── scripts/                   # deploy / delete / logs / status
 ├── ai/
@@ -199,7 +210,7 @@ techmoda-ai-capstone/
     ├── S01-rekognition-labels/
     │   ├── GUIA.md
     │   ├── functions/enrich-labels/        # Lambda Python + boto3
-    │   └── template-snippet.yaml           # recurso + IAM mínimo privilegio
+    │   └── template-snippet.yaml           # recurso + Function URL + Role: LabRole
     ├── S02-... S08-...                      # mismo patrón
     └── S09 / S10 / S11                       # guía + scaffold/scripts
 ```

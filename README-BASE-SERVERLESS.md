@@ -44,7 +44,7 @@ Muestra:
 ./scripts/delete-all.sh
 ```
 Elimina TODO para evitar cargos:
-- API Gateway
+- Lambda Function URLs (router CRUD + funciones de IA)
 - Funciones Lambda
 - Tabla DynamoDB
 - Bucket S3 y CloudFront
@@ -77,13 +77,17 @@ Para instrucciones detalladas paso a paso con capturas de pantalla, consulta **[
 
 ## Descripción General
 
-TechModa es una API REST serverless para gestionar un catálogo de productos de e-commerce de moda. Este proyecto capstone demuestra dominio de patrones de arquitectura serverless de AWS utilizando Lambda, API Gateway y DynamoDB.
+TechModa es una API serverless para gestionar un catálogo de productos de e-commerce de moda. Este proyecto capstone demuestra dominio de patrones de arquitectura serverless de AWS utilizando Lambda, **Lambda Function URLs** y DynamoDB.
+
+> 🏖️ **Sandbox AWS re/Start (Vocareum):** este proyecto se despliega con el **LabRole**, que no
+> permite API Gateway ni `iam:CreateRole`. Por eso el CRUD se expone con **una Function URL** servida
+> por un **router**, y cada función usa el LabRole. Ver [docs/SANDBOX-COMPAT.md](docs/SANDBOX-COMPAT.md).
 
 ### Objetivos de Aprendizaje
 
 Al completar este proyecto, podrás:
 
-- Diseñar arquitecturas serverless usando Lambda, API Gateway y DynamoDB
+- Diseñar arquitecturas serverless usando Lambda, Lambda Function URLs y DynamoDB
 - Implementar APIs RESTful con métodos HTTP apropiados y códigos de estado
 - Desplegar infraestructura como código usando AWS SAM
 - Probar APIs manualmente usando curl e interpretar respuestas
@@ -96,10 +100,10 @@ Al completar este proyecto, podrás:
 ## Arquitectura
 
 ```
-┌─────────────┐      ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
-│   Cliente   │─────▶│ API Gateway │─────▶│   Lambda    │─────▶│  DynamoDB   │
-│  (curl/     │◀─────│   (REST)    │◀─────│ (Node.js)   │◀─────│   (NoSQL)   │
-│  navegador) │      └─────────────┘      └─────────────┘      └─────────────┘
+┌─────────────┐      ┌──────────────┐      ┌─────────────┐      ┌─────────────┐
+│   Cliente   │─────▶│ Function URL │─────▶│   Lambda    │─────▶│  DynamoDB   │
+│  (curl/     │◀─────│  + router    │◀─────│ (Node.js)   │◀─────│   (NoSQL)   │
+│  navegador) │      └──────────────┘      └─────────────┘      └─────────────┘
 └─────────────┘              │                     │
                              │                     │
                              ▼                     ▼
@@ -111,7 +115,9 @@ Al completar este proyecto, podrás:
 
 ### Componentes
 
-- **API Gateway**: API REST con 5 endpoints para operaciones CRUD
+- **Lambda Function URL + router**: una Function URL (`AuthType: NONE`, CORS abierto) apunta al router
+  `functions/router/index.js`, que enruta los 5 endpoints CRUD reusando las Lambdas. (Cada función de
+  IA S1–S8 tiene su propia Function URL.) Ver [docs/SANDBOX-COMPAT.md](docs/SANDBOX-COMPAT.md).
 - **Lambda Functions**: 5 funciones Node.js 18.x (ListItems, CreateItem, GetItem, UpdateItem, DeleteItem)
 - **DynamoDB**: Base de datos NoSQL con facturación PAY_PER_REQUEST
 - **CloudWatch**: Registro centralizado para ejecución de Lambda
@@ -197,41 +203,29 @@ Este comando:
 
 ### 5. Desplegar a AWS
 
-#### Primer Despliegue (Guiado)
+#### Primer Despliegue (sandbox AWS re/Start)
+
+En el sandbox **no** uses `--guided` (no hay que crear roles: se reusa el LabRole). Desplegá con flags
+explícitos:
 
 ```bash
 # Usando el script auxiliar
 ./scripts/deploy.sh
 
 # O directamente con SAM CLI
-sam deploy --guided
-```
-
-**IMPORTANTE**: Se te harán varias preguntas. Usa estos valores:
-
-```
-Stack Name [techmoda-capstone]: tu-nombre-con-guiones-medios
-AWS Region [us-east-1]:
-#Shows you resources changes to be deployed and require a 'Y' to initiate deploy
-Confirm changes before deploy [Y/n]: y
-#SAM needs permission to be able to create roles to connect to the resources in your template
-Allow SAM CLI IAM role creation [Y/n]: y
-#Preserves the state of previously provisioned resources when an operation fails
-Disable rollback [y/N]: y
-ListItemsFunction has no authentication. Is this okay? [y/N]: y
-CreateItemFunction has no authentication. Is this okay? [y/N]: y
-GetItemFunction has no authentication. Is this okay? [y/N]: y
-UpdateItemFunction has no authentication. Is this okay? [y/N]: y
-DeleteItemFunction has no authentication. Is this okay? [y/N]: y
-Save arguments to configuration file [Y/n]: y
-SAM configuration file [samconfig.toml]:
-SAM configuration environment [default]:
+sam build && sam deploy \
+  --stack-name techmoda-ai --region us-west-2 \
+  --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
+  --resolve-s3 --no-confirm-changeset
 ```
 
 **Notas**:
-- **Stack Name**: Reemplaza `tu-nombre-con-guiones-medios` con tu nombre real usando guiones (ej., `juan-perez`, `maria-garcia`)
-- **AWS Region**: Presiona Enter para usar el valor predeterminado `us-east-1` (o ingresa tu región preferida)
-- **Advertencias de no autenticación**: Esto es esperado para este proyecto educativo (no estamos usando API keys o Cognito)
+- **Stack Name**: `techmoda-ai` (definido también en `samconfig.us-west-2.example`).
+- **AWS Region**: `us-west-2` (la del sandbox; ahí están habilitados Bedrock/Rekognition/etc).
+- **`CAPABILITY_AUTO_EXPAND`**: obligatorio (Transform SAM). **No** hace falta crear roles IAM: cada
+  función usa `Role: !Ref LabRoleArn`. Ver [docs/SANDBOX-COMPAT.md](docs/SANDBOX-COMPAT.md).
+- **Sin autenticación**: las Function URLs usan `AuthType: NONE` — esperado para este proyecto
+  educativo (no usamos API keys ni Cognito).
 
 #### Despliegues Subsiguientes
 
@@ -249,16 +243,18 @@ Después del despliegue, recibirás una URL de API en las salidas:
 
 ```
 Outputs:
-  ApiUrl: https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/Prod
+  ApiUrl: https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-west-2.on.aws/
 ```
 
-Copia esta URL y prueba tus endpoints usando curl. Consulta [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md) para instrucciones completas de prueba.
+`ApiUrl` es la **Function URL del router** (termina en `/`, sin `/Prod`). Copia esta URL y prueba tus
+endpoints usando curl. Consulta [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md) para instrucciones
+completas de prueba.
 
 **Ejemplo de prueba rápida:**
 
 ```bash
-# Configura tu URL de API
-export API_URL="https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/Prod"
+# Configura tu URL de API (Function URL del router; quita la barra final al concatenar rutas)
+export API_URL="https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-west-2.on.aws"
 
 # Crea un producto
 curl -X POST $API_URL/products \
@@ -376,7 +372,7 @@ Para ejecutar el frontend localmente:
 
 2. Actualiza `.env` con tu URL de API:
    ```
-   VITE_API_URL=https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/Prod
+   VITE_API_URL=https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-west-2.on.aws/
    ```
 
 3. Instala las dependencias y ejecuta:
@@ -401,10 +397,10 @@ Consulta [frontend/README.md](frontend/README.md) para más detalles.
 ./scripts/delete.sh
 
 # Opción 3: Directamente con SAM CLI
-sam delete --stack-name techmoda-capstone
+sam delete --stack-name techmoda-ai --region us-west-2
 ```
 
-**Nota**: Esto eliminará la API, funciones Lambda, tabla DynamoDB, bucket S3 y distribución CloudFront.
+**Nota**: Esto eliminará las Function URLs, funciones Lambda, tabla DynamoDB, bucket S3 y distribución CloudFront. El **LabRole** es preexistente y compartido — no se elimina.
 
 Consulta [docs/COST_AND_CLEANUP.md](docs/COST_AND_CLEANUP.md) para estimaciones de costos y mejores prácticas de limpieza.
 
@@ -442,7 +438,7 @@ Consulta [docs/COST_AND_CLEANUP.md](docs/COST_AND_CLEANUP.md) para estimaciones 
 
 **Fallos de Despliegue**
 - Verifica las credenciales de AWS: `aws sts get-caller-identity`
-- Verifica los permisos IAM para CloudFormation, Lambda, API Gateway, DynamoDB
+- Verifica los permisos del LabRole para CloudFormation, Lambda (incl. Function URLs), DynamoDB
 - Revisa los eventos de CloudFormation en la Consola de AWS para errores específicos
 
 **Errores de API (404, 500)**
@@ -520,7 +516,7 @@ Para desglose detallado de costos, consulta [docs/COST_AND_CLEANUP.md](docs/COST
 - [Documentación de AWS SAM](https://docs.aws.amazon.com/serverless-application-model/)
 - [Guía del Desarrollador de AWS Lambda](https://docs.aws.amazon.com/lambda/)
 - [Guía del Desarrollador de DynamoDB](https://docs.aws.amazon.com/dynamodb/)
-- [Documentación de API Gateway REST API](https://docs.aws.amazon.com/apigateway/)
+- [Lambda Function URLs](https://docs.aws.amazon.com/lambda/latest/dg/lambda-urls.html)
 
 ## Licencia
 

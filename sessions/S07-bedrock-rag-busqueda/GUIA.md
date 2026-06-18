@@ -4,6 +4,10 @@
 
 > 🔥 **El dominio más pesado del examen (28%).** Embeddings + recuperación semántica son la base del RAG.
 
+> 🏖️ **Sandbox:** estas funciones se exponen **cada una con su propia Lambda Function URL** (no API
+> Gateway) y usan el **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). Sus URLs
+> son los outputs **`IndexEmbeddingsUrl`** (indexar) y **`SemanticSearchUrl`** (buscar) del stack.
+
 ---
 
 ## 🎯 Objetivo
@@ -53,16 +57,20 @@ El flujo de esta sesión:
 ## 🚶 Paso a paso
 
 1. Habilitá el modelo de embeddings en la consola de Bedrock.
-2. Pegá las **dos** funciones (`IndexEmbeddings`, `SemanticSearch`) y las rutas `/search/index` y `/search`.
+2. Pegá las **dos** funciones (`IndexEmbeddings`, `SemanticSearch`), cada una con `Role: !Ref LabRoleArn` + su `FunctionUrlConfig`, y sus outputs `IndexEmbeddingsUrl` y `SemanticSearchUrl`.
 3. `sam build && sam deploy`.
-4. **Indexar** el catálogo:
+4. **Indexar** el catálogo (Function URL de `IndexEmbeddings`):
 ```bash
-curl -s -X POST "$ApiUrl/search/index" | python3 -m json.tool
+INDEX_URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+  --query "Stacks[0].Outputs[?OutputKey=='IndexEmbeddingsUrl'].OutputValue" --output text)
+curl -s -X POST "${INDEX_URL%/}/search/index" | python3 -m json.tool
 # {"indexed": 4, "skipped": 0, "total": 4, "model": "amazon.titan-embed-text-v2:0"}
 ```
-5. **Buscar** semánticamente:
+5. **Buscar** semánticamente (Function URL de `SemanticSearch`):
 ```bash
-curl -s "$ApiUrl/search?q=algo%20abrigado%20para%20el%20invierno" | python3 -m json.tool
+SEARCH_URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+  --query "Stacks[0].Outputs[?OutputKey=='SemanticSearchUrl'].OutputValue" --output text)
+curl -s "${SEARCH_URL%/}/search?q=algo%20abrigado%20para%20el%20invierno" | python3 -m json.tool
 ```
 Resultado esperado (la chaqueta primero, aunque la consulta no diga "chaqueta"):
 ```json

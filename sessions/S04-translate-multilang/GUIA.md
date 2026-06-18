@@ -2,6 +2,10 @@
 
 **Duración:** ~60 min · **Servicio:** Amazon Translate · **Dominio AIF-C01:** **D1 — Fundamentals of AI and ML (20%)**
 
+> 🏖️ **Sandbox:** esta función se expone con su propia **Lambda Function URL** (no API Gateway) y usa el
+> **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). Su URL es el output
+> **`TranslateCatalogUrl`** del stack.
+
 ---
 
 ## 🎯 Objetivo
@@ -37,11 +41,13 @@ Ideas que el examen evalúa:
 
 ## 🚶 Paso a paso
 
-1. Pegá `TranslateCatalogFunction` y la ruta `POST /products/{id}/translate` desde el snippet.
+1. Pegá `TranslateCatalogFunction` (con `Role: !Ref LabRoleArn` + su `FunctionUrlConfig`) y el output `TranslateCatalogUrl` desde el snippet.
 2. `sam build && sam deploy`.
-3. Traducí un producto al inglés:
+3. Traducí un producto al inglés (Function URL de esta función; el productId va en path o body):
 ```bash
-curl -s -X POST "$ApiUrl/products/PRODUCT_ID/translate" \
+URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+  --query "Stacks[0].Outputs[?OutputKey=='TranslateCatalogUrl'].OutputValue" --output text)
+curl -s -X POST "${URL%/}/products/PRODUCT_ID/translate" \
   -H "Content-Type: application/json" -d '{"target":"en"}' | python3 -m json.tool
 ```
 Respuesta esperada:

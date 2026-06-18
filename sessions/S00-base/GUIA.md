@@ -7,8 +7,14 @@
 ## 🎯 Objetivo
 
 Dejar corriendo, en tu cuenta sandbox **us-west-2**, la tienda TechModa serverless **sin IA todavía**:
-API Gateway REST + 5 Lambdas (CRUD) + DynamoDB + frontend React en S3/CloudFront. Este es el lienzo
-sobre el que las 11 sesiones siguientes irán pegando capacidades de IA, una por hora.
+un **router CRUD** (Node.js) expuesto con **una Lambda Function URL** + DynamoDB + frontend React en
+S3/CloudFront. Este es el lienzo sobre el que las 11 sesiones siguientes irán pegando capacidades de
+IA, una por hora.
+
+> 🏖️ **Sandbox AWS re/Start:** el `LabRole` con el que despliega el sandbox **no permite API Gateway
+> ni crear roles IAM**. Por eso la API NO usa API Gateway sino **Lambda Function URLs**, y cada función
+> reusa el **LabRole**. Las 3 restricciones y el porqué del diseño están en
+> [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md).
 
 Al terminar S0 vas a poder **crear, listar, ver, editar y borrar productos** desde el navegador.
 
@@ -32,9 +38,11 @@ proyecto de IA esto es ideal porque:
 
 - **Pagás por uso, igual que los servicios de IA.** Una Lambda que llama a Rekognition solo cuesta cuando alguien sube una foto.
 - **Escala solo.** Si 1.000 clientes piden traducciones a la vez, Lambda crea 1.000 ejecuciones; no aprovisionás nada.
-- **Aísla cada capacidad.** Cada feature de IA será **su propia Lambda con su propio permiso IAM** → mínimo privilegio fácil.
+- **Aísla cada capacidad.** Cada feature de IA será **su propia Lambda** con su propia Function URL.
 
-Esa última idea es el patrón central del capstone: **una Lambda = un servicio de IA = un permiso acotado.**
+Esa última idea es el patrón central del capstone: **una Lambda = un servicio de IA**. En una cuenta
+propia, además, le pondrías un **permiso IAM acotado** por función (mínimo privilegio); en el sandbox
+todas reusan el `LabRole` (que ya trae los permisos de IA) porque no se permite crear roles nuevos.
 
 ---
 
@@ -50,23 +58,26 @@ cp samconfig.us-west-2.example samconfig.toml
 ```bash
 sam build
 ```
-SAM empaqueta las 5 Lambdas Node.js y valida el `template.yaml`.
+SAM empaqueta el router CRUD (Node.js) y valida el `template.yaml`.
 
 ### 3. Desplegar
 ```bash
-sam deploy --guided     # solo la primera vez
+# atajo: bash scripts/deploy.sh
+sam deploy --stack-name techmoda-ai --region us-west-2 \
+  --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
+  --resolve-s3 --no-confirm-changeset
 ```
-Aceptá los defaults (stack `techmoda-ai`, región `us-west-2`, `CAPABILITY_IAM`). En despliegues
-posteriores basta con `sam deploy`.
+`CAPABILITY_AUTO_EXPAND` es obligatorio (Transform SAM). En despliegues posteriores podés repetir el
+mismo comando (o `sam deploy` a secas si copiaste `samconfig.us-west-2.example` → `samconfig.toml`).
 
-> 🔐 **Sobre IAM en el sandbox:** SAM crea un rol de ejecución por Lambda con permisos mínimos
-> (las `Policies:` del `template.yaml`). El sandbox re/Start permite esta creación de roles acotados
-> — es justamente el patrón que usaremos para los servicios de IA. Si tu sandbox bloqueara la
-> creación de roles, mirá la nota de *LabRole fallback* en `sessions/S10-iam-logging-costos/GUIA.md`.
+> 🔐 **Sobre IAM en el sandbox:** el `LabRole` **no permite `iam:CreateRole`**, así que cada Lambda
+> reusa ese rol preexistente (`Role: !Ref LabRoleArn` en el template) y **no** lleva bloque `Policies:`
+> (Role y Policies son mutuamente excluyentes en SAM). En una cuenta propia escribirías políticas de
+> mínimo privilegio por función — ver `docs/SANDBOX-COMPAT.md`.
 
 ### 4. Anotar las salidas
 Al final del deploy, CloudFormation imprime:
-- `ApiUrl` → la URL base de tu API (`https://xxxx.execute-api.us-west-2.amazonaws.com/Prod`)
+- `ApiUrl` → la URL base de tu API: una **Lambda Function URL** (`https://<id>.lambda-url.us-west-2.on.aws/`)
 - `FrontendUrl` → la URL de CloudFront del catálogo
 - `ProductsTableName` → la tabla DynamoDB
 
@@ -88,14 +99,16 @@ Abrí `FrontendUrl` en el navegador → deberías ver el catálogo con los 4 pro
 ## ✅ Checklist de validación
 
 - [ ] `sam deploy` terminó en estado `CREATE_COMPLETE` / `UPDATE_COMPLETE`.
-- [ ] `curl "$ApiUrl/products"` devuelve un JSON con `products: [...]`.
+- [ ] `curl "${ApiUrl%/}/products"` devuelve un JSON con `products: [...]`.
 - [ ] La `FrontendUrl` carga y muestra los productos.
 - [ ] Podés crear un producto desde la UI y aparece al refrescar.
-- [ ] En CloudWatch Logs ves el log group `/aws/lambda/techmoda-ai-ListItems`.
+- [ ] En CloudWatch Logs ves el log group `/aws/lambda/techmoda-ai-Router`.
 
 ```bash
-# Prueba rápida desde la terminal del IDE:
-curl -s "$ApiUrl/products" | python3 -m json.tool
+# Prueba rápida desde la terminal del IDE (ApiUrl es la Function URL del router):
+ApiUrl=$(aws cloudformation describe-stacks --stack-name techmoda-ai \
+          --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" --output text)
+curl -s "${ApiUrl%/}/products" | python3 -m json.tool
 ```
 
 ---
@@ -112,7 +125,7 @@ S0 no cubre un dominio de IA, pero fija el **vocabulario de arquitectura** que e
 
 ## 💸 Costo + 🧹 Cleanup
 
-**Costo de S0:** prácticamente **$0** en sandbox (Lambda + DynamoDB on-demand + API Gateway entran en
+**Costo de S0:** prácticamente **$0** en sandbox (Lambda + Function URL + DynamoDB on-demand entran en
 volúmenes mínimos; CloudFront/S3 centavos). *Verificar contra los precios oficiales de AWS.*
 
 **Cleanup:** no borres todavía — las sesiones siguientes construyen sobre este stack. El cleanup total
