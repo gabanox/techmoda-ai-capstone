@@ -3,7 +3,7 @@
 Frontend React + TypeScript + Vite para el catálogo de productos TechModa.
 
 > 🏖️ **Sandbox AWS re/Start:** `VITE_API_URL` es la **Lambda Function URL del router** (no API
-> Gateway), con formato `https://<id>.lambda-url.us-west-2.on.aws/`. Ver
+> Gateway), con formato `https://<id>.lambda-url.us-east-1.on.aws/`. Ver
 > [../docs/SANDBOX-COMPAT.md](../docs/SANDBOX-COMPAT.md).
 
 ## Desarrollo Local
@@ -15,7 +15,7 @@ cp .env.example .env
 
 Editar `.env` y agregar tu Function URL (output `ApiUrl` del stack):
 ```
-VITE_API_URL=https://your-fn-id.lambda-url.us-west-2.on.aws/
+VITE_API_URL=https://your-fn-id.lambda-url.us-east-1.on.aws/
 ```
 
 2. Instalar dependencias:

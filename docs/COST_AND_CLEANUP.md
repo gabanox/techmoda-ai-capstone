@@ -168,7 +168,7 @@ Las estimaciones anteriores asumen:
 Ejecuta la limpieza tan pronto hayas demostrado tu API funcionando:
 
 ```bash
-sam delete --stack-name techmoda-ai --region us-west-2
+sam delete --stack-name techmoda-ai --region us-east-1
 ```
 
 Esto previene cualquier cargo continuo, aunque serían mínimos.
@@ -221,12 +221,12 @@ Aunque este proyecto cuesta casi $0 durante el uso activo, los recursos de AWS p
 La forma más rápida y segura de eliminar todos los recursos:
 
 ```bash
-sam delete --stack-name techmoda-ai --region us-west-2
+sam delete --stack-name techmoda-ai --region us-east-1
 ```
 
 **Prompts interactivos**:
 ```
-Are you sure you want to delete the stack techmoda-ai in the region us-west-2 ? [y/N]: y
+Are you sure you want to delete the stack techmoda-ai in the region us-east-1 ? [y/N]: y
 Are you sure you want to delete the folder techmoda-ai in S3 which contains the artifacts? [y/N]: y
 ```
 
@@ -270,7 +270,7 @@ Después de ejecutar `sam delete`, verifica que todos los recursos se hayan elim
 ### 1. Verificar CloudFormation
 
 ```bash
-aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2
+aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1
 ```
 
 **Salida esperada**: Mensaje de error indicando que el stack no existe:
@@ -330,7 +330,7 @@ aws lambda list-functions --query "Functions[?contains(FunctionName, 'techmoda-a
 2. Elimina manualmente el recurso problemático en la Consola de AWS
 3. Reintenta la eliminación:
    ```bash
-   sam delete --stack-name techmoda-ai --region us-west-2 --no-prompts
+   sam delete --stack-name techmoda-ai --region us-east-1 --no-prompts
    ```
 
 ### Problema: "Stack cannot be deleted while in status DELETE_FAILED"
@@ -339,7 +339,7 @@ aws lambda list-functions --query "Functions[?contains(FunctionName, 'techmoda-a
 
 ```bash
 aws cloudformation delete-stack \
-  --stack-name techmoda-ai --region us-west-2 \
+  --stack-name techmoda-ai --region us-east-1 \
   --retain-resources [ResourceLogicalId]
 ```
 
@@ -354,7 +354,7 @@ Reemplaza `[ResourceLogicalId]` con el recurso que falló al eliminarse (de la p
 ```bash
 # Encontrar el nombre del bucket
 aws cloudformation describe-stacks \
-  --stack-name techmoda-ai --region us-west-2 \
+  --stack-name techmoda-ai --region us-east-1 \
   --query "Stacks[0].Parameters[?ParameterKey=='SAMDeploymentBucket'].ParameterValue" \
   --output text
 
@@ -362,7 +362,7 @@ aws cloudformation describe-stacks \
 aws s3 rm s3://YOUR_BUCKET_NAME --recursive
 
 # Reintentar eliminación
-sam delete --stack-name techmoda-ai --region us-west-2
+sam delete --stack-name techmoda-ai --region us-east-1
 ```
 
 ### Problema: Error de permisos durante la eliminación

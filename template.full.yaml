@@ -252,7 +252,7 @@ Resources:
           AllowHeaders: [ "*" ]
 
   # ---- S10 · gobernanza (log group de invocacion) ----
-  # La alarma de billing va en us-east-1 (metrica AWS/Billing) -> crear en consola/Budgets.
+  # La alarma de billing no la crea este stack (metrica AWS/Billing) -> crear a mano en consola/Budgets.
   BedrockInvocationLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:

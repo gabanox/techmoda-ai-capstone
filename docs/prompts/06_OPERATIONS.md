@@ -198,7 +198,7 @@ Please suggest:
 I need to delete ALL resources created for my TechModa capstone.
 
 Stack name: techmoda-ai
-Region: us-west-2
+Region: us-east-1
 
 Please provide step-by-step:
 1. Command to delete stack

@@ -18,8 +18,8 @@ usage() {
     echo "  -h, --help             Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0 --api-url https://abc123.lambda-url.us-west-2.on.aws"
-    echo "  $0 -a https://abc123.lambda-url.us-west-2.on.aws -d ./dist"
+    echo "  $0 --api-url https://abc123.lambda-url.us-east-1.on.aws"
+    echo "  $0 -a https://abc123.lambda-url.us-east-1.on.aws -d ./dist"
     echo ""
     exit 1
 }

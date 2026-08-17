@@ -44,7 +44,7 @@ Por eso el capstone se organiza en dos pistas:
 ```bash
 # 1. Desplegar base + features de servicios gestionados
 sam build -t template.full.yaml
-sam deploy -t template.full.yaml --stack-name techmoda-ai --region us-west-2 \
+sam deploy -t template.full.yaml --stack-name techmoda-ai --region us-east-1 \
   --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --resolve-s3 --no-confirm-changeset
 # 2. Sembrar productos
 bash ai/seed/seed-products.sh
@@ -86,5 +86,7 @@ que sí tiene Bedrock habilitado:
 
 Conclusión: la Pista B funciona end-to-end en una cuenta con Bedrock habilitado y
 un rol de ejecución con `bedrock:InvokeModel`/`translate:TranslateText`. En el
-sandbox re/Start no corre por la política del LabRole (ver matriz en
-`docs/SANDBOX-COMPAT.md`), por eso se imparte como demo guiada del instructor.
+sandbox re/Start no corre por la política del LabRole, que deniega **esas acciones**
+(no es un tema de región: el sandbox también está en `us-east-1` y sigue bloqueado,
+ver matriz en `docs/SANDBOX-COMPAT.md`), por eso se imparte como demo guiada del
+instructor.

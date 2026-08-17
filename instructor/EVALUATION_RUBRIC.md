@@ -6,7 +6,7 @@ Esta rúbrica evalúa las entregas de los estudiantes en tres dimensiones: **Exc
 
 > 🏖️ **Sandbox AWS re/Start:** el capstone se despliega con el **LabRole** (sin API Gateway, sin
 > `iam:CreateRole`). El CRUD se expone con **una Lambda Function URL** + **router**, y cada función usa
-> `Role: !Ref LabRoleArn` sin bloque `Policies:`. Stack **`techmoda-ai`**, región **us-west-2**. Al
+> `Role: !Ref LabRoleArn` sin bloque `Policies:`. Stack **`techmoda-ai`**, región **us-east-1**. Al
 > evaluar, **no** penalizar la ausencia de API Gateway ni de `Policies:` — es lo correcto en el sandbox.
 > Ver [../docs/SANDBOX-COMPAT.md](../docs/SANDBOX-COMPAT.md).
 
@@ -316,7 +316,7 @@ Esta rúbrica evalúa las entregas de los estudiantes en tres dimensiones: **Exc
 
 ### Paso 2: Prueba de Despliegue
 1. Ejecutar `sam build`
-2. Ejecutar `sam deploy --stack-name techmoda-ai --region us-west-2 --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --resolve-s3`
+2. Ejecutar `sam deploy --stack-name techmoda-ai --region us-east-1 --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --resolve-s3`
 3. Anotar éxito/fallo del despliegue
 4. Capturar la Function URL (output `ApiUrl`)
 

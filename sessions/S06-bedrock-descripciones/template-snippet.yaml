@@ -37,6 +37,6 @@
 #        -H 'Content-Type: application/json' -d '{"tone":"elegante","save":true}'
 #
 # El LabRole ya permite bedrock:InvokeModel. Habilitá el modelo en
-# Bedrock > Model access (us-west-2) antes de invocar.
+# Bedrock > Model access (us-east-1) antes de invocar.
 # NOTA: si usás un inference profile, ajustá BEDROCK_MODEL_ID (prefijo "us.").
 # ----------------------------------------------------------------------------

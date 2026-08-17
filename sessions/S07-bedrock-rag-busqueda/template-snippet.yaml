@@ -60,5 +60,5 @@
 #   curl "${SEARCH_URL%/}/search?q=algo+abrigado+para+el+frio"
 #
 # El LabRole ya permite bedrock:InvokeModel (Titan embeddings). Habilitá el
-# modelo en Bedrock > Model access (us-west-2).
+# modelo en Bedrock > Model access (us-east-1).
 # ----------------------------------------------------------------------------

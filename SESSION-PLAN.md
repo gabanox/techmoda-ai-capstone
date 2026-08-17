@@ -66,7 +66,7 @@ re-correr enriquecimientos previos.
 
 ```bash
 # ¿quedó todo arriba?
-API=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+API=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 \
        --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" --output text)
 curl -s "${API%/}/products" | python3 -m json.tool   # debe listar los 4 productos
 ```

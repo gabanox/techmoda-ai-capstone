@@ -3,13 +3,13 @@
 #
 # Uso:
 #   bash ai/seed/seed-products.sh
-#   API_URL=https://xxxx.lambda-url.us-west-2.on.aws bash ai/seed/seed-products.sh
+#   API_URL=https://xxxx.lambda-url.us-east-1.on.aws bash ai/seed/seed-products.sh
 #
 # Si no pasás API_URL, intenta leerlo de la salida del stack CloudFormation.
 set -euo pipefail
 
 STACK_NAME="${STACK_NAME:-techmoda-ai}"
-REGION="${AWS_REGION:-us-west-2}"
+REGION="${AWS_REGION:-us-east-1}"
 
 if [[ -z "${API_URL:-}" ]]; then
   echo "→ Resolviendo ApiUrl del stack '${STACK_NAME}' en ${REGION}..."

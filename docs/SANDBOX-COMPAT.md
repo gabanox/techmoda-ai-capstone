@@ -29,7 +29,7 @@ Function URLs**, que sí están permitidas (`lambda:CreateFunctionUrlConfig`).
 
 ```
                  Lambda Function URL (AuthType: NONE, CORS *)
-                 https://<id>.lambda-url.us-west-2.on.aws/
+                 https://<id>.lambda-url.us-east-1.on.aws/
                                   │
                                   ▼
                     functions/router/index.js      ← parsea method + rawPath
@@ -125,7 +125,7 @@ adicional: **Rekognition** (S1/S2), **Comprehend** (S3), **Translate** (S4),
 `ssm`, `sns`, `sqs`.
 
 > **Bedrock**: habilitá el acceso a cada modelo en **Bedrock → Model access**
-> (región `us-west-2`) antes de invocar, o `InvokeModel` devolverá AccessDenied del
+> (región `us-east-1`) antes de invocar, o `InvokeModel` devolverá AccessDenied del
 > lado del servicio aunque el IAM lo permita.
 
 ---
@@ -133,9 +133,9 @@ adicional: **Rekognition** (S1/S2), **Comprehend** (S3), **Translate** (S4),
 ## Deploy en el sandbox
 
 ```bash
-cp samconfig.us-west-2.example samconfig.toml      # stack techmoda-ai, us-west-2
+cp samconfig.us-east-1.example samconfig.toml      # stack techmoda-ai, us-east-1
 sam build
-sam deploy --stack-name techmoda-ai --region us-west-2 \
+sam deploy --stack-name techmoda-ai --region us-east-1 \
   --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
   --resolve-s3 --no-confirm-changeset
 ```
@@ -172,7 +172,7 @@ curl -X POST "${API%/}/products" -H 'Content-Type: application/json' \
 
 ## Matriz de disponibilidad de servicios IA (empírica — verificada 2026-06-18)
 
-Probado en el sandbox AWS re/Start (cuenta `879652687082`, us-west-2) ejecutando
+Probado en el sandbox AWS re/Start (cuenta `879652687082`) ejecutando
 las Lambdas con el `LabRole`. El LabRole trae `ReadOnlyAccess` + `VocLabPolicy1/2`
 y **no es modificable** (sin `iam:CreateRole`/`PutRolePolicy`).
 

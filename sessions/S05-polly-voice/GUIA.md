@@ -54,7 +54,7 @@ de ciclo de vida que **borra el audio a los 7 días** (FinOps).
 2. `sam build && sam deploy`.
 3. Generá audio en español (Function URL de esta función; el productId va en path o body):
 ```bash
-URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 \
   --query "Stacks[0].Outputs[?OutputKey=='SynthesizeVoiceUrl'].OutputValue" --output text)
 curl -s -X POST "${URL%/}/products/PRODUCT_ID/voice" \
   -H "Content-Type: application/json" -d '{"lang":"es"}' | python3 -m json.tool

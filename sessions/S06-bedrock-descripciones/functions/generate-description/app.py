@@ -22,7 +22,7 @@ import os
 import boto3
 
 PRODUCTS_TABLE = os.environ["PRODUCTS_TABLE"]
-# Verificá acceso al modelo en Bedrock > Model access (us-west-2). Para inference
+# Verificá acceso al modelo en Bedrock > Model access (us-east-1). Para inference
 # profiles cross-region el id suele llevar prefijo "us." (p. ej. us.anthropic.claude-3-5-...).
 MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "anthropic.claude-3-haiku-20240307-v1:0")
 MAX_TOKENS = int(os.environ.get("BEDROCK_MAX_TOKENS", "300"))
@@ -115,7 +115,7 @@ def lambda_handler(event, context):
             {
                 "error": "Fallo al invocar el modelo",
                 "detail": str(e),
-                "hint": "¿Habilitaste acceso al modelo en Bedrock > Model access (us-west-2)?",
+                "hint": "¿Habilitaste acceso al modelo en Bedrock > Model access (us-east-1)?",
             },
         )
 

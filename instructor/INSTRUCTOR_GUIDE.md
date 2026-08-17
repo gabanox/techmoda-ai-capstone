@@ -7,7 +7,7 @@ Esta guía ayuda a los instructores a facilitar la Sesión 10 (la sesión del ca
 > 🏖️ **Sandbox AWS re/Start (Vocareum):** el capstone se despliega con el **LabRole**, que no permite
 > API Gateway ni `iam:CreateRole`. El CRUD se expone con **una Lambda Function URL** + **router** y
 > cada función usa el LabRole (sin bloque `Policies:`). El stack se llama **`techmoda-ai`** y la región
-> es **us-west-2**. Donde esta guía menciona API Gateway o privilegio mínimo IAM, es material didáctico
+> es **us-east-1**. Donde esta guía menciona API Gateway o privilegio mínimo IAM, es material didáctico
 > del patrón clásico; la realidad desplegada usa Function URLs. Ver
 > [../docs/SANDBOX-COMPAT.md](../docs/SANDBOX-COMPAT.md).
 
@@ -314,7 +314,7 @@ return {
   - Quedó un `AWS::Serverless::Api` o `Events: Type: Api` (el LabRole no permite API Gateway → el stack revierte)
   - Template inválido: Errores de sintaxis YAML
 - Reintentar despliegue después de corregir el problema
-- Eliminar stack fallido: `aws cloudformation delete-stack --stack-name techmoda-ai --region us-west-2`
+- Eliminar stack fallido: `aws cloudformation delete-stack --stack-name techmoda-ai --region us-east-1`
 
 ### Desafío 8: Confusión con las Pruebas
 
@@ -548,7 +548,7 @@ Ver [EVALUATION_RUBRIC.md](EVALUATION_RUBRIC.md) para criterios de puntuación d
 
 **Function URL faltante** (output `ApiUrl`):
 ```bash
-aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 --query "Stacks[0].Outputs"
+aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 --query "Stacks[0].Outputs"
 ```
 
 **Revisar items de DynamoDB**:
@@ -563,7 +563,7 @@ aws logs tail /aws/lambda/techmoda-ai-ListItems --since 5m
 
 **Forzar eliminación de stack atascado**:
 ```bash
-aws cloudformation delete-stack --stack-name techmoda-ai --region us-west-2
+aws cloudformation delete-stack --stack-name techmoda-ai --region us-east-1
 ```
 
 ## Seguimiento Post-Sesión

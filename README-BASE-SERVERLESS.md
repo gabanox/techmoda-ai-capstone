@@ -214,14 +214,14 @@ explícitos:
 
 # O directamente con SAM CLI
 sam build && sam deploy \
-  --stack-name techmoda-ai --region us-west-2 \
+  --stack-name techmoda-ai --region us-east-1 \
   --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
   --resolve-s3 --no-confirm-changeset
 ```
 
 **Notas**:
-- **Stack Name**: `techmoda-ai` (definido también en `samconfig.us-west-2.example`).
-- **AWS Region**: `us-west-2` (la del sandbox; ahí están habilitados Bedrock/Rekognition/etc).
+- **Stack Name**: `techmoda-ai` (definido también en `samconfig.us-east-1.example`).
+- **AWS Region**: `us-east-1` (Norte de Virginia; ahí están habilitados Bedrock/Rekognition/etc).
 - **`CAPABILITY_AUTO_EXPAND`**: obligatorio (Transform SAM). **No** hace falta crear roles IAM: cada
   función usa `Role: !Ref LabRoleArn`. Ver [docs/SANDBOX-COMPAT.md](docs/SANDBOX-COMPAT.md).
 - **Sin autenticación**: las Function URLs usan `AuthType: NONE` — esperado para este proyecto
@@ -243,7 +243,7 @@ Después del despliegue, recibirás una URL de API en las salidas:
 
 ```
 Outputs:
-  ApiUrl: https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-west-2.on.aws/
+  ApiUrl: https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-east-1.on.aws/
 ```
 
 `ApiUrl` es la **Function URL del router** (termina en `/`, sin `/Prod`). Copia esta URL y prueba tus
@@ -254,7 +254,7 @@ completas de prueba.
 
 ```bash
 # Configura tu URL de API (Function URL del router; quita la barra final al concatenar rutas)
-export API_URL="https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-west-2.on.aws"
+export API_URL="https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-east-1.on.aws"
 
 # Crea un producto
 curl -X POST $API_URL/products \
@@ -372,7 +372,7 @@ Para ejecutar el frontend localmente:
 
 2. Actualiza `.env` con tu URL de API:
    ```
-   VITE_API_URL=https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-west-2.on.aws/
+   VITE_API_URL=https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-east-1.on.aws/
    ```
 
 3. Instala las dependencias y ejecuta:
@@ -397,7 +397,7 @@ Consulta [frontend/README.md](frontend/README.md) para más detalles.
 ./scripts/delete.sh
 
 # Opción 3: Directamente con SAM CLI
-sam delete --stack-name techmoda-ai --region us-west-2
+sam delete --stack-name techmoda-ai --region us-east-1
 ```
 
 **Nota**: Esto eliminará las Function URLs, funciones Lambda, tabla DynamoDB, bucket S3 y distribución CloudFront. El **LabRole** es preexistente y compartido — no se elimina.

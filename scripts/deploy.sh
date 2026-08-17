@@ -11,7 +11,7 @@
 set -e
 
 STACK_NAME="${STACK_NAME:-techmoda-ai}"
-REGION="${AWS_REGION:-us-west-2}"
+REGION="${AWS_REGION:-us-east-1}"
 
 echo "Deploying SAM application (Function URLs, sin API Gateway)..."
 echo "============================================================="

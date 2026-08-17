@@ -1,15 +1,15 @@
 # AWS SAM Configuration — TechModa AI Capstone (sandbox AWS re/Start)
 #
-# Uso:  cp samconfig.us-west-2.example samconfig.toml
+# Uso:  cp samconfig.us-east-1.example samconfig.toml
 #
 # samconfig.toml está en .gitignore para no comitear settings específicos de tu cuenta.
-# Región fija del sandbox re/Start: us-west-2 (Oregón).
+# Región de trabajo del proyecto en el sandbox re/Start: us-east-1 (Norte de Virginia).
 
 version = 0.1
 
 [default.deploy.parameters]
 stack_name = "techmoda-ai"
-region = "us-west-2"
+region = "us-east-1"
 # CAPABILITY_AUTO_EXPAND es obligatorio (Transform SAM). NO se necesita crear roles
 # nuevos porque las funciones reusan el LabRole (ver docs/SANDBOX-COMPAT.md), pero
 # CAPABILITY_IAM se mantiene por compatibilidad del changeset.

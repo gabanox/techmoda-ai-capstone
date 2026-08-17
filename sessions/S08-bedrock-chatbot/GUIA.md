@@ -30,7 +30,7 @@ Este es el patrón **RAG completo**: *Retrieval* (S7) + *Augmented Generation* (
 ## 🧩 Prerequisitos
 
 - **S7 completada y el índice construido** (`POST /search/index`). El asistente recupera sobre esos embeddings.
-- 🔑 **Acceso a dos modelos** en Bedrock (us-west-2): el de **embeddings** (Titan) y el de **generación** (Claude Haiku).
+- 🔑 **Acceso a dos modelos** en Bedrock (us-east-1): el de **embeddings** (Titan) y el de **generación** (Claude Haiku).
 
 ---
 
@@ -64,7 +64,7 @@ precios de hoy. Si le preguntás por productos, **alucinaría**. RAG resuelve es
 3. `sam build && sam deploy`.
 4. Conversá (Function URL de esta función):
 ```bash
-URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 \
   --query "Stacks[0].Outputs[?OutputKey=='ShoppingAssistantUrl'].OutputValue" --output text)
 curl -s -X POST "${URL%/}/assistant" \
   -H "Content-Type: application/json" \

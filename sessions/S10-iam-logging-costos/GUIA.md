@@ -78,7 +78,7 @@ A lo largo del proyecto aplicamos un patrón consistente. Repasalo, porque **es 
 3. **Logging de Bedrock:**
    ```bash
    bash sessions/S10-iam-logging-costos/enable-bedrock-logging.sh
-   aws bedrock get-model-invocation-logging-configuration --region us-west-2
+   aws bedrock get-model-invocation-logging-configuration --region us-east-1
    ```
 4. **Ver costos atribuidos:** activá los cost allocation tags en Billing → Cost Allocation Tags y revisá
    Cost Explorer filtrando por `Project=techmoda-ai-capstone`.
@@ -113,6 +113,6 @@ en el log group evita acumulación. *Verificar precios de CloudWatch Logs/Alarms
 
 **Cleanup de S10:**
 ```bash
-aws bedrock delete-model-invocation-logging-configuration --region us-west-2
+aws bedrock delete-model-invocation-logging-configuration --region us-east-1
 ```
 Y quitá los recursos de gobernanza del `template.yaml` si revertís (o dejalos hasta S11).

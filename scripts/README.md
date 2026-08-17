@@ -3,8 +3,8 @@
 Este directorio contiene scripts para facilitar el despliegue y gestión de la aplicación TechModa.
 
 > 🏖️ **Sandbox AWS re/Start:** el frente HTTP son **Lambda Function URLs** (no API Gateway), el stack
-> se llama **`techmoda-ai`** y la región es **us-west-2**. Las URLs de ejemplo de abajo tienen el
-> formato `https://<id>.lambda-url.us-west-2.on.aws/`. Ver
+> se llama **`techmoda-ai`** y la región es **us-east-1**. Las URLs de ejemplo de abajo tienen el
+> formato `https://<id>.lambda-url.us-east-1.on.aws/`. Ver
 > [../docs/SANDBOX-COMPAT.md](../docs/SANDBOX-COMPAT.md).
 
 ## 📋 Índice de Scripts
@@ -181,14 +181,14 @@ Estado: CREATE_COMPLETE
 📋 Información del Despliegue
 -------------------------------------------
 🔗 API Backend (Lambda Function URL del router):
-   https://abc123abc123abc123abc123abc1230.lambda-url.us-west-2.on.aws/
+   https://abc123abc123abc123abc123abc1230.lambda-url.us-east-1.on.aws/
 
    Endpoints disponibles:
-   • GET    https://abc123abc123abc123abc123abc1230.lambda-url.us-west-2.on.aws/products
-   • POST   https://abc123abc123abc123abc123abc1230.lambda-url.us-west-2.on.aws/products
-   • GET    https://abc123abc123abc123abc123abc1230.lambda-url.us-west-2.on.aws/products/{id}
-   • PUT    https://abc123abc123abc123abc123abc1230.lambda-url.us-west-2.on.aws/products/{id}
-   • DELETE https://abc123abc123abc123abc123abc1230.lambda-url.us-west-2.on.aws/products/{id}
+   • GET    https://abc123abc123abc123abc123abc1230.lambda-url.us-east-1.on.aws/products
+   • POST   https://abc123abc123abc123abc123abc1230.lambda-url.us-east-1.on.aws/products
+   • GET    https://abc123abc123abc123abc123abc1230.lambda-url.us-east-1.on.aws/products/{id}
+   • PUT    https://abc123abc123abc123abc123abc1230.lambda-url.us-east-1.on.aws/products/{id}
+   • DELETE https://abc123abc123abc123abc123abc1230.lambda-url.us-east-1.on.aws/products/{id}
 
 🌐 Frontend Web:
    https://d123abc.cloudfront.net

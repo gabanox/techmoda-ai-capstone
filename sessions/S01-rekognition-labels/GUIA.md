@@ -31,7 +31,7 @@ campo `aiLabels`.
 - Al menos **un producto con una imagen real**. La `imageUrl` puede ser:
   - `s3://techmoda-ai-frontend/assets/vestido.jpg` (subí la foto a ese bucket), **o**
   - una URL pública `https://...jpg`.
-- Acceso a Rekognition en `us-west-2` (confirmado disponible en el sandbox).
+- Acceso a Rekognition en `us-east-1` (confirmado disponible en el sandbox).
 
 ```bash
 # Subir una foto de ejemplo al bucket de assets y apuntar el producto a ella:
@@ -76,7 +76,7 @@ sam build && sam deploy
 ### 3. Ejecutar
 ```bash
 # URL = Function URL de esta función (output EnrichLabelsUrl); ${URL%/} quita la barra final.
-URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 \
   --query "Stacks[0].Outputs[?OutputKey=='EnrichLabelsUrl'].OutputValue" --output text)
 
 # Reemplazá PRODUCT_ID por el productId de un producto con imagen real.
@@ -100,7 +100,7 @@ Respuesta esperada (ejemplo):
 
 ### 4. Ver el enriquecimiento en DynamoDB
 ```bash
-aws dynamodb get-item --region us-west-2 \
+aws dynamodb get-item --region us-east-1 \
   --table-name techmoda-ai-Products \
   --key '{"productId":{"S":"PRODUCT_ID"}}' \
   --query 'Item.aiLabels'

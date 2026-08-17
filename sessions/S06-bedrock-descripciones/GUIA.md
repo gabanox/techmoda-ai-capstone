@@ -28,7 +28,7 @@ de marketing en español, con el tono que pidamos. Es el primer contacto con **g
 
 - **S0 desplegado.** Ideal haber corrido **S1** antes (las `aiLabels` enriquecen el prompt).
 - 🔑 **Acceso al modelo habilitado:** Consola → **Amazon Bedrock → Model access** → habilitar
-  *Anthropic Claude 3 Haiku* (o el modelo que uses) en **us-west-2**. Sin esto, la llamada falla con AccessDenied.
+  *Anthropic Claude 3 Haiku* (o el modelo que uses) en **us-east-1**. Sin esto, la llamada falla con AccessDenied.
 
 ---
 
@@ -66,7 +66,7 @@ entrenar/alojar tus propios modelos**. Para "generar texto sin entrenar nada" �
 3. `sam build && sam deploy`.
 4. Generá una descripción (Function URL de esta función; el productId va en path o body):
 ```bash
-URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 \
   --query "Stacks[0].Outputs[?OutputKey=='GenerateDescriptionUrl'].OutputValue" --output text)
 curl -s -X POST "${URL%/}/products/PRODUCT_ID/describe" \
   -H "Content-Type: application/json" \

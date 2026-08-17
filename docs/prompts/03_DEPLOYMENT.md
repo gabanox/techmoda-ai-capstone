@@ -6,11 +6,11 @@ Estos prompts le guían a través de la construcción y el despliegue de su apli
 > permite). La API se expone con una **Lambda Function URL** (router CRUD) y cada Lambda reusa el
 > `LabRole` (no se crean roles IAM nuevos). Por eso:
 > - El comando real de deploy es:
->   `sam deploy --stack-name techmoda-ai --region us-west-2 --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --resolve-s3 --no-confirm-changeset`
+>   `sam deploy --stack-name techmoda-ai --region us-east-1 --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --resolve-s3 --no-confirm-changeset`
 >   (atajo: `bash scripts/deploy.sh`). **No** uses `--guided` interactivo en el sandbox.
-> - El output `ApiUrl` es una Function URL `https://<id>.lambda-url.us-west-2.on.aws/` (sin `/Prod`).
-> - Donde abajo veas "API Gateway", "TechModaApi", "execute-api", "/Prod", "us-east-1" o
->   "techmoda-capstone", interpretá Function URL / `ApiUrl` / `us-west-2` / `techmoda-ai`.
+> - El output `ApiUrl` es una Function URL `https://<id>.lambda-url.us-east-1.on.aws/` (sin `/Prod`).
+> - Donde abajo veas "API Gateway", "TechModaApi", "execute-api", "/Prod" o
+>   "techmoda-capstone", interpretá Function URL / `ApiUrl` / `techmoda-ai`.
 >
 > Las 3 restricciones y el patrón están en [`../SANDBOX-COMPAT.md`](../SANDBOX-COMPAT.md).
 
@@ -185,7 +185,7 @@ Outputs
 -------------------------------------------------
 Key                 ApiUrl
 Description         Base API URL (Lambda Function URL del router CRUD)
-Value               https://abc123xyz.lambda-url.us-west-2.on.aws/
+Value               https://abc123xyz.lambda-url.us-east-1.on.aws/
 -------------------------------------------------
 ```
 

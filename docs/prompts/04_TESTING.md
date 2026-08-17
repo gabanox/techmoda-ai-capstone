@@ -3,7 +3,7 @@
 Estos prompts le ayudan a probar sus endpoints de la API de TechModa usando comandos curl y a solucionar problemas de solicitudes fallidas.
 
 > 🏖️ **Sandbox AWS re/Start:** la URL base es una **Lambda Function URL** (output `ApiUrl`), con
-> formato `https://<id>.lambda-url.us-west-2.on.aws/` — termina en `/` y **no** lleva `/Prod`. Quita
+> formato `https://<id>.lambda-url.us-east-1.on.aws/` — termina en `/` y **no** lleva `/Prod`. Quita
 > la barra final con `${API_URL%/}` al concatenar rutas. Ver [../SANDBOX-COMPAT.md](../SANDBOX-COMPAT.md).
 
 ## Prompt 4.1: Generar Comandos Curl para Todos los Endpoints
@@ -11,7 +11,7 @@ Estos prompts le ayudan a probar sus endpoints de la API de TechModa usando coma
 ```
 I have deployed my TechModa capstone API and need curl commands to test all 5 endpoints.
 
-Lambda Function URL (router): https://<id>.lambda-url.us-west-2.on.aws/
+Lambda Function URL (router): https://<id>.lambda-url.us-east-1.on.aws/
 
 Endpoints to test:
 1. GET /products (list all)
@@ -62,7 +62,7 @@ Siga esta secuencia para pruebas completas:
 ### Guardar URL de API
 
 ```bash
-export API_URL="https://abc123xyzabc123xyzabc123xyz0000.lambda-url.us-west-2.on.aws"
+export API_URL="https://abc123xyzabc123xyzabc123xyz0000.lambda-url.us-east-1.on.aws"
 ```
 
 ### Probar Todos los Endpoints

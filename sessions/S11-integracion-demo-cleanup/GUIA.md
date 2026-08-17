@@ -55,8 +55,8 @@ Una solución de IA no es solo "que funcione el modelo". El examen evalúa que e
 ### 1. Demo end-to-end
 ```bash
 # API_URL = Function URL del router (output ApiUrl). demo.sh resuelve por su cuenta las
-# Function URLs de cada feature de IA desde los outputs del stack techmoda-ai (us-west-2).
-API_URL=https://xxxx.lambda-url.us-west-2.on.aws/ \
+# Function URLs de cada feature de IA desde los outputs del stack techmoda-ai (us-east-1).
+API_URL=https://xxxx.lambda-url.us-east-1.on.aws/ \
   bash sessions/S11-integracion-demo-cleanup/demo.sh
 ```
 Recorre las 8 features en orden e imprime cada resultado. Ideal para grabar o presentar.
@@ -78,10 +78,10 @@ El frontend base (React) ya consume la API. Mejoras sugeridas para la demo visua
 ### 4. 🔴 Cleanup responsable (OBLIGATORIO)
 ```bash
 # 1) Deshabilitar logging de Bedrock (si lo activaste en S10)
-aws bedrock delete-model-invocation-logging-configuration --region us-west-2 || true
+aws bedrock delete-model-invocation-logging-configuration --region us-east-1 || true
 
 # 2) Borrar el guardrail (si lo creaste en S9)
-# aws bedrock delete-guardrail --guardrail-identifier <id> --region us-west-2
+# aws bedrock delete-guardrail --guardrail-identifier <id> --region us-east-1
 
 # 3) Vaciar buckets (frontend + audio) y borrar el stack completo
 bash scripts/delete-all.sh
@@ -89,7 +89,7 @@ bash scripts/delete-all.sh
 `scripts/delete-all.sh` vacía los buckets S3 antes de eliminar el stack (CloudFormation no borra buckets
 con objetos). Verificá al final que el stack ya no aparece:
 ```bash
-aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 2>&1 | grep -q "does not exist" \
+aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 2>&1 | grep -q "does not exist" \
   && echo "✓ Stack eliminado" || echo "⚠ Revisá el estado del stack"
 ```
 

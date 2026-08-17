@@ -4,7 +4,7 @@
 
 > 🏖️ **Sandbox AWS re/Start:** el frente HTTP es una **Lambda Function URL** + **router** (no API
 > Gateway), cada función usa el **LabRole** (sin `Policies:`), el stack es **`techmoda-ai`** y la región
-> **us-west-2**. Ver [../docs/SANDBOX-COMPAT.md](../docs/SANDBOX-COMPAT.md).
+> **us-east-1**. Ver [../docs/SANDBOX-COMPAT.md](../docs/SANDBOX-COMPAT.md).
 
 Este documento proporciona patrones de implementación y orientación para instructores. NO contiene soluciones completas para evitar la tentación de compartirlas con los estudiantes. En su lugar, ofrece:
 
@@ -713,7 +713,7 @@ Asegurar que Lambda retorna:
 
 ```bash
 # Establecer la Function URL del router (output ApiUrl; sin barra final)
-export API_URL="https://[fn-id].lambda-url.us-west-2.on.aws"
+export API_URL="https://[fn-id].lambda-url.us-east-1.on.aws"
 
 # Crear producto
 curl -X POST "${API_URL%/}/products" \
@@ -754,10 +754,10 @@ Al revisar el código de los estudiantes, buscar:
 
 ```bash
 # Ver recursos del stack
-aws cloudformation list-stack-resources --stack-name techmoda-ai --region us-west-2
+aws cloudformation list-stack-resources --stack-name techmoda-ai --region us-east-1
 
 # Obtener la Function URL (output ApiUrl)
-aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 --query "Stacks[0].Outputs"
+aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 --query "Stacks[0].Outputs"
 
 # Escanear tabla DynamoDB
 aws dynamodb scan --table-name techmoda-ai-Products
@@ -766,7 +766,7 @@ aws dynamodb scan --table-name techmoda-ai-Products
 aws logs tail /aws/lambda/techmoda-ai-ListItems --follow
 
 # Eliminar stack
-sam delete --stack-name techmoda-ai --region us-west-2
+sam delete --stack-name techmoda-ai --region us-east-1
 ```
 
 ---

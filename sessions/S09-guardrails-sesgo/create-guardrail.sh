@@ -7,7 +7,7 @@
 # una sola vez desde el IDE con LabRole o un rol admin del sandbox).
 set -euo pipefail
 
-REGION="${AWS_REGION:-us-west-2}"
+REGION="${AWS_REGION:-us-east-1}"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CFG="$DIR/guardrail-config.json"
 

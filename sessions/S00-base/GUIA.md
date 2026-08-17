@@ -6,7 +6,7 @@
 
 ## 🎯 Objetivo
 
-Dejar corriendo, en tu cuenta sandbox **us-west-2**, la tienda TechModa serverless **sin IA todavía**:
+Dejar corriendo, en tu cuenta sandbox **us-east-1**, la tienda TechModa serverless **sin IA todavía**:
 un **router CRUD** (Node.js) expuesto con **una Lambda Function URL** + DynamoDB + frontend React en
 S3/CloudFront. Este es el lienzo sobre el que las 11 sesiones siguientes irán pegando capacidades de
 IA, una por hora.
@@ -51,7 +51,7 @@ todas reusan el `LabRole` (que ya trae los permisos de IA) porque no se permite 
 ### 1. Clonar y configurar
 ```bash
 git clone <este-repo> techmoda-ai-capstone && cd techmoda-ai-capstone
-cp samconfig.us-west-2.example samconfig.toml
+cp samconfig.us-east-1.example samconfig.toml
 ```
 
 ### 2. Construir
@@ -63,12 +63,12 @@ SAM empaqueta el router CRUD (Node.js) y valida el `template.yaml`.
 ### 3. Desplegar
 ```bash
 # atajo: bash scripts/deploy.sh
-sam deploy --stack-name techmoda-ai --region us-west-2 \
+sam deploy --stack-name techmoda-ai --region us-east-1 \
   --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
   --resolve-s3 --no-confirm-changeset
 ```
 `CAPABILITY_AUTO_EXPAND` es obligatorio (Transform SAM). En despliegues posteriores podés repetir el
-mismo comando (o `sam deploy` a secas si copiaste `samconfig.us-west-2.example` → `samconfig.toml`).
+mismo comando (o `sam deploy` a secas si copiaste `samconfig.us-east-1.example` → `samconfig.toml`).
 
 > 🔐 **Sobre IAM en el sandbox:** el `LabRole` **no permite `iam:CreateRole`**, así que cada Lambda
 > reusa ese rol preexistente (`Role: !Ref LabRoleArn` en el template) y **no** lleva bloque `Policies:`
@@ -77,7 +77,7 @@ mismo comando (o `sam deploy` a secas si copiaste `samconfig.us-west-2.example` 
 
 ### 4. Anotar las salidas
 Al final del deploy, CloudFormation imprime:
-- `ApiUrl` → la URL base de tu API: una **Lambda Function URL** (`https://<id>.lambda-url.us-west-2.on.aws/`)
+- `ApiUrl` → la URL base de tu API: una **Lambda Function URL** (`https://<id>.lambda-url.us-east-1.on.aws/`)
 - `FrontendUrl` → la URL de CloudFront del catálogo
 - `ProductsTableName` → la tabla DynamoDB
 

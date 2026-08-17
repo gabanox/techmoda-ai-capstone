@@ -8,7 +8,7 @@ Description: TechModa Serverless Capstone - Fashion E-commerce Product Catalog A
 #   2. SIN iam:CreateRole: cada función referencia el LabRole preexistente; NO se
 #      usan `Policies:` (SAM las traduce a roles nuevos). Role y Policies son
 #      mutuamente excluyentes en SAM.
-#   3. Deploy: sam build && sam deploy --stack-name techmoda-ai --region us-west-2 \
+#   3. Deploy: sam build && sam deploy --stack-name techmoda-ai --region us-east-1 \
 #                --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
 #                --resolve-s3 --no-confirm-changeset
 # ============================================================================

@@ -19,7 +19,7 @@ declare global {
 const RAW_API_URL =
   window.__ENV?.VITE_API_URL ||
   import.meta.env.VITE_API_URL ||
-  'https://your-function-url-id.lambda-url.us-west-2.on.aws';
+  'https://your-function-url-id.lambda-url.us-east-1.on.aws';
 
 const API_URL = RAW_API_URL.replace(/\/+$/, '');
 

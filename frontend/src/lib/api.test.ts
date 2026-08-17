@@ -190,7 +190,7 @@ describe('API Module', () => {
   describe('API URL Configuration', () => {
     it('should use runtime config URL if available', () => {
       // window.__ENV is already set in setup.ts (Function URL con slash final)
-      expect(window.__ENV?.VITE_API_URL).toBe('https://test-api.lambda-url.us-west-2.on.aws/');
+      expect(window.__ENV?.VITE_API_URL).toBe('https://test-api.lambda-url.us-east-1.on.aws/');
     });
 
     it('should construct correct API endpoints', async () => {
@@ -204,7 +204,7 @@ describe('API Module', () => {
 
       // El slash final de la Function URL se normaliza -> sin doble slash.
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://test-api.lambda-url.us-west-2.on.aws/products'
+        'https://test-api.lambda-url.us-east-1.on.aws/products'
       );
     });
   });

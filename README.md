@@ -120,12 +120,12 @@ el **2026-06-17**:
 ## ✅ Prerequisitos
 
 1. **Cuenta sandbox de AWS re/Start (vocareum)** activa.
-   - Región de trabajo: **`us-west-2`** (Oregón).
+   - Región de trabajo: **`us-east-1`** (Norte de Virginia).
    - Rol disponible: **`LabRole`**. EC2 limitado a `t*.nano/micro/small/medium`, EBS gp ≤ 100 GB.
 2. **VS Code IDE del sandbox** desplegado (se aprovisiona aparte vía CloudFormation). Todas las sesiones se corren **dentro de ese IDE**.
 3. Herramientas (presentes en el IDE del sandbox): **AWS SAM CLI**, **AWS CLI v2**, **Node.js 18+**, **Python 3.12**, **git**.
 4. **Acceso a modelos de Bedrock** habilitado para S6–S8:
-   Consola → **Amazon Bedrock → Model access** → habilitar los modelos que uses (p. ej. Anthropic Claude y Amazon Titan Embeddings). **Verificar disponibilidad en `us-west-2`** antes de la sesión.
+   Consola → **Amazon Bedrock → Model access** → habilitar los modelos que uses (p. ej. Anthropic Claude y Amazon Titan Embeddings). **Verificar disponibilidad en `us-east-1`** antes de la sesión.
 
 > **Servicios de IA confirmados disponibles en el sandbox:** Rekognition, Comprehend, Textract, Polly, Transcribe, Translate **y Bedrock**.
 
@@ -137,12 +137,12 @@ el **2026-06-17**:
 # 1. Clonar el repo dentro del VS Code IDE del sandbox
 git clone <este-repo> techmoda-ai-capstone && cd techmoda-ai-capstone
 
-# 2. Configurar SAM para us-west-2
-cp samconfig.us-west-2.example samconfig.toml
+# 2. Configurar SAM para us-east-1
+cp samconfig.us-east-1.example samconfig.toml
 
 # 3. Construir y desplegar (atajo: bash scripts/deploy.sh)
 sam build
-sam deploy --stack-name techmoda-ai --region us-west-2 \
+sam deploy --stack-name techmoda-ai --region us-east-1 \
   --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
   --resolve-s3 --no-confirm-changeset
 
@@ -154,14 +154,14 @@ bash scripts/deploy-frontend.sh
 ```
 
 La salida del stack te da `ApiUrl` (la **Lambda Function URL** del router, formato
-`https://<id>.lambda-url.us-west-2.on.aws/`) y `FrontendUrl`. Ábrelos y verás el catálogo de TechModa.
+`https://<id>.lambda-url.us-east-1.on.aws/`) y `FrontendUrl`. Ábrelos y verás el catálogo de TechModa.
 Detalle completo y validación en **[sessions/S00-base/GUIA.md](sessions/S00-base/GUIA.md)**.
 
 > 🧩 **Dos formas de llegar al mismo resultado:**
 > - **Progresiva (recomendada, pedagógica):** desplegás `template.yaml` (solo S0) y vas pegando el
 >   `template-snippet.yaml` de cada sesión, una por hora. Así "ves crecer" la arquitectura.
 > - **Todo junto:** `sam build -t template.full.yaml && sam deploy -t template.full.yaml --stack-name techmoda-ai
->   --region us-west-2 --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --resolve-s3 --no-confirm-changeset`
+>   --region us-east-1 --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --resolve-s3 --no-confirm-changeset`
 >   despliega la base + las 8 features de IA (S1–S8) + gobernanza (S10) ya cableadas, cada una con su
 >   Function URL. Útil para una demo rápida o para revisar el resultado final.
 >   Este archivo está **validado con `sam validate --lint`**.
@@ -198,7 +198,7 @@ techmoda-ai-capstone/
 ├── README.md                  # este archivo
 ├── README-BASE-SERVERLESS.md  # docs del capstone serverless base (sin IA)
 ├── template.yaml              # SAM base (S0). Cada sesión agrega su snippet aquí.
-├── samconfig.us-west-2.example
+├── samconfig.us-east-1.example
 ├── functions/                 # 5 Lambdas CRUD Node.js + router/ (1 Function URL, base S0)
 ├── frontend/                  # React + Vite (base S0)
 ├── scripts/                   # deploy / delete / logs / status

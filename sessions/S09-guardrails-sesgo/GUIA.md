@@ -70,7 +70,7 @@ género). Mitigaciones que el examen espera que conozcas:
 ```bash
 bash sessions/S09-guardrails-sesgo/create-guardrail.sh
 # Anotá el guardrailId que devuelve y publicá una versión:
-aws bedrock create-guardrail-version --guardrail-identifier <guardrailId> --region us-west-2
+aws bedrock create-guardrail-version --guardrail-identifier <guardrailId> --region us-east-1
 ```
 
 ### 2. Cablear el guardrail a las llamadas generativas (lo completás vos)
@@ -96,13 +96,13 @@ Y en el `template.yaml`, agregá a esas funciones:
 - Statement:
     - Effect: Allow
       Action: [ bedrock:ApplyGuardrail ]
-      Resource: !Sub arn:${AWS::Partition}:bedrock:us-west-2:${AWS::AccountId}:guardrail/*
+      Resource: !Sub arn:${AWS::Partition}:bedrock:us-east-1:${AWS::AccountId}:guardrail/*
 ```
 
 ### 3. Probar que filtra
 ```bash
 # Function URL del asistente (output ShoppingAssistantUrl de S8):
-URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 \
   --query "Stacks[0].Outputs[?OutputKey=='ShoppingAssistantUrl'].OutputValue" --output text)
 # Intento fuera de dominio / con PII → el guardrail debe intervenir:
 curl -s -X POST "${URL%/}/assistant" -H "Content-Type: application/json" \
@@ -140,6 +140,6 @@ Práctica = **centavos**. *Verificar en la página de precios de Amazon Bedrock 
 
 **Cleanup de S9:**
 ```bash
-aws bedrock delete-guardrail --guardrail-identifier <guardrailId> --region us-west-2
+aws bedrock delete-guardrail --guardrail-identifier <guardrailId> --region us-east-1
 ```
 Y quitá `guardrailConfig`/permisos de S6/S8 si revertís.

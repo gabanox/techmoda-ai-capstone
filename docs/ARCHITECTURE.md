@@ -21,7 +21,7 @@
                              ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │            Lambda Function URL  (AuthType: NONE, CORS *)             │
-│            https://<id>.lambda-url.us-west-2.on.aws/                 │
+│            https://<id>.lambda-url.us-east-1.on.aws/                 │
 │  ┌────────────────────────────────────────────────────────────────┐ │
 │  │  Router (functions/router/index.js) — parsea method + rawPath: │ │
 │  │  • GET  /products          → Lambda ListItems                  │ │
@@ -110,7 +110,7 @@
 - Devolver respuestas Lambda a clientes con códigos de estado HTTP apropiados
 - Registrar peticiones en CloudWatch
 
-**Formato de URL Base**: `https://<id>.lambda-url.us-west-2.on.aws/` (termina en `/`, sin `/Prod`).
+**Formato de URL Base**: `https://<id>.lambda-url.us-east-1.on.aws/` (termina en `/`, sin `/Prod`).
 El output del stack se llama `ApiUrl`. Cada función de IA (S1–S8) expone **su propia** Function URL
 (p. ej. `EnrichLabelsUrl`, `ModerateImageUrl`, …).
 
@@ -361,7 +361,7 @@ escritura a CloudWatch Logs, X-Ray, DynamoDB y los servicios de IA administrados
 ### URL Base
 
 ```
-https://<id>.lambda-url.us-west-2.on.aws/
+https://<id>.lambda-url.us-east-1.on.aws/
 ```
 
 Es la **Function URL del router** (output `ApiUrl` del stack). Termina en `/` y **no** lleva sufijo

@@ -7,7 +7,7 @@
 # En el sandbox podés reusar LabRole como deliveryRole si tiene logs:PutLogEvents.
 set -euo pipefail
 
-REGION="${AWS_REGION:-us-west-2}"
+REGION="${AWS_REGION:-us-east-1}"
 ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
 LOG_GROUP="${LOG_GROUP:-/techmoda/techmoda-ai/bedrock-invocations}"
 ROLE_ARN="${ROLE_ARN:-arn:aws:iam::${ACCOUNT_ID}:role/LabRole}"

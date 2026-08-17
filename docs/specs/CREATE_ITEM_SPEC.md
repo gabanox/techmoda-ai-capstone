@@ -220,7 +220,7 @@ PutItem retorna una respuesta vacía en caso de éxito. La función debe retorna
 ## Comando Curl de Prueba
 
 > `API_URL` = Function URL del router (output `ApiUrl`), p. ej.
-> `https://<id>.lambda-url.us-west-2.on.aws`. `${API_URL%/}` quita la barra final.
+> `https://<id>.lambda-url.us-east-1.on.aws`. `${API_URL%/}` quita la barra final.
 
 ### Crear Producto con Todos los Campos
 

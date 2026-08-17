@@ -31,7 +31,7 @@ el chatbot de S8.
 ## 🧩 Prerequisitos
 
 - **S0 desplegado** con productos cargados. Ideal **S1** corrido (las `aiLabels` enriquecen el texto a indexar).
-- 🔑 **Acceso al modelo de embeddings** en Bedrock → Model access → *Amazon Titan Text Embeddings V2* (us-west-2).
+- 🔑 **Acceso al modelo de embeddings** en Bedrock → Model access → *Amazon Titan Text Embeddings V2* (us-east-1).
 
 ---
 
@@ -67,14 +67,14 @@ El flujo de esta sesión:
 3. `sam build && sam deploy`.
 4. **Indexar** el catálogo (Function URL de `IndexEmbeddings`):
 ```bash
-INDEX_URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+INDEX_URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 \
   --query "Stacks[0].Outputs[?OutputKey=='IndexEmbeddingsUrl'].OutputValue" --output text)
 curl -s -X POST "${INDEX_URL%/}/search/index" | python3 -m json.tool
 # {"indexed": 4, "skipped": 0, "total": 4, "model": "amazon.titan-embed-text-v2:0"}
 ```
 5. **Buscar** semánticamente (Function URL de `SemanticSearch`):
 ```bash
-SEARCH_URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+SEARCH_URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 \
   --query "Stacks[0].Outputs[?OutputKey=='SemanticSearchUrl'].OutputValue" --output text)
 curl -s "${SEARCH_URL%/}/search?q=algo%20abrigado%20para%20el%20invierno" | python3 -m json.tool
 ```

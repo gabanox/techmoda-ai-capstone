@@ -3,7 +3,7 @@
 Esta guía te ayudará a desplegar y probar el proyecto en 10 minutos.
 
 > 🏖️ **Sandbox AWS re/Start:** sin API Gateway (no permitido por el `LabRole`). La API es una
-> **Lambda Function URL** servida por un router, y cada Lambda reusa el `LabRole`. Región `us-west-2`,
+> **Lambda Function URL** servida por un router, y cada Lambda reusa el `LabRole`. Región `us-east-1`,
 > stack `techmoda-ai`. Detalle: [`docs/SANDBOX-COMPAT.md`](docs/SANDBOX-COMPAT.md).
 
 ## Opción 1: Usar el Código Pre-implementado (Recomendado para empezar)
@@ -23,7 +23,7 @@ Las funciones Lambda ya están implementadas y listas para usar. Solo necesitas 
 ```
 
 `scripts/deploy.sh` corre `sam build && sam deploy` con las capabilities correctas para el sandbox
-(`CAPABILITY_IAM CAPABILITY_AUTO_EXPAND`, región `us-west-2`, stack `techmoda-ai`, sin API Gateway).
+(`CAPABILITY_IAM CAPABILITY_AUTO_EXPAND`, región `us-east-1`, stack `techmoda-ai`, sin API Gateway).
 No hace falta crear roles IAM: las funciones reusan el `LabRole`.
 
 ### Paso 3: Obtener tu API URL
@@ -31,7 +31,7 @@ No hace falta crear roles IAM: las funciones reusan el `LabRole`.
 Después del despliegue, verás (la base es una **Lambda Function URL**, no API Gateway):
 ```
 Outputs
-ApiUrl    https://xxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-west-2.on.aws/
+ApiUrl    https://xxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-east-1.on.aws/
 ```
 
 **Copia esa URL** y guárdala.

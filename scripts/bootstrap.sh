@@ -11,11 +11,11 @@
 # Uso (paso 0 de cada día / cada vez que el sandbox se recicló):
 #   bash scripts/bootstrap.sh
 #
-# Variables opcionales: STACK_NAME (default techmoda-ai), AWS_REGION (default us-west-2)
+# Variables opcionales: STACK_NAME (default techmoda-ai), AWS_REGION (default us-east-1)
 # ============================================================================
 set -euo pipefail
 STACK="${STACK_NAME:-techmoda-ai}"
-REGION="${AWS_REGION:-us-west-2}"
+REGION="${AWS_REGION:-us-east-1}"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$DIR"
 
