@@ -71,7 +71,24 @@ def lambda_handler(event, context):
     if not texts:
         return _response(400, {"error": "Enviá 'text' o 'reviews' (lista de strings)."})
 
-    results = [_analyze_one(t) for t in texts]
+    # 502 = falló el servicio de IA. Sin este try, un AccessDenied crashea la Lambda
+    # y la Function URL devuelve un 502 opaco, sin cuerpo JSON ni pista de la causa.
+    try:
+        results = [_analyze_one(t) for t in texts]
+    except Exception as e:  # noqa: BLE001
+        print("Comprehend error:", repr(e))
+        return _response(
+            502,
+            {
+                "error": "Fallo al analizar el texto",
+                "detail": str(e),
+                "hint": (
+                    "¿El rol tiene comprehend:DetectSentiment Y "
+                    "comprehend:DetectDominantLanguage? El handler detecta el idioma antes "
+                    "de analizar, así que necesita las dos acciones (ver docs/IAM.md)."
+                ),
+            },
+        )
 
     # Sentimiento agregado: el más frecuente.
     tally = Counter(r["sentiment"] for r in results)

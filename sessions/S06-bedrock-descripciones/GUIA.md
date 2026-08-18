@@ -76,7 +76,7 @@ Respuesta esperada:
 ```json
 {
   "productId": "a1b2...",
-  "model": "anthropic.claude-haiku-4-5-20251001-v1:0",
+  "model": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
   "tone": "elegante y aspiracional",
   "saved": true,
   "description": "Este vestido midi de gasa floral une fluidez y delicadeza...",
@@ -97,9 +97,19 @@ A diferencia de Rekognition/Comprehend, Bedrock permite acotar por **modelo espe
     arn:...:bedrock:us-*:ACCOUNT:inference-profile/us.anthropic.claude-haiku-4-5-20251001-v1:0
 ```
 - **No** damos `bedrock:*` ni `Resource: "*"`. Solo InvokeModel sobre el modelo que usamos.
+- **Hacen falta los DOS ARN, y no son el mismo string.** El del foundation model **no lleva** el
+  prefijo `us.` y su campo de cuenta va **vacío** (los modelos son públicos de AWS); el del
+  *inference profile* **sí** lleva `us.` y vive en **tu** cuenta. Invocar por perfil cross-region
+  necesita permiso sobre ambos: el perfil (lo que pedís) y el modelo destino (donde se ejecuta).
 - **Region wildcard `us-*`** porque los *inference profiles* cross-region pueden ejecutar en varias
   regiones de EE.UU. (patrón documentado por AWS). Esto es `ArnLike` implícito — si lo escribís como
   condición usá `ArnLike`/`StringLike`, **nunca** `StringEquals`/`ArnEquals` con comodines.
+
+> ⚠️ **Por qué el default lleva `us.`**: `anthropic.claude-haiku-4-5-20251001-v1:0` a secas
+> **sólo soporta `INFERENCE_PROFILE`**, no `ON_DEMAND`. Invocarlo directo devuelve
+> `ValidationException: Invocation of model ID ... with on-demand throughput isn't supported.`
+> Verificalo en tu región con:
+> `aws bedrock list-foundation-models --query "modelSummaries[?contains(modelId,'haiku-4-5')].[modelId,inferenceTypesSupported]" --output text`
 
 ---
 

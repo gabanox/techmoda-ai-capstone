@@ -25,8 +25,8 @@ Nunca `servicio:*` ni `Resource: "*"` por comodidad.
 | **S3** | ✅ Sí | `S3ReadPolicy` / `S3CrudPolicy` **por bucket** |
 | **Bedrock** | ✅ Sí | `bedrock:InvokeModel` **por ARN de modelo** |
 | **Rekognition** | ❌ No (APIs `Detect*`) | Por **acción** (`DetectLabels`, `DetectModerationLabels`) |
-| **Comprehend** | ❌ No (APIs `Detect*`) | Por **acción** (`DetectSentiment`) |
-| **Translate** | ❌ No | Por **acción** (`TranslateText`) |
+| **Comprehend** | ❌ No (APIs `Detect*`) | Por **acción** (`DetectSentiment` **+ `DetectDominantLanguage`**) |
+| **Translate** | ❌ No | Por **acción** (`TranslateText` **+ `comprehend:DetectDominantLanguage`**, ver abajo) |
 | **Polly** | ❌ No | Por **acción** (`SynthesizeSpeech`) |
 
 Que Rekognition/Comprehend/Translate/Polly lleven `Resource: "*"` **no es descuido**: esas APIs no
@@ -74,8 +74,8 @@ SAM no crea nada y tus `Policies` se ignoran en silencio.
 | S00 router | Crud | — | — |
 | S01 labels | Crud | `rekognition:DetectLabels` | `s3:GetObject` si `imageUrl` es `s3://` |
 | S02 moderación | Crud | `rekognition:DetectModerationLabels` + `DetectLabels` | idem |
-| S03 sentimiento | Crud | `comprehend:DetectSentiment` | — |
-| S04 traducción | Crud | `translate:TranslateText` | — |
+| S03 sentimiento | Crud | `comprehend:DetectSentiment` + `comprehend:DetectDominantLanguage` | — |
+| S04 traducción | Crud | `translate:TranslateText` + `comprehend:DetectDominantLanguage` | — |
 | S05 voz | Crud | `polly:SynthesizeSpeech` | `S3CrudPolicy` sobre el bucket de audio |
 | S06 descripciones | Crud | `bedrock:InvokeModel` | — |
 | S07 index embeddings | Crud | `bedrock:InvokeModel` | — |
@@ -84,6 +84,58 @@ SAM no crea nada y tus `Policies` se ignoran en silencio.
 
 S07-búsqueda y S08 llevan `Read` y no `Crud` porque solo consultan el catálogo. Es la diferencia
 entre "acotado" y "acotado de verdad".
+
+---
+
+## El permiso que no se ve leyendo el código: dependencias downstream
+
+**Acotá por las APIs que tu código llama, no por la que le da nombre a la sesión.** Dos casos reales de
+este capstone, los dos descubiertos **recién al invocar en la nube** (`sam validate` y `sam build` pasan
+igual, y el deploy también: el permiso que falta sólo aparece en la primera invocación).
+
+**1. Un handler puede llamar más de una API.** S03 detecta el idioma **antes** de analizar el
+sentimiento, así que necesita **dos** acciones:
+
+```yaml
+        - Statement:
+            - Effect: Allow
+              Action:
+                - comprehend:DetectSentiment
+                - comprehend:DetectDominantLanguage   # el handler detecta el idioma primero
+              Resource: "*"
+```
+
+Con sólo `DetectSentiment`:
+`AccessDeniedException ... not authorized to perform: comprehend:DetectDominantLanguage`.
+
+**2. Un servicio puede llamar a OTRO servicio por dentro, con TU rol.** S04 usa
+`SourceLanguageCode="auto"`, y Translate resuelve el idioma llamando a Comprehend:
+
+```yaml
+        - Statement:
+            - Effect: Allow
+              Action:
+                - translate:TranslateText
+                - comprehend:DetectDominantLanguage   # Translate lo llama por dentro si source=auto
+              Resource: "*"
+```
+
+Sin ese permiso, el error **nombra un servicio que tu código nunca menciona**:
+
+```
+AccessDeniedException: com.amazonaws.translate.dataplane.DownstreamDependencyAccessDeniedException:
+User: ...:assumed-role/techmoda-ai-TranslateCatalogFunctionRole-... is not authorized to perform:
+comprehend:DetectDominantLanguage
+```
+
+**Cómo se caza esto** (y es la técnica que vale para el examen y para el trabajo): desplegá, invocá, y
+leé CloudWatch. El mensaje de `AccessDenied` **siempre dice la acción exacta que falta** — es la forma
+más rápida y honesta de construir una política mínima: empezar corto y agregar lo que el error pida,
+en vez de arrancar con `servicio:*` y prometerse recortarlo después.
+
+```bash
+aws logs tail /aws/lambda/techmoda-ai-AnalyzeSentiment --since 10m --format short | grep -i denied
+```
 
 ---
 

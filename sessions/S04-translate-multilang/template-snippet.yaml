@@ -19,7 +19,13 @@
             TableName: !Ref ProductsTable
         - Statement:
             - Effect: Allow
-              Action: translate:TranslateText
+              Action:
+                - translate:TranslateText
+                # Con SourceLanguageCode="auto", Translate llama a Comprehend POR
+                # DENTRO para detectar el idioma. Sin esta accion falla con
+                # DownstreamDependencyAccessDeniedException. Es el caso clasico de
+                # permiso que no se ve leyendo solo el nombre de la API.
+                - comprehend:DetectDominantLanguage
               Resource: "*"
       FunctionUrlConfig:
         AuthType: NONE
@@ -37,5 +43,8 @@
 #   curl -X POST "${URL%/}/products/<PRODUCT_ID>/translate" \
 #        -H 'Content-Type: application/json' -d '{"target":"en"}'
 #
-# Permisos concedidos: translate:TranslateText (agregá comprehend:DetectDominantLanguage si lo usás).
+# Permisos concedidos: translate:TranslateText + comprehend:DetectDominantLanguage.
+# El segundo NO es opcional: con SourceLanguageCode="auto", Translate llama a
+# Comprehend por dentro y sin ese permiso devuelve
+# DownstreamDependencyAccessDeniedException.
 # ----------------------------------------------------------------------------

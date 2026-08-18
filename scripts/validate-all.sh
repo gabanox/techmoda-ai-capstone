@@ -146,8 +146,30 @@ EOF
   [ -z "$DOC_STALE" ] && pass "la documentación no promete el modelo IAM viejo" \
     || fallo "docs que todavía mandan usar LabRole" "$DOC_STALE"
 
+  # Los nombres de bucket S3 son de namespace GLOBAL: `${StackName}-algo` a secas
+  # choca con cualquier otra cuenta que ya lo tenga (409 -> revierte el stack).
+  BUK="$(grep -rIn 'BucketName: !Sub' template*.yaml sessions/*/template-snippet*.yaml 2>/dev/null \
+         | grep -v 'AWS::AccountId')"
+  [ -z "$BUK" ] && pass "nombres de bucket únicos por cuenta+región" \
+                || fallo "un BucketName no incluye AccountId (namespace S3 es global)" "$BUK"
+
+  # Las fotos que sube el estudiante van a un prefijo que `deploy-frontend.sh`
+  # EXCLUYE del `s3 sync --delete`. Si la doc manda a otro prefijo, el próximo
+  # deploy del frontend borra las fotos y S1/S2 se rompen sin decir por qué.
+  PREFIJO="$(grep -o -- "--exclude \"[^\"]*/\*\"" scripts/deploy-frontend.sh 2>/dev/null \
+             | sed 's/--exclude "//; s|/\*"||')"
+  if [ -z "$PREFIJO" ]; then
+    fallo "deploy-frontend.sh hace sync --delete sin excluir las fotos de producto"
+  else
+    MAL="$(grep -rIln 's3://[^ ")]*/assets/[^ ")]*\.\(jpg\|jpeg\|png\)' \
+           sessions/ ai/ docs/ *.md 2>/dev/null)"
+    [ -z "$MAL" ] && pass "fotos de producto en '$PREFIJO/' (excluido del sync --delete)" \
+                  || fallo "la doc manda fotos a assets/, que el sync --delete borra" "$MAL"
+  fi
+
   # Los model IDs de Bedrock viven en 5 lugares y tienen que coincidir.
-  IDS="$(grep -rhoI 'anthropic\.claude[A-Za-z0-9._:-]*' template.full.yaml \
+  # El prefijo `us.` es parte del ID: entra en la comparación a propósito.
+  IDS="$(grep -rhoI '\(us\.\)\?anthropic\.claude[A-Za-z0-9._:-]*' template.full.yaml \
           sessions/S06-*/template-snippet.yaml sessions/S08-*/template-snippet.yaml \
           sessions/S06-*/functions/*/app.py sessions/S08-*/functions/*/app.py 2>/dev/null \
         | sort -u)"
@@ -237,6 +259,14 @@ titulo "9. CRUD (S00)"
 
 titulo "10. Features de IA (una por Function URL)"
     # Cada feature solo se prueba si su output existe en el stack.
+    #
+    # Se captura el HTTP code Y el cuerpo (sin `curl -f`, que descarta el body):
+    # sin el cuerpo, un AccessDenied de IAM se veía como un "error 502" pelado y
+    # había que ir a CloudWatch para saber qué acción faltaba.
+    #
+    # 422 no es un fallo: es el código que los handlers devuelven cuando el dato de
+    # entrada no sirve — típicamente la `imageUrl` de ejemplo sin reemplazar por una
+    # imagen real. Se reporta como omitido, con el comando para arreglarlo.
     probar_ia() {
       local nombre="$1" out="$2" metodo="$3" ruta="$4" data="$5"
       local u; u="$(url "$out")"; u="${u%/}"
@@ -246,11 +276,34 @@ import json,sys
 ps=json.load(sys.stdin).get("products",[])
 print(ps[0]["productId"] if ps else "")' 2>/dev/null)"
       local target="${ruta//\{id\}/$pid}"
-      local r
-      if [ "$metodo" = "GET" ]; then r=$(curl -fsS --max-time 60 "$u$target" 2>&1)
-      else r=$(curl -fsS --max-time 60 -X POST "$u$target" -H 'Content-Type: application/json' -d "$data" 2>&1); fi
-      if [ $? -eq 0 ]; then pass "$nombre"
-      else fallo "$nombre" "$(echo "$r" | tail -1)"; fi
+      local tmp code
+      tmp="$(mktemp)"
+      if [ "$metodo" = "GET" ]; then
+        code=$(curl -sS --max-time 90 -o "$tmp" -w '%{http_code}' "$u$target" 2>/dev/null)
+      else
+        code=$(curl -sS --max-time 90 -o "$tmp" -w '%{http_code}' -X POST "$u$target" \
+               -H 'Content-Type: application/json' -d "$data" 2>/dev/null)
+      fi
+      # Del cuerpo JSON sacamos error/detail/hint; si no es JSON, las primeras 200 letras.
+      local motivo
+      motivo="$(python3 - "$tmp" <<'PY' 2>/dev/null || head -c 200 "$tmp"
+import json, sys
+try:
+    d = json.load(open(sys.argv[1]))
+except Exception:
+    print(open(sys.argv[1]).read()[:200].replace("\n", " ")); raise SystemExit
+if isinstance(d, dict):
+    print(" | ".join(str(d[k]) for k in ("error", "detail", "hint") if d.get(k))[:400])
+PY
+)"
+      rm -f "$tmp"
+      case "$code" in
+        2*)  pass "$nombre" ;;
+        422) skip "$nombre — entrada inválida (HTTP 422), no es un fallo de permisos"
+             printf '      %s\n' "${motivo:-sin detalle}"
+             printf '      Subí una imagen real y apuntá imageUrl a ella (ver GUIA.md de S01).\n' ;;
+        *)   fallo "$nombre (HTTP $code)" "${motivo:-sin cuerpo en la respuesta}" ;;
+      esac
     }
     probar_ia "S1 Rekognition labels"  EnrichLabelsUrl        POST "/products/{id}/labels"   '{}'
     probar_ia "S2 moderación+alt-text" ModerateImageUrl       POST "/products/{id}/moderate" '{}'

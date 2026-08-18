@@ -19,7 +19,13 @@
             TableName: !Ref ProductsTable
         - Statement:
             - Effect: Allow
-              Action: comprehend:DetectSentiment
+              Action:
+                - comprehend:DetectSentiment
+                # El handler detecta el idioma ANTES de analizar el sentimiento
+                # (detect_dominant_language). Sin esta accion falla con AccessDenied:
+                # la politica tiene que cubrir las APIs que el codigo LLAMA, no solo
+                # la que le da nombre a la sesion.
+                - comprehend:DetectDominantLanguage
               Resource: "*"
       FunctionUrlConfig:
         AuthType: NONE
@@ -37,5 +43,7 @@
 #   curl -X POST "$URL" -H 'Content-Type: application/json' \
 #        -d '{"text":"Me encantó la calidad de la tela"}'
 #
-# Permisos concedidos: comprehend:DetectSentiment (agregá DetectDominantLanguage si lo usás).
+# Permisos concedidos: comprehend:DetectSentiment + comprehend:DetectDominantLanguage.
+# Los DOS son necesarios: el handler detecta el idioma antes de analizar. Con solo
+# DetectSentiment la Lambda falla con AccessDenied en la primera invocación.
 # ----------------------------------------------------------------------------

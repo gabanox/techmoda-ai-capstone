@@ -232,7 +232,28 @@ commiteada; IAM + contrato sin commitear) — conviene rama nueva desde `master`
 `gh` **no está instalado**; el PR va por la API REST de GitHub con `$GITHUB_TOKEN` (permiso `push`
 verificado en `gabanox/techmoda-ai-capstone`).
 
-**Gap que ningún arreglo de docs cierra**: sin credenciales AWS, nadie ha probado que los roles que
-SAM genera alcancen en runtime. Las 9 features de IA y el CRUD E2E siguen sin verificar contra la
-nube. Es el primer paso del próximo pase con credenciales:
-`bash scripts/validate-all.sh` (modo completo).
+**Gap que ningún arreglo de docs cerraba — ✅ CERRADO el 2026-08-18.** Con credenciales de la cuenta
+`281248178297` se desplegó `template.full.yaml` en `us-east-1` y se corrió `validate-all.sh` completo:
+**49 OK / 0 fallos**, las 9 features de IA respondiendo con los roles acotados que crea SAM. Un rol
+distinto por función, verificado con `aws iam list-role-policies` (p. ej. `SemanticSearch` tiene
+DynamoDB **solo de lectura**).
+
+El deploy en vivo encontró **tres bugs que ningún gate estático podía ver**, todos arreglados y ahora
+cubiertos por checks:
+
+1. **`BucketAlreadyExists` → rollback del stack completo.** `${StackName}-frontend` / `-audio` son de
+   namespace **global**; los nombres estaban tomados. Ningún estudiante podía desplegar con el stack
+   name por defecto. Ahora incluyen `AccountId` + `Region`.
+2. **Dos permisos downstream faltantes** (S03 y S04), que sólo aparecen en la primera invocación:
+   `comprehend:DetectDominantLanguage`. En S04 el error nombra un servicio que el código nunca
+   menciona (`DownstreamDependencyAccessDeniedException`).
+3. **El model ID de Bedrock necesitaba el prefijo `us.`**: el foundation model sólo soporta
+   `INFERENCE_PROFILE`, no `ON_DEMAND`.
+
+Y un cuarto, de orden de operaciones: **`deploy-frontend.sh` borraba las fotos de producto** del
+estudiante (`s3 sync --delete` sobre `assets/`, que es la salida de Vite). Movidas a
+`product-images/`, excluido del sync.
+
+**Lección del pase**: los 30 gates estáticos daban verde con cuatro bugs que rompían el capstone en el
+primer deploy. Ninguno era detectable sin invocar de verdad. `validate-all.sh` en modo completo (no
+`--static`) es el único gate que cuenta antes de dictar.
