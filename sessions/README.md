@@ -53,8 +53,15 @@ bash sessions/S11-integracion-demo-cleanup/demo.sh
 
 `CAPABILITY_IAM` **no es opcional**: el stack crea un rol por función.
 
-Para S01/S02 (visión) hay que subir una imagen real a `s3://techmoda-ai-frontend/assets/`
-y apuntar el `imageUrl` del producto a esa ruta (`s3://...`).
+Para S01/S02 (visión) hay que subir una imagen real al bucket de frontend y apuntar el `imageUrl`
+del producto a esa ruta (`s3://...`). El nombre del bucket lleva tu account ID y región (el namespace
+de S3 es global), así que sacalo del output `FrontendBucketName` del stack en vez de escribirlo:
+
+```bash
+BUCKET=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 \
+          --query "Stacks[0].Outputs[?OutputKey=='FrontendBucketName'].OutputValue" --output text)
+aws s3 cp ./vestido.jpg "s3://$BUCKET/product-images/vestido.jpg"
+```
 
 La ruta progresiva (una sesión por vez, pegando cada `template-snippet.yaml` en
 `template.yaml`) está en la `GUIA.md` de cada sesión. Ver también
@@ -74,20 +81,32 @@ La tabla completa (qué política lleva cada Lambda y por qué) está en
 
 ## Estado verificado
 
-**Servicios de IA end-to-end (2026-06-18)** — cada llamada probada contra el servicio real:
+**Desplegado y probado end-to-end el 2026-08-18** (cuenta `281248178297`, `us-east-1`,
+`template.full.yaml`), ya **con los roles de mínimo privilegio que crea SAM** — un rol por función:
 
 | Sesión | Llamada | Resultado |
 |---|---|---|
-| S01/S02 | Rekognition `DetectLabels` / `DetectModerationLabels` | ✅ |
-| S03 | Comprehend `DetectSentiment` | ✅ |
-| S04 | `translate:TranslateText` | ✅ traducción ES→EN |
+| S00 | CRUD completo por la Function URL del router | ✅ incluido `stock` persistido |
+| S01 | Rekognition `DetectLabels` (imagen `s3://`) | ✅ `Dress`, `Evening Dress`, `High Heel`… |
+| S02 | Rekognition `DetectModerationLabels` + alt-text | ✅ `moderationStatus: APPROVED` |
+| S03 | Comprehend `DetectDominantLanguage` + `DetectSentiment` | ✅ `es` / `POSITIVE` |
+| S04 | `translate:TranslateText` (source `auto`) | ✅ traducción ES→EN |
 | S05 | Polly `SynthesizeSpeech` + URL prefirmada | ✅ |
-| S06 | Bedrock Converse (Claude Haiku) | ✅ descripción generada |
-| S07/S08 | Bedrock `amazon.titan-embed-text-v2:0` (InvokeModel) | ✅ embedding de 1024 dims |
-| S09 | Bedrock Guardrails | ✅ API con acceso |
+| S06 | Bedrock Converse (Claude Haiku 4.5) | ✅ descripción generada en español |
+| S07 | Bedrock `titan-embed-text-v2:0` + búsqueda semántica | ✅ embedding de 1024 dims |
+| S08 | Chatbot RAG | ✅ |
 
-⚠️ **Pendiente de verificar:** el refactor a roles de mínimo privilegio (`Policies:` por función)
-**no se ha probado en la nube todavía**. Las llamadas de arriba se validaron cuando las Lambdas
-usaban un rol compartido y amplio; que los roles generados por SAM alcancen en runtime es lo que
-falta confirmar. Correr `bash scripts/validate-all.sh` (modo completo) contra un stack desplegado
-es lo que cierra ese hueco.
+Reproducilo con un comando: `bash scripts/validate-all.sh` → **49 OK / 0 fallos**.
+
+Tres bugs que **sólo aparecieron al desplegar de verdad** (y que ya están arreglados):
+
+1. **Nombres de bucket S3.** `${StackName}-frontend` es de namespace **global** → `409
+   BucketAlreadyExists` y el stack entero revierte. Ahora llevan `AccountId` y `Region`.
+2. **Permisos downstream.** S03 necesita `comprehend:DetectDominantLanguage` además de
+   `DetectSentiment`; y S04, con `SourceLanguageCode="auto"`, hace que **Translate llame a Comprehend
+   por dentro con tu rol** → `DownstreamDependencyAccessDeniedException`. Ver
+   [`docs/IAM.md`](../docs/IAM.md#el-permiso-que-no-se-ve-leyendo-el-código-dependencias-downstream).
+3. **El model ID de Bedrock necesita el prefijo `us.`**: `anthropic.claude-haiku-4-5-20251001-v1:0`
+   sólo soporta `INFERENCE_PROFILE`, no `ON_DEMAND`.
+
+Los tres son ahora **checks** de `validate-all.sh`, así que no pueden volver en silencio.

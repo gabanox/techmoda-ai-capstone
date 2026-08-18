@@ -129,7 +129,13 @@ Resources:
             TableName: !Ref ProductsTable
         - Statement:
             - Effect: Allow
-              Action: comprehend:DetectSentiment
+              Action:
+                - comprehend:DetectSentiment
+                # El handler detecta el idioma ANTES de analizar el sentimiento
+                # (detect_dominant_language). Sin esta accion falla con AccessDenied:
+                # la politica tiene que cubrir las APIs que el codigo LLAMA, no solo
+                # la que le da nombre a la sesion.
+                - comprehend:DetectDominantLanguage
               Resource: "*"
       FunctionUrlConfig:
         AuthType: NONE
@@ -142,7 +148,8 @@ Resources:
   AudioBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-audio
+      # Nombre único por despliegue: el namespace de S3 es GLOBAL (ver FrontendBucket).
+      BucketName: !Sub ${AWS::StackName}-audio-${AWS::AccountId}-${AWS::Region}
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true

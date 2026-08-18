@@ -29,14 +29,23 @@ campo `aiLabels`.
 
 - **S0 desplegado** y funcionando (catálogo visible, `ApiUrl` a mano).
 - Al menos **un producto con una imagen real**. La `imageUrl` puede ser:
-  - `s3://techmoda-ai-frontend/assets/vestido.jpg` (subí la foto a ese bucket), **o**
+  - `s3://<bucket-de-frontend>/product-images/vestido.jpg` (subí la foto a ese bucket), **o**
   - una URL pública `https://...jpg`.
-- Acceso a Rekognition en `us-east-1` (confirmado disponible en el sandbox).
+- Acceso a Rekognition en la región del deploy.
+
+> 📦 **El nombre del bucket no es fijo**: lleva tu account ID y región (el namespace de S3 es
+> global). Sacalo del output del stack en vez de escribirlo a mano:
+> ```bash
+> BUCKET=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 \
+>           --query "Stacks[0].Outputs[?OutputKey=='FrontendBucketName'].OutputValue" --output text)
+> ```
 
 ```bash
 # Subir una foto de ejemplo al bucket de assets y apuntar el producto a ella:
-aws s3 cp ./mi-vestido.jpg s3://techmoda-ai-frontend/assets/vestido.jpg
-# luego, PUT al producto con imageUrl = s3://techmoda-ai-frontend/assets/vestido.jpg
+BUCKET=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 \
+          --query "Stacks[0].Outputs[?OutputKey=='FrontendBucketName'].OutputValue" --output text)
+aws s3 cp ./mi-vestido.jpg "s3://$BUCKET/product-images/vestido.jpg"
+# luego, PUT al producto con imageUrl = s3://$BUCKET/product-images/vestido.jpg
 ```
 
 ---
@@ -116,7 +125,7 @@ La Lambda tiene **solo tres permisos**, y ese es el punto pedagógico:
 |---------|---------|---------|
 | `DynamoDBCrudPolicy` | Solo la tabla `ProductsTable` | Leer la imagen y escribir `aiLabels`. |
 | `rekognition:DetectLabels` | `Resource: "*"` | Las APIs *Detect* de Rekognition **no admiten ARN a nivel de recurso**; acotamos por **acción única**, no por recurso. |
-| `s3:GetObject` | `arn:...:${StackName}-frontend/*` | Leer la imagen **solo** del bucket de assets, nunca de cualquier bucket. |
+| `s3:GetObject` | `arn:...:<bucket-de-frontend>/*` (vía `!Ref FrontendBucket`) | Leer la imagen **solo** del bucket de assets, nunca de cualquier bucket. |
 
 > 🧠 **Para el examen (D5 lo profundiza en S10):** "mínimo privilegio" no siempre significa ARN específico.
 > Cuando el servicio no soporta permisos a nivel de recurso, el control correcto es **limitar la acción**

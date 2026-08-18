@@ -85,7 +85,7 @@ Resources:
               Resource: "*"
         # Si imageUrl es s3://, Rekognition lee el objeto con ESTE rol.
         - S3ReadPolicy:
-            BucketName: !Sub ${AWS::StackName}-frontend
+            BucketName: !Ref FrontendBucket
       Environment:
         Variables:
           LABEL_MIN_CONFIDENCE: "80"
@@ -115,7 +115,7 @@ Resources:
                 - rekognition:DetectLabels    # el alt-text reusa las etiquetas
               Resource: "*"
         - S3ReadPolicy:
-            BucketName: !Sub ${AWS::StackName}-frontend
+            BucketName: !Ref FrontendBucket
       Environment:
         Variables:
           MODERATION_MIN_CONFIDENCE: "60"
@@ -139,7 +139,13 @@ Resources:
             TableName: !Ref ProductsTable
         - Statement:
             - Effect: Allow
-              Action: comprehend:DetectSentiment
+              Action:
+                - comprehend:DetectSentiment
+                # El handler detecta el idioma ANTES de analizar el sentimiento
+                # (detect_dominant_language). Sin esta accion falla con AccessDenied:
+                # la politica tiene que cubrir las APIs que el codigo LLAMA, no solo
+                # la que le da nombre a la sesion.
+                - comprehend:DetectDominantLanguage
               Resource: "*"
       FunctionUrlConfig:
         AuthType: NONE
@@ -161,7 +167,13 @@ Resources:
             TableName: !Ref ProductsTable
         - Statement:
             - Effect: Allow
-              Action: translate:TranslateText
+              Action:
+                - translate:TranslateText
+                # Con SourceLanguageCode="auto", Translate llama a Comprehend POR
+                # DENTRO para detectar el idioma. Sin esta accion falla con
+                # DownstreamDependencyAccessDeniedException. Es el caso clasico de
+                # permiso que no se ve leyendo solo el nombre de la API.
+                - comprehend:DetectDominantLanguage
               Resource: "*"
       FunctionUrlConfig:
         AuthType: NONE
@@ -174,7 +186,8 @@ Resources:
   AudioBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-audio
+      # Nombre único por despliegue: el namespace de S3 es GLOBAL (ver FrontendBucket).
+      BucketName: !Sub ${AWS::StackName}-audio-${AWS::AccountId}-${AWS::Region}
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -236,7 +249,7 @@ Resources:
                 - !Sub arn:${AWS::Partition}:bedrock:*:${AWS::AccountId}:inference-profile/*
       Environment:
         Variables:
-          BEDROCK_MODEL_ID: anthropic.claude-haiku-4-5-20251001-v1:0
+          BEDROCK_MODEL_ID: us.anthropic.claude-haiku-4-5-20251001-v1:0
           BEDROCK_MAX_TOKENS: "300"
           BEDROCK_TEMPERATURE: "0.7"
       FunctionUrlConfig:
@@ -324,7 +337,7 @@ Resources:
       Environment:
         Variables:
           EMBED_MODEL_ID: amazon.titan-embed-text-v2:0
-          BEDROCK_MODEL_ID: anthropic.claude-haiku-4-5-20251001-v1:0
+          BEDROCK_MODEL_ID: us.anthropic.claude-haiku-4-5-20251001-v1:0
           ASSISTANT_TOP_K: "3"
           BEDROCK_MAX_TOKENS: "400"
       FunctionUrlConfig:
@@ -346,7 +359,10 @@ Resources:
   FrontendBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-frontend
+      # El namespace de S3 es GLOBAL: `${StackName}-frontend` a secas choca con
+      # cualquier otra cuenta que ya lo haya usado (409 BucketAlreadyExists -> el
+      # stack entero revierte). AccountId + Region lo hacen único por despliegue.
+      BucketName: !Sub ${AWS::StackName}-frontend-${AWS::AccountId}-${AWS::Region}
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: index.html

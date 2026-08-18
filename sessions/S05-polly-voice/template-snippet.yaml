@@ -7,7 +7,8 @@
   AudioBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-audio
+      # Nombre único por despliegue: el namespace de S3 es GLOBAL (ver FrontendBucket).
+      BucketName: !Sub ${AWS::StackName}-audio-${AWS::AccountId}-${AWS::Region}
       # Sin acceso público: el audio se sirve por URL prefirmada (mejor práctica).
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true

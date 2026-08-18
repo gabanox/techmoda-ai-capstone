@@ -73,7 +73,10 @@ Resources:
   FrontendBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-frontend
+      # El namespace de S3 es GLOBAL: `${StackName}-frontend` a secas choca con
+      # cualquier otra cuenta que ya lo haya usado (409 BucketAlreadyExists -> el
+      # stack entero revierte). AccountId + Region lo hacen único por despliegue.
+      BucketName: !Sub ${AWS::StackName}-frontend-${AWS::AccountId}-${AWS::Region}
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: index.html

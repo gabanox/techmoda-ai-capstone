@@ -65,7 +65,7 @@ Respuesta:
   "productId": "a1b2...",
   "lang": "es",
   "voice": "Lupe",
-  "audioUrl": "https://techmoda-ai-audio.s3.amazonaws.com/audio/a1b2-es.mp3?X-Amz-...",
+  "audioUrl": "https://techmoda-ai-audio-<acct>-us-east-1.s3.amazonaws.com/audio/a1b2-es.mp3?X-Amz-...",
   "expiresIn": 3600
 }
 ```
@@ -83,7 +83,7 @@ la tabla. El bucket bloquea todo acceso público; el acceso es por URL firmada t
 ## ✅ Checklist de validación
 
 - [ ] El `audioUrl` reproduce la descripción con voz natural.
-- [ ] El bucket `techmoda-ai-audio` existe y **no** es público.
+- [ ] El bucket de audio (output `AudioBucketName`) existe y **no** es público.
 - [ ] El objeto `audio/PRODUCT_ID-es.mp3` está en el bucket.
 - [ ] (Si hiciste S4) `{"lang":"en"}` usa la traducción y la voz Joanna.
 
@@ -106,7 +106,9 @@ con **capa gratuita** los primeros meses (verificar vigencia). Generar audios de
 
 **Cleanup de S5:**
 ```bash
-aws s3 rm s3://techmoda-ai-audio --recursive   # vaciar antes de borrar
+AUDIO=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 \
+         --query "Stacks[0].Outputs[?OutputKey=='AudioBucketName'].OutputValue" --output text)
+aws s3 rm "s3://$AUDIO" --recursive            # vaciar antes de borrar
 ```
 Luego quitar `AudioBucket` + `SynthesizeVoiceFunction` + ruta del `template.yaml` y `sam deploy`.
 La regla de ciclo de vida ya expira el audio a los 7 días aunque te olvides.

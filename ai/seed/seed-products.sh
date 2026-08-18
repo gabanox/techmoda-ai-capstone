@@ -46,5 +46,7 @@ for p in products:
         print(f"  ✗ {payload['name']}: {e}", file=sys.stderr)
 PY
 
-echo "✓ Seed completo. Recordá subir imágenes reales a s3://${STACK_NAME}-frontend/assets/ y"
+FRONT_BUCKET="$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --region "$REGION" \
+  --query "Stacks[0].Outputs[?OutputKey=='FrontendBucketName'].OutputValue" --output text 2>/dev/null)"
+echo "✓ Seed completo. Recordá subir imágenes reales a s3://${FRONT_BUCKET:-<output FrontendBucketName>}/product-images/ y"
 echo "  actualizar el imageUrl de cada producto antes de las sesiones de visión (S1/S2)."

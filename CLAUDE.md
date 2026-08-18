@@ -187,7 +187,7 @@ Checklist en `docs/IAM.md`. En resumen:
 - Los IDs de modelo Bedrock viven en variables de entorno (`BEDROCK_MODEL_ID`, `EMBED_MODEL_ID`) y S06
   usa la **Converse API**, que es agnóstica al proveedor → cambiar de modelo no requiere tocar código.
   Estas Lambdas usan la integración **legacy** de Bedrock (`boto3` `bedrock-runtime`), que exige IDs
-  **versionados**: el default pineado es `anthropic.claude-haiku-4-5-20251001-v1:0`. El alias de la
+  **versionados**: el default pineado es `us.anthropic.claude-haiku-4-5-20251001-v1:0`. El alias de la
   Claude API (`claude-haiku-4-5` a secas) **no sirve acá** — `bedrock-runtime` lo rechaza. Con perfiles
   de inferencia cross-region el ID lleva prefijo `us.` y hay que permitir el ARN `inference-profile/*`
   además de `foundation-model/*` (ver `docs/IAM.md`). Si una demo falla con 404 / "model not found",
@@ -195,5 +195,18 @@ Checklist en `docs/IAM.md`. En resumen:
 - Los model IDs viven en **cinco** lugares que tienen que coincidir: `template.full.yaml`, el
   `template-snippet.yaml` de S06 y de S08, y el default de cada `app.py`. `validate-all.sh` chequea
   que no divergan.
+- **Los nombres de bucket S3 son de namespace GLOBAL.** `${AWS::StackName}-frontend` a secas choca
+  con cualquier otra cuenta que ya lo tenga: `409 BucketAlreadyExists` y CloudFormation **revierte el
+  stack entero**. Por eso los buckets llevan `-${AWS::AccountId}-${AWS::Region}`. No los "simplifiques".
+- **Acotá por las APIs que el código LLAMA, no por la que nombra la sesión.** Dos casos reales:
+  S03 llama `DetectDominantLanguage` antes de `DetectSentiment`, y S04 con `SourceLanguageCode="auto"`
+  hace que **Translate invoque a Comprehend por dentro, con el rol de tu Lambda**
+  (`DownstreamDependencyAccessDeniedException`, que nombra un servicio que tu código nunca menciona).
+  Los dos permisos faltantes sólo aparecen **en la primera invocación**: `sam validate`, `sam build` y
+  el deploy pasan igual. Ver `docs/IAM.md`.
+- **Las fotos de producto van a `product-images/`, no a `assets/`.** `deploy-frontend.sh` hace
+  `s3 sync --delete` contra el bucket del frontend; `assets/` es la salida de Vite, así que cualquier
+  cosa que el estudiante suba ahí **la borra el próximo deploy** y S1/S2 se rompen sin explicación.
+  El sync excluye `product-images/*` a propósito.
 - `_response()` está duplicado en los 9 handlers de IA y el helper de extracción de id en 5. Es
   **deliberado**: cada sesión tiene que poder leerse aislada. No lo factorices a un `ai/shared/`.
