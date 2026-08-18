@@ -1,25 +1,22 @@
 Transform: AWS::Serverless-2016-10-31
-Description: TechModa Serverless Capstone - Fashion E-commerce Product Catalog API (sandbox AWS re/Start compatible)
+Description: TechModa Serverless Capstone - Fashion E-commerce Product Catalog API (base S0)
 
 # ============================================================================
-# COMPATIBILIDAD CON EL SANDBOX AWS re/Start (vocareum) — ver docs/SANDBOX-COMPAT.md
-#   1. SIN API Gateway: el LabRole no permite apigateway:* -> usamos UNA Lambda
-#      Function URL (AuthType NONE) + un router interno (functions/router).
-#   2. SIN iam:CreateRole: cada función referencia el LabRole preexistente; NO se
-#      usan `Policies:` (SAM las traduce a roles nuevos). Role y Policies son
-#      mutuamente excluyentes en SAM.
-#   3. Deploy: sam build && sam deploy --stack-name techmoda-ai --region us-west-2 \
-#                --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
-#                --resolve-s3 --no-confirm-changeset
+# BASE del capstone (S0): DynamoDB + router CRUD + frontend. Cada sesión de IA
+# agrega su recurso pegando el `template-snippet.yaml` correspondiente.
+#
+# IAM: cada Lambda declara sus `Policies:` y **SAM le crea un rol de mínimo
+# privilegio**. No hay rol preexistente ni account ID hardcodeado -> este
+# template funciona en cualquier cuenta con permiso de crear roles.
+#
+# HTTP: una Lambda Function URL (AuthType NONE) + router interno
+# (functions/router), en vez de API Gateway.
+#
+# Deploy: sam build && sam deploy --stack-name techmoda-ai --region us-east-1 \
+#           --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
+#           --resolve-s3 --no-confirm-changeset
+# Detalle: docs/IAM.md
 # ============================================================================
-
-Parameters:
-  LabRoleArn:
-    Type: String
-    Default: arn:aws:iam::879652687082:role/LabRole
-    Description: >-
-      Rol de ejecución preexistente del sandbox (LabRole). El sandbox no permite
-      iam:CreateRole, así que TODAS las Lambdas reusan este rol.
 
 Globals:
   Function:
@@ -54,10 +51,12 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-Router
-      Description: Router CRUD de /products via Lambda Function URL (sandbox-compatible)
+      Description: Router CRUD de /products via Lambda Function URL
       CodeUri: functions/
       Handler: router/index.handler
-      Role: !Ref LabRoleArn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
       FunctionUrlConfig:
         AuthType: NONE
         Cors:
@@ -69,7 +68,7 @@ Resources:
             - "*"
 
   # ---------------------------------------------------------------------------
-  # Frontend estático (S3 + CloudFront). Permitido por el LabRole.
+  # Frontend estático (S3 + CloudFront).
   # ---------------------------------------------------------------------------
   FrontendBucket:
     Type: AWS::S3::Bucket

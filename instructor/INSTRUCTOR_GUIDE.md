@@ -4,12 +4,11 @@
 
 Esta guía ayuda a los instructores a facilitar la Sesión 10 (la sesión del capstone), apoyar a los estudiantes durante la implementación, evaluar las entregas y solucionar problemas comunes.
 
-> 🏖️ **Sandbox AWS re/Start (Vocareum):** el capstone se despliega con el **LabRole**, que no permite
-> API Gateway ni `iam:CreateRole`. El CRUD se expone con **una Lambda Function URL** + **router** y
-> cada función usa el LabRole (sin bloque `Policies:`). El stack se llama **`techmoda-ai`** y la región
-> es **us-west-2**. Donde esta guía menciona API Gateway o privilegio mínimo IAM, es material didáctico
-> del patrón clásico; la realidad desplegada usa Function URLs. Ver
-> [../docs/SANDBOX-COMPAT.md](../docs/SANDBOX-COMPAT.md).
+> 🔌 **Lo que realmente se despliega:** el CRUD se expone con **una Lambda Function URL** + **router**
+> (no API Gateway), y cada función lleva sus `Policies:` para que **SAM le cree un rol de mínimo
+> privilegio**. Stack **`techmoda-ai`**, región **us-east-1**. Requiere una cuenta con `iam:CreateRole`.
+> Donde esta guía menciona API Gateway, es material didáctico del patrón clásico. Ver
+> [../docs/SANDBOX-COMPAT.md](../docs/SANDBOX-COMPAT.md) y [../docs/IAM.md](../docs/IAM.md).
 
 ## Cronograma de la Sesión 10 (120 minutos)
 
@@ -198,7 +197,7 @@ Al final de la Sesión 10, los estudiantes deben demostrar:
 - Dirigir a [docs/prompts/01_ENVIRONMENT_SETUP.md](../docs/prompts/01_ENVIRONMENT_SETUP.md)
 - Verificar que PATH incluye los binarios de AWS CLI/SAM CLI
 - Probar credenciales: `aws sts get-caller-identity`
-- Confirmar que el deploy usa el **LabRole** del sandbox (ya trae CloudFormation, Lambda incl. Function URLs, DynamoDB)
+- Confirmar que la identidad del deploy puede crear roles (`iam:CreateRole`), además de CloudFormation, Lambda (incl. Function URLs) y DynamoDB
 
 ### Desafío 2: Errores en Funciones Lambda
 
@@ -211,7 +210,7 @@ Al final de la Sesión 10, los estudiantes deben demostrar:
 - Revisar CloudWatch Logs para el error específico
 - Verificar que los imports de AWS SDK v3 son correctos
 - Confirmar que se está leyendo la variable de entorno PRODUCTS_TABLE
-- Verificar que la función use `Role: !Ref LabRoleArn` (sandbox; sin bloque `Policies:`)
+- Verificar que la función declare `Policies:` acotadas y **no** un `Role:` (excluyentes en SAM)
 - Verificar el formato de respuesta HTTP (statusCode, headers, body) — válido para la Function URL
 
 **Problemas Comunes en el Código**:
@@ -311,10 +310,10 @@ return {
 - Causas comunes (sandbox):
   - Falta `CAPABILITY_AUTO_EXPAND` (obligatorio para el Transform SAM)
   - Se dejó `Policies:` en una función junto con `Role:` (mutuamente excluyentes → falla)
-  - Quedó un `AWS::Serverless::Api` o `Events: Type: Api` (el LabRole no permite API Gateway → el stack revierte)
+  - Quedó un `AWS::Serverless::Api` o `Events: Type: Api` (el capstone no usa API Gateway)
   - Template inválido: Errores de sintaxis YAML
 - Reintentar despliegue después de corregir el problema
-- Eliminar stack fallido: `aws cloudformation delete-stack --stack-name techmoda-ai --region us-west-2`
+- Eliminar stack fallido: `aws cloudformation delete-stack --stack-name techmoda-ai --region us-east-1`
 
 ### Desafío 8: Confusión con las Pruebas
 
@@ -414,11 +413,11 @@ Los estudiantes deben entregar:
 - ✅ Las 5 funciones Lambda definidas + router
 - ✅ Function URL en el router (sin `AWS::Serverless::Api`, sin `Events: Type: Api`)
 - ✅ Tabla DynamoDB con esquema apropiado
-- ✅ Cada función con `Role: !Ref LabRoleArn` (sandbox; sin bloque `Policies:`)
+- ✅ Cada función con sus `Policies:` acotadas y sin `Role:`
 - ✅ Variables de entorno inyectadas
 
 **Mejores prácticas de AWS (5%)**:
-- ✅ Reuso del LabRole en el sandbox (privilegio mínimo es el patrón didáctico para cuenta propia)
+- ✅ Privilegio mínimo real: acotado por ARN donde el servicio lo admite, por acción donde no (ver `docs/IAM.md`)
 - ✅ Rastreo X-Ray habilitado
 - ✅ CloudWatch Logs configurados
 - ✅ Headers CORS en respuestas
@@ -548,7 +547,7 @@ Ver [EVALUATION_RUBRIC.md](EVALUATION_RUBRIC.md) para criterios de puntuación d
 
 **Function URL faltante** (output `ApiUrl`):
 ```bash
-aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 --query "Stacks[0].Outputs"
+aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 --query "Stacks[0].Outputs"
 ```
 
 **Revisar items de DynamoDB**:
@@ -563,7 +562,7 @@ aws logs tail /aws/lambda/techmoda-ai-ListItems --since 5m
 
 **Forzar eliminación de stack atascado**:
 ```bash
-aws cloudformation delete-stack --stack-name techmoda-ai --region us-west-2
+aws cloudformation delete-stack --stack-name techmoda-ai --region us-east-1
 ```
 
 ## Seguimiento Post-Sesión

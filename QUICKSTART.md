@@ -2,9 +2,14 @@
 
 Esta guía te ayudará a desplegar y probar el proyecto en 10 minutos.
 
-> 🏖️ **Sandbox AWS re/Start:** sin API Gateway (no permitido por el `LabRole`). La API es una
-> **Lambda Function URL** servida por un router, y cada Lambda reusa el `LabRole`. Región `us-west-2`,
-> stack `techmoda-ai`. Detalle: [`docs/SANDBOX-COMPAT.md`](docs/SANDBOX-COMPAT.md).
+> 🔌 **Cómo está armado:** sin API Gateway — la API es una **Lambda Function URL** servida por un
+> router. Cada Lambda declara sus `Policies:` y **SAM le crea un rol de mínimo privilegio**, así que
+> necesitás una cuenta donde puedas **crear roles IAM** (`iam:CreateRole`). Región `us-east-1`, stack
+> `techmoda-ai`. Detalle: [`docs/SANDBOX-COMPAT.md`](docs/SANDBOX-COMPAT.md) (por qué no hay API
+> Gateway) y [`docs/IAM.md`](docs/IAM.md) (permisos).
+
+> ✅ **Antes de tocar AWS**, un comando te dice si todo está en orden:
+> `bash scripts/validate-all.sh --static`
 
 ## Opción 1: Usar el Código Pre-implementado (Recomendado para empezar)
 
@@ -22,16 +27,16 @@ Las funciones Lambda ya están implementadas y listas para usar. Solo necesitas 
 ./scripts/deploy.sh
 ```
 
-`scripts/deploy.sh` corre `sam build && sam deploy` con las capabilities correctas para el sandbox
-(`CAPABILITY_IAM CAPABILITY_AUTO_EXPAND`, región `us-west-2`, stack `techmoda-ai`, sin API Gateway).
-No hace falta crear roles IAM: las funciones reusan el `LabRole`.
+`scripts/deploy.sh` corre `sam build && sam deploy` con las capabilities correctas
+(`CAPABILITY_IAM CAPABILITY_AUTO_EXPAND`, región `us-east-1`, stack `techmoda-ai`, sin API Gateway).
+`CAPABILITY_IAM` **no es opcional**: el stack crea un rol de ejecución por Lambda.
 
 ### Paso 3: Obtener tu API URL
 
 Después del despliegue, verás (la base es una **Lambda Function URL**, no API Gateway):
 ```
 Outputs
-ApiUrl    https://xxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-west-2.on.aws/
+ApiUrl    https://xxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-east-1.on.aws/
 ```
 
 **Copia esa URL** y guárdala.
@@ -118,7 +123,7 @@ Abre `docs/prompts/02_LAMBDA_IMPLEMENTATION.md` y copia el prompt para cada func
 Por ejemplo, para **CreateItem**:
 
 ```
-Necesito implementar una función Lambda en Node.js 18.x que cree productos en DynamoDB.
+Necesito implementar una función Lambda en Node.js 22.x que cree productos en DynamoDB.
 
 Requisitos:
 - Tabla DynamoDB: usar variable de entorno PRODUCTS_TABLE
@@ -137,6 +142,7 @@ Campos del producto:
   "description": "string",
   "price": "number (requerido)",
   "category": "string",
+  "stock": "number (default 0)",
   "imageUrl": "string",
   "createdAt": "ISO timestamp",
   "updatedAt": "ISO timestamp"
@@ -164,7 +170,20 @@ aws configure
 
 O si usas Codespaces, ver [AWS_CREDENTIALS_SETUP.md](AWS_CREDENTIALS_SETUP.md).
 
-### Error: "AccessDenied" al desplegar
+### Error: `is not authorized to perform: iam:CreateRole`
+
+El stack crea un rol de mínimo privilegio por Lambda, así que tu identidad de deploy necesita
+`iam:CreateRole`. Si la cuenta no lo permite (caso típico: el `LabRole` del sandbox AWS re/Start),
+el deploy falla y CloudFormation revierte el stack entero. No es un error del template: es la cuenta.
+Contexto en [`docs/SANDBOX-COMPAT.md`](docs/SANDBOX-COMPAT.md) §2–§3.
+
+### Error: `AccessDeniedException` en las sesiones de Bedrock (S06–S09)
+
+Primer sospechoso: **Bedrock → Model access** no habilitado en la consola, en la región del deploy
+(es un setting por región). El permiso IAM concedido **no alcanza** si el modelo no está habilitado.
+Ver [`docs/IAM.md`](docs/IAM.md).
+
+### Otros "AccessDenied" al desplegar
 
 **Solución**: Tu usuario IAM necesita permisos. Contacta al instructor.
 
@@ -231,6 +250,9 @@ techmoda-serverless-capstone-starter/
 
 **¡Éxito con tu proyecto capstone!** 🚀
 
-## Continuidad en el sandbox (efímero)
+## Continuidad entre sesiones
 
-El sandbox de AWS re/Start se recicla entre sesiones. **Paso 0 de cada sesión:** `bash scripts/bootstrap.sh` (reconstruye el entorno de la Pista A en ~2-3 min). Plan día por día y modelo de continuidad: ver [`SESSION-PLAN.md`](SESSION-PLAN.md).
+Si trabajás en un entorno efímero (un sandbox que se recicla, o después de un cleanup), el stack y los
+datos no sobreviven. **Paso 0 de cada sesión:** `bash scripts/bootstrap.sh` — reconstruye el entorno en
+~2-3 min y es idempotente (si ya está desplegado, termina en segundos). Plan día por día y modelo de
+continuidad: ver [`SESSION-PLAN.md`](SESSION-PLAN.md).

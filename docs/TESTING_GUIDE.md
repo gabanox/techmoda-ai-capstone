@@ -5,7 +5,7 @@
 Esta guía proporciona instrucciones completas para probar manualmente tu API de Catálogo de Productos TechModa usando comandos curl. Aprenderás cómo obtener tu **Lambda Function URL**, ejecutar pruebas para las 5 operaciones CRUD e interpretar las respuestas.
 
 > 🏖️ **Sandbox AWS re/Start:** la URL base es una **Lambda Function URL** (no API Gateway), servida
-> por un **router**. Formato `https://<id>.lambda-url.us-west-2.on.aws/` — termina en `/` y **no** lleva
+> por un **router**. Formato `https://<id>.lambda-url.us-east-1.on.aws/` — termina en `/` y **no** lleva
 > `/Prod`. Usa `${API_URL%/}` para quitar la barra final al concatenar rutas. Ver
 > [SANDBOX-COMPAT.md](SANDBOX-COMPAT.md).
 
@@ -30,7 +30,7 @@ Outputs
 -------------------------------------------------
 Key                 ApiUrl
 Description         Lambda Function URL (router CRUD)
-Value               https://abc123xyzabc123xyzabc123xyz0000.lambda-url.us-west-2.on.aws/
+Value               https://abc123xyzabc123xyzabc123xyz0000.lambda-url.us-east-1.on.aws/
 -------------------------------------------------
 ```
 
@@ -58,17 +58,17 @@ Para facilitar las pruebas, guarda tu Function URL como una variable de entorno 
 
 **macOS/Linux**:
 ```bash
-export API_URL="https://abc123xyzabc123xyzabc123xyz0000.lambda-url.us-west-2.on.aws"
+export API_URL="https://abc123xyzabc123xyzabc123xyz0000.lambda-url.us-east-1.on.aws"
 ```
 
 **Windows (PowerShell)**:
 ```powershell
-$env:API_URL = "https://abc123xyzabc123xyzabc123xyz0000.lambda-url.us-west-2.on.aws"
+$env:API_URL = "https://abc123xyzabc123xyzabc123xyz0000.lambda-url.us-east-1.on.aws"
 ```
 
 **Windows (CMD)**:
 ```cmd
-set API_URL=https://abc123xyzabc123xyzabc123xyz0000.lambda-url.us-west-2.on.aws
+set API_URL=https://abc123xyzabc123xyzabc123xyz0000.lambda-url.us-east-1.on.aws
 ```
 
 Ahora puedes usar `$API_URL` (o `%API_URL%` en Windows CMD) en los comandos curl.
@@ -157,7 +157,7 @@ echo $PRODUCT_ID
 | Error | Causa Probable | Solución |
 |-------|--------------|----------|
 | 400 Bad Request | Falta `name` o `price` | Agregar campos requeridos al cuerpo JSON |
-| 403 Forbidden | Problema de permisos | Verificar que la función use `Role: !Ref LabRoleArn` (sandbox) |
+| 403 Forbidden | Problema de permisos | Verificar las `Policies:` de la función (y que no tenga `Role:`, que las anula en silencio) — ver `docs/IAM.md` |
 | 500 Internal Server Error | Error de ejecución Lambda | Revisar CloudWatch Logs |
 | Connection refused | URL de API incorrecta | Verificar la Lambda Function URL (.lambda-url.<region>.on.aws/) |
 
@@ -414,7 +414,7 @@ Aquí hay un script bash completo para probar todos los endpoints en secuencia:
 #!/bin/bash
 
 # Configuración — Lambda Function URL del router (sin barra final)
-API_URL="https://your-fn-id.lambda-url.us-west-2.on.aws"
+API_URL="https://your-fn-id.lambda-url.us-east-1.on.aws"
 
 echo "=== TechModa API Test Suite ==="
 echo ""
@@ -607,8 +607,10 @@ REPORT RequestId: abc-123-def  Duration: 150.00 ms  Billed Duration: 150 ms  Mem
 ### Problema: 403 Forbidden
 
 **Solución**: Problema de permisos
-- Verificar que la función use `Role: !Ref LabRoleArn` y **no** un bloque `Policies:` (sandbox)
-- Confirmar que el LabRole tenga los permisos necesarios sobre DynamoDB
+- Verificar que la función declare `Policies:` y **no** un `Role:` (son excluyentes en SAM: con `Role`,
+  tus `Policies` se ignoran **en silencio**)
+- Confirmar que la política apunte a la tabla correcta (`DynamoDBCrudPolicy` vs `DynamoDBReadPolicy`)
+- Ver el rol que SAM generó: `aws lambda get-function-configuration --function-name <fn> --query Role`
 - Re-desplegar con `sam build && sam deploy`
 
 ### Problema: 500 Internal Server Error

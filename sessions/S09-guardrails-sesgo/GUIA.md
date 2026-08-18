@@ -1,19 +1,19 @@
-> ⚠️ **Pista B — Demo guiada del instructor.** Esta sesión usa Bedrock/Translate y
-> **NO corre en el sandbox AWS re/Start**: el `LabRole` deniega `bedrock:InvokeModel` /
-> `translate:TranslateText` y no es modificable. Se ejecuta en una cuenta AWS de Bootcamp
-> con Bedrock habilitado y un rol con esos permisos. Ver `sessions/README.md` (dos pistas)
-> y `docs/SANDBOX-COMPAT.md` (matriz de servicios).
+> 🔑 **Requisito externo — Bedrock Model access.** El rol de esta Lambda ya trae
+> `bedrock:InvokeModel` acotado por ARN de modelo, pero el permiso IAM **no alcanza**: hay que
+> habilitar el modelo en la consola (**Bedrock → Model access**), en **la región del deploy**
+> — es un setting por región. Si la llamada devuelve `AccessDeniedException`, ese es el primer
+> sospechoso, no las políticas IAM. Detalle en [`docs/IAM.md`](../../docs/IAM.md).
 
 # S9 · Guardrails, sesgo y privacidad en las features de IA (Bedrock Guardrails)
 
 **Duración:** ~60 min · **Servicio:** Amazon Bedrock Guardrails · **Dominio AIF-C01:** **D4 — Responsible AI (14%)**
 **Estado:** 🟡 Guía detallada + scaffold (config + script listos; el cableado a converse lo completás en la sesión).
 
-> 🏖️ **Sandbox:** el guardrail protege la función del asistente de S8, que se expone con su propia
-> **Lambda Function URL** (no API Gateway) y usa el **LabRole** — ver
-> [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). En el sandbox el LabRole ya permite
-> `bedrock:ApplyGuardrail`; el bloque IAM de abajo es **material didáctico** del permiso mínimo para una
-> cuenta propia. Probás contra el output **`ShoppingAssistantUrl`** del stack.
+> 🔌 **Cómo se expone:** el guardrail protege la función del asistente de S8, que tiene su propia
+> **Lambda Function URL** (no API Gateway) y su **rol de mínimo privilegio creado por SAM** — ver
+> [`docs/IAM.md`](../../docs/IAM.md). El bloque IAM de abajo es el permiso mínimo que hay que agregarle
+> a ese rol (`bedrock:ApplyGuardrail`) para esta sesión. Probás contra el output
+> **`ShoppingAssistantUrl`** del stack.
 
 ---
 
@@ -70,7 +70,7 @@ género). Mitigaciones que el examen espera que conozcas:
 ```bash
 bash sessions/S09-guardrails-sesgo/create-guardrail.sh
 # Anotá el guardrailId que devuelve y publicá una versión:
-aws bedrock create-guardrail-version --guardrail-identifier <guardrailId> --region us-west-2
+aws bedrock create-guardrail-version --guardrail-identifier <guardrailId> --region us-east-1
 ```
 
 ### 2. Cablear el guardrail a las llamadas generativas (lo completás vos)
@@ -96,13 +96,13 @@ Y en el `template.yaml`, agregá a esas funciones:
 - Statement:
     - Effect: Allow
       Action: [ bedrock:ApplyGuardrail ]
-      Resource: !Sub arn:${AWS::Partition}:bedrock:us-west-2:${AWS::AccountId}:guardrail/*
+      Resource: !Sub arn:${AWS::Partition}:bedrock:us-east-1:${AWS::AccountId}:guardrail/*
 ```
 
 ### 3. Probar que filtra
 ```bash
 # Function URL del asistente (output ShoppingAssistantUrl de S8):
-URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 \
   --query "Stacks[0].Outputs[?OutputKey=='ShoppingAssistantUrl'].OutputValue" --output text)
 # Intento fuera de dominio / con PII → el guardrail debe intervenir:
 curl -s -X POST "${URL%/}/assistant" -H "Content-Type: application/json" \
@@ -140,6 +140,6 @@ Práctica = **centavos**. *Verificar en la página de precios de Amazon Bedrock 
 
 **Cleanup de S9:**
 ```bash
-aws bedrock delete-guardrail --guardrail-identifier <guardrailId> --region us-west-2
+aws bedrock delete-guardrail --guardrail-identifier <guardrailId> --region us-east-1
 ```
 Y quitá `guardrailConfig`/permisos de S6/S8 si revertís.

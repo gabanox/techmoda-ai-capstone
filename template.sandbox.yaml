@@ -1,18 +1,12 @@
 Transform: AWS::Serverless-2016-10-31
 Description: >-
-  TechModa AI Capstone — TEMPLATE DE BOOTSTRAP (Pista A · sandbox AWS re/Start).
-  Solo las sesiones que corren en el sandbox (S00 base + S01/S02/S03 Rekognition·Comprehend,
-  S05 Polly, S10 gobernanza). SIN CloudFront a propósito: el bootstrap debe levantar
-  el entorno en ~2-3 min aunque el sandbox se haya reciclado. El frontend (S3+CloudFront)
-  vive en template.yaml / template.full.yaml; aquí no se necesita porque las features se
-  prueban por Function URL. Las sesiones de Bedrock/Translate (Pista B) NO van aquí: el
-  LabRole no las permite (ver docs/SANDBOX-COMPAT.md) — se demuestran en cuenta Bootcamp.
-
-Parameters:
-  LabRoleArn:
-    Type: String
-    Default: arn:aws:iam::879652687082:role/LabRole
-    Description: Rol de ejecución preexistente del sandbox (el sandbox no permite iam:CreateRole).
+  TechModa AI Capstone — TEMPLATE DE BOOTSTRAP (deploy rápido). S00 base +
+  S01/S02 Rekognition, S03 Comprehend, S05 Polly, S10 gobernanza. SIN CloudFront
+  a propósito: levanta el entorno en ~2-3 min. El frontend (S3+CloudFront) vive en
+  template.yaml / template.full.yaml; acá no hace falta porque las features se
+  prueban por Function URL. Para las features de Bedrock/Translate usá
+  template.full.yaml. IAM: cada Lambda declara sus Policies y SAM le crea un rol
+  de mínimo privilegio (ver docs/IAM.md).
 
 Globals:
   Function:
@@ -45,7 +39,9 @@ Resources:
       Description: Router CRUD de /products via Lambda Function URL (sandbox-compatible)
       CodeUri: functions/
       Handler: router/index.handler
-      Role: !Ref LabRoleArn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
       FunctionUrlConfig:
         AuthType: NONE
         Cors:
@@ -62,7 +58,19 @@ Resources:
       CodeUri: sessions/S01-rekognition-labels/functions/enrich-labels
       Handler: app.lambda_handler
       Runtime: python3.12
-      Role: !Ref LabRoleArn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+        # Las APIs Detect* de Rekognition no admiten ARN -> acotamos por acción.
+        - Statement:
+            - Effect: Allow
+              Action: rekognition:DetectLabels
+              Resource: "*"
+        # Si imageUrl es s3://, Rekognition lee el objeto con ESTE rol.
+        - Statement:
+            - Effect: Allow
+              Action: s3:GetObject
+              Resource: !Sub arn:${AWS::Partition}:s3:::${AWS::StackName}-*/*
       Environment:
         Variables:
           LABEL_MIN_CONFIDENCE: "80"
@@ -83,7 +91,20 @@ Resources:
       CodeUri: sessions/S02-moderation-alttext/functions/moderate-image
       Handler: app.lambda_handler
       Runtime: python3.12
-      Role: !Ref LabRoleArn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - rekognition:DetectModerationLabels
+                - rekognition:DetectLabels
+              Resource: "*"
+        # Si imageUrl es s3://, Rekognition lee el objeto con ESTE rol.
+        - Statement:
+            - Effect: Allow
+              Action: s3:GetObject
+              Resource: !Sub arn:${AWS::Partition}:s3:::${AWS::StackName}-*/*
       Environment:
         Variables:
           MODERATION_MIN_CONFIDENCE: "60"
@@ -103,7 +124,13 @@ Resources:
       CodeUri: sessions/S03-comprehend-sentiment/functions/analyze-sentiment
       Handler: app.lambda_handler
       Runtime: python3.12
-      Role: !Ref LabRoleArn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+        - Statement:
+            - Effect: Allow
+              Action: comprehend:DetectSentiment
+              Resource: "*"
       FunctionUrlConfig:
         AuthType: NONE
         Cors:
@@ -135,7 +162,16 @@ Resources:
       CodeUri: sessions/S05-polly-voice/functions/synthesize-voice
       Handler: app.lambda_handler
       Runtime: python3.12
-      Role: !Ref LabRoleArn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+        - Statement:
+            - Effect: Allow
+              Action: polly:SynthesizeSpeech
+              Resource: "*"
+        # Escribe el mp3 y firma la URL prefirmada con este rol -> Crud.
+        - S3CrudPolicy:
+            BucketName: !Ref AudioBucket
       Environment:
         Variables:
           AUDIO_BUCKET: !Ref AudioBucket
@@ -147,7 +183,7 @@ Resources:
           AllowHeaders: [ "*" ]
 
   # ---- S10 · gobernanza: log group de invocación ----
-  # (La alarma de billing va en us-east-1 — métrica AWS/Billing; ver GUIA de S10.)
+  # (La alarma de billing no la crea este stack — métrica AWS/Billing, se crea a mano en consola/Budgets; ver GUIA de S10.)
   BedrockInvocationLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:

@@ -6,11 +6,11 @@
 # EnrichLabelsUrl, ModerateImageUrl, ...). Este script resuelve cada una del stack.
 # Requiere haber desplegado template.full.yaml (todas las features cableadas).
 #
-# Uso:  STACK_NAME=techmoda-ai AWS_REGION=us-west-2 bash demo.sh
+# Uso:  STACK_NAME=techmoda-ai AWS_REGION=us-east-1 bash demo.sh
 set -euo pipefail
 
 STACK_NAME="${STACK_NAME:-techmoda-ai}"
-REGION="${AWS_REGION:-us-west-2}"
+REGION="${AWS_REGION:-us-east-1}"
 
 # Lee un output del stack y le quita el slash final (las Function URLs terminan en '/').
 out() {

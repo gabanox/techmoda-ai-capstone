@@ -1,17 +1,18 @@
 #!/bin/bash
 #
-# Deploy script for TechModa AI Capstone (sandbox AWS re/Start)
+# Deploy script for TechModa AI Capstone
 # Despliega el backend (Lambda + Function URLs + DynamoDB) sin API Gateway.
 #
-# Restricciones del sandbox (ver docs/SANDBOX-COMPAT.md): el LabRole no permite
-# apigateway:* ni iam:CreateRole. Por eso NO se usa API Gateway y se necesita
-# CAPABILITY_AUTO_EXPAND (Transform SAM) + CAPABILITY_IAM.
+# No hay API Gateway: el frente HTTP son Lambda Function URLs (docs/SANDBOX-COMPAT.md).
+# Cada Lambda declara sus Policies: y SAM le crea un rol de mínimo privilegio (docs/IAM.md),
+# por eso CAPABILITY_IAM es obligatoria. CAPABILITY_AUTO_EXPAND, por el Transform de SAM.
+# Requiere una cuenta donde puedas crear roles IAM (iam:CreateRole).
 #
 
 set -e
 
 STACK_NAME="${STACK_NAME:-techmoda-ai}"
-REGION="${AWS_REGION:-us-west-2}"
+REGION="${AWS_REGION:-us-east-1}"
 
 echo "Deploying SAM application (Function URLs, sin API Gateway)..."
 echo "============================================================="

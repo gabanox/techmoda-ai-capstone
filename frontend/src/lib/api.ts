@@ -19,7 +19,7 @@ declare global {
 const RAW_API_URL =
   window.__ENV?.VITE_API_URL ||
   import.meta.env.VITE_API_URL ||
-  'https://your-function-url-id.lambda-url.us-west-2.on.aws';
+  'https://your-function-url-id.lambda-url.us-east-1.on.aws';
 
 const API_URL = RAW_API_URL.replace(/\/+$/, '');
 
@@ -52,7 +52,7 @@ export const api = {
   },
 
   // Create a new product
-  async createProduct(product: Omit<Product, 'product_id' | 'created_at' | 'updated_at'>): Promise<Product> {
+  async createProduct(product: Omit<Product, 'productId' | 'createdAt' | 'updatedAt'>): Promise<Product> {
     const response = await fetch(`${API_URL}/products`, {
       method: 'POST',
       headers: {
@@ -71,7 +71,7 @@ export const api = {
   // Update a product
   async updateProduct(
     productId: string,
-    updates: Partial<Omit<Product, 'product_id' | 'created_at' | 'updated_at'>>
+    updates: Partial<Omit<Product, 'productId' | 'createdAt' | 'updatedAt'>>
   ): Promise<Product> {
     const response = await fetch(`${API_URL}/products/${productId}`, {
       method: 'PUT',

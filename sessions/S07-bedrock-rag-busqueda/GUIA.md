@@ -1,8 +1,8 @@
-> ⚠️ **Pista B — Demo guiada del instructor.** Esta sesión usa Bedrock/Translate y
-> **NO corre en el sandbox AWS re/Start**: el `LabRole` deniega `bedrock:InvokeModel` /
-> `translate:TranslateText` y no es modificable. Se ejecuta en una cuenta AWS de Bootcamp
-> con Bedrock habilitado y un rol con esos permisos. Ver `sessions/README.md` (dos pistas)
-> y `docs/SANDBOX-COMPAT.md` (matriz de servicios).
+> 🔑 **Requisito externo — Bedrock Model access.** El rol de esta Lambda ya trae
+> `bedrock:InvokeModel` acotado por ARN de modelo, pero el permiso IAM **no alcanza**: hay que
+> habilitar el modelo en la consola (**Bedrock → Model access**), en **la región del deploy**
+> — es un setting por región. Si la llamada devuelve `AccessDeniedException`, ese es el primer
+> sospechoso, no las políticas IAM. Detalle en [`docs/IAM.md`](../../docs/IAM.md).
 
 # S7 · Búsqueda semántica / RAG sobre el catálogo (Bedrock embeddings)
 
@@ -10,9 +10,10 @@
 
 > 🔥 **El dominio más pesado del examen (28%).** Embeddings + recuperación semántica son la base del RAG.
 
-> 🏖️ **Sandbox:** estas funciones se exponen **cada una con su propia Lambda Function URL** (no API
-> Gateway) y usan el **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). Sus URLs
-> son los outputs **`IndexEmbeddingsUrl`** (indexar) y **`SemanticSearchUrl`** (buscar) del stack.
+> 🔌 **Cómo se exponen:** cada función tiene su propia **Lambda Function URL** (no API Gateway) y su
+> **rol de mínimo privilegio creado por SAM** a partir de sus `Policies:` — ver
+> [`docs/IAM.md`](../../docs/IAM.md). Sus URLs son los outputs **`IndexEmbeddingsUrl`** (indexar) y
+> **`SemanticSearchUrl`** (buscar) del stack.
 
 ---
 
@@ -31,7 +32,7 @@ el chatbot de S8.
 ## 🧩 Prerequisitos
 
 - **S0 desplegado** con productos cargados. Ideal **S1** corrido (las `aiLabels` enriquecen el texto a indexar).
-- 🔑 **Acceso al modelo de embeddings** en Bedrock → Model access → *Amazon Titan Text Embeddings V2* (us-west-2).
+- 🔑 **Acceso al modelo de embeddings** en Bedrock → Model access → *Amazon Titan Text Embeddings V2* (us-east-1).
 
 ---
 
@@ -63,18 +64,18 @@ El flujo de esta sesión:
 ## 🚶 Paso a paso
 
 1. Habilitá el modelo de embeddings en la consola de Bedrock.
-2. Pegá las **dos** funciones (`IndexEmbeddings`, `SemanticSearch`), cada una con `Role: !Ref LabRoleArn` + su `FunctionUrlConfig`, y sus outputs `IndexEmbeddingsUrl` y `SemanticSearchUrl`.
+2. Pegá las **dos** funciones (`IndexEmbeddings`, `SemanticSearch`), cada una con sus `Policies:` + su `FunctionUrlConfig`, y sus outputs `IndexEmbeddingsUrl` y `SemanticSearchUrl`. Fijate que `SemanticSearch` lleva `DynamoDBReadPolicy` y no `Crud`: sólo lee el catálogo.
 3. `sam build && sam deploy`.
 4. **Indexar** el catálogo (Function URL de `IndexEmbeddings`):
 ```bash
-INDEX_URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+INDEX_URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 \
   --query "Stacks[0].Outputs[?OutputKey=='IndexEmbeddingsUrl'].OutputValue" --output text)
 curl -s -X POST "${INDEX_URL%/}/search/index" | python3 -m json.tool
 # {"indexed": 4, "skipped": 0, "total": 4, "model": "amazon.titan-embed-text-v2:0"}
 ```
 5. **Buscar** semánticamente (Function URL de `SemanticSearch`):
 ```bash
-SEARCH_URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+SEARCH_URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 \
   --query "Stacks[0].Outputs[?OutputKey=='SemanticSearchUrl'].OutputValue" --output text)
 curl -s "${SEARCH_URL%/}/search?q=algo%20abrigado%20para%20el%20invierno" | python3 -m json.tool
 ```

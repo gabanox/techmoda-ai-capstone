@@ -26,7 +26,7 @@ import boto3
 
 PRODUCTS_TABLE = os.environ["PRODUCTS_TABLE"]
 EMBED_MODEL_ID = os.environ.get("EMBED_MODEL_ID", "amazon.titan-embed-text-v2:0")
-CHAT_MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "anthropic.claude-3-haiku-20240307-v1:0")
+CHAT_MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "anthropic.claude-haiku-4-5-20251001-v1:0")
 TOP_K = int(os.environ.get("ASSISTANT_TOP_K", "3"))
 MAX_TOKENS = int(os.environ.get("BEDROCK_MAX_TOKENS", "400"))
 

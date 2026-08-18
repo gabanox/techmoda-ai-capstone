@@ -2,15 +2,15 @@
 
 Estos prompts le guían a través de la construcción y el despliegue de su aplicación serverless de TechModa usando AWS SAM.
 
-> 🏖️ **Sandbox AWS re/Start (importante):** este capstone **no usa API Gateway** (el `LabRole` no lo
-> permite). La API se expone con una **Lambda Function URL** (router CRUD) y cada Lambda reusa el
-> `LabRole` (no se crean roles IAM nuevos). Por eso:
+> 🔌 **Importante:** este capstone **no usa API Gateway**. La API se expone con una **Lambda Function
+> URL** (router CRUD) y **SAM le crea a cada Lambda un rol de mínimo privilegio** a partir de sus
+> `Policies:` (por eso `CAPABILITY_IAM` es obligatoria). Por eso:
 > - El comando real de deploy es:
->   `sam deploy --stack-name techmoda-ai --region us-west-2 --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --resolve-s3 --no-confirm-changeset`
->   (atajo: `bash scripts/deploy.sh`). **No** uses `--guided` interactivo en el sandbox.
-> - El output `ApiUrl` es una Function URL `https://<id>.lambda-url.us-west-2.on.aws/` (sin `/Prod`).
-> - Donde abajo veas "API Gateway", "TechModaApi", "execute-api", "/Prod", "us-east-1" o
->   "techmoda-capstone", interpretá Function URL / `ApiUrl` / `us-west-2` / `techmoda-ai`.
+>   `sam deploy --stack-name techmoda-ai --region us-east-1 --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --resolve-s3 --no-confirm-changeset`
+>   (atajo: `bash scripts/deploy.sh`). **No** uses `--guided` interactivo.
+> - El output `ApiUrl` es una Function URL `https://<id>.lambda-url.us-east-1.on.aws/` (sin `/Prod`).
+> - Donde abajo veas "API Gateway", "TechModaApi", "execute-api", "/Prod" o
+>   "techmoda-capstone", interpretá Function URL / `ApiUrl` / `techmoda-ai`.
 >
 > Las 3 restricciones y el patrón están en [`../SANDBOX-COMPAT.md`](../SANDBOX-COMPAT.md).
 
@@ -83,7 +83,7 @@ Please provide:
 ✅ Stack de CloudFormation creado/actualizado
 ✅ Funciones Lambda desplegadas (con Function URLs)
 ✅ Tabla de DynamoDB creada
-✅ Funciones asociadas al `LabRole` (no se crean roles nuevos)
+✅ Un rol de ejecución de mínimo privilegio por función, creado por el stack
 ✅ Outputs mostrados (incluyendo `ApiUrl` = Function URL del router)
 
 ## Guía Detallada
@@ -185,7 +185,7 @@ Outputs
 -------------------------------------------------
 Key                 ApiUrl
 Description         Base API URL (Lambda Function URL del router CRUD)
-Value               https://abc123xyz.lambda-url.us-west-2.on.aws/
+Value               https://abc123xyz.lambda-url.us-east-1.on.aws/
 -------------------------------------------------
 ```
 
@@ -284,7 +284,8 @@ aws cloudformation list-stack-resources \
 - 1 tabla DynamoDB
 - S3 + CloudFront (frontend)
 - Grupos de CloudWatch Logs
-- (NO hay API Gateway ni roles IAM nuevos — las funciones usan el `LabRole`)
+- Los roles IAM de ejecución (uno por función, creados por el stack)
+- (NO hay API Gateway)
 
 ### Obtener URL de API
 

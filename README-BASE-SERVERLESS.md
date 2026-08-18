@@ -79,9 +79,9 @@ Para instrucciones detalladas paso a paso con capturas de pantalla, consulta **[
 
 TechModa es una API serverless para gestionar un catálogo de productos de e-commerce de moda. Este proyecto capstone demuestra dominio de patrones de arquitectura serverless de AWS utilizando Lambda, **Lambda Function URLs** y DynamoDB.
 
-> 🏖️ **Sandbox AWS re/Start (Vocareum):** este proyecto se despliega con el **LabRole**, que no
-> permite API Gateway ni `iam:CreateRole`. Por eso el CRUD se expone con **una Function URL** servida
-> por un **router**, y cada función usa el LabRole. Ver [docs/SANDBOX-COMPAT.md](docs/SANDBOX-COMPAT.md).
+> 🔌 **Cómo está armado:** el CRUD se expone con **una Function URL** servida por un **router**, no con
+> API Gateway, y cada función lleva sus `Policies:` para que SAM le cree un rol de mínimo privilegio.
+> Ver [docs/SANDBOX-COMPAT.md](docs/SANDBOX-COMPAT.md) y [docs/IAM.md](docs/IAM.md).
 
 ### Objetivos de Aprendizaje
 
@@ -203,10 +203,10 @@ Este comando:
 
 ### 5. Desplegar a AWS
 
-#### Primer Despliegue (sandbox AWS re/Start)
+#### Primer Despliegue
 
-En el sandbox **no** uses `--guided` (no hay que crear roles: se reusa el LabRole). Desplegá con flags
-explícitos:
+**No** uses `--guided` (el interactivo no hace falta: el stack no tiene parámetros). Desplegá con
+flags explícitos:
 
 ```bash
 # Usando el script auxiliar
@@ -214,16 +214,17 @@ explícitos:
 
 # O directamente con SAM CLI
 sam build && sam deploy \
-  --stack-name techmoda-ai --region us-west-2 \
+  --stack-name techmoda-ai --region us-east-1 \
   --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
   --resolve-s3 --no-confirm-changeset
 ```
 
 **Notas**:
-- **Stack Name**: `techmoda-ai` (definido también en `samconfig.us-west-2.example`).
-- **AWS Region**: `us-west-2` (la del sandbox; ahí están habilitados Bedrock/Rekognition/etc).
-- **`CAPABILITY_AUTO_EXPAND`**: obligatorio (Transform SAM). **No** hace falta crear roles IAM: cada
-  función usa `Role: !Ref LabRoleArn`. Ver [docs/SANDBOX-COMPAT.md](docs/SANDBOX-COMPAT.md).
+- **Stack Name**: `techmoda-ai` (definido también en `samconfig.us-east-1.example`).
+- **AWS Region**: `us-east-1` (Norte de Virginia; ahí están habilitados Bedrock/Rekognition/etc).
+- **Capabilities**: `CAPABILITY_AUTO_EXPAND` por el Transform de SAM, y `CAPABILITY_IAM` porque el
+  stack **crea un rol de mínimo privilegio por función**. Necesitás `iam:CreateRole` en la cuenta.
+  Ver [docs/IAM.md](docs/IAM.md).
 - **Sin autenticación**: las Function URLs usan `AuthType: NONE` — esperado para este proyecto
   educativo (no usamos API keys ni Cognito).
 
@@ -243,7 +244,7 @@ Después del despliegue, recibirás una URL de API en las salidas:
 
 ```
 Outputs:
-  ApiUrl: https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-west-2.on.aws/
+  ApiUrl: https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-east-1.on.aws/
 ```
 
 `ApiUrl` es la **Function URL del router** (termina en `/`, sin `/Prod`). Copia esta URL y prueba tus
@@ -254,7 +255,7 @@ completas de prueba.
 
 ```bash
 # Configura tu URL de API (Function URL del router; quita la barra final al concatenar rutas)
-export API_URL="https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-west-2.on.aws"
+export API_URL="https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-east-1.on.aws"
 
 # Crea un producto
 curl -X POST $API_URL/products \
@@ -372,7 +373,7 @@ Para ejecutar el frontend localmente:
 
 2. Actualiza `.env` con tu URL de API:
    ```
-   VITE_API_URL=https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-west-2.on.aws/
+   VITE_API_URL=https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.lambda-url.us-east-1.on.aws/
    ```
 
 3. Instala las dependencias y ejecuta:
@@ -397,10 +398,10 @@ Consulta [frontend/README.md](frontend/README.md) para más detalles.
 ./scripts/delete.sh
 
 # Opción 3: Directamente con SAM CLI
-sam delete --stack-name techmoda-ai --region us-west-2
+sam delete --stack-name techmoda-ai --region us-east-1
 ```
 
-**Nota**: Esto eliminará las Function URLs, funciones Lambda, tabla DynamoDB, bucket S3 y distribución CloudFront. El **LabRole** es preexistente y compartido — no se elimina.
+**Nota**: Esto eliminará las Function URLs, funciones Lambda, tabla DynamoDB, bucket S3, distribución CloudFront y los roles IAM de ejecución que creó el stack.
 
 Consulta [docs/COST_AND_CLEANUP.md](docs/COST_AND_CLEANUP.md) para estimaciones de costos y mejores prácticas de limpieza.
 
@@ -438,7 +439,7 @@ Consulta [docs/COST_AND_CLEANUP.md](docs/COST_AND_CLEANUP.md) para estimaciones 
 
 **Fallos de Despliegue**
 - Verifica las credenciales de AWS: `aws sts get-caller-identity`
-- Verifica los permisos del LabRole para CloudFormation, Lambda (incl. Function URLs), DynamoDB
+- Verifica que tu identidad tenga permisos de CloudFormation, Lambda (incl. Function URLs), DynamoDB e `iam:CreateRole`
 - Revisa los eventos de CloudFormation en la Consola de AWS para errores específicos
 
 **Errores de API (404, 500)**

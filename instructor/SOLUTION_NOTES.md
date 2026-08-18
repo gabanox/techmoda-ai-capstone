@@ -2,9 +2,10 @@
 
 ## Propósito
 
-> 🏖️ **Sandbox AWS re/Start:** el frente HTTP es una **Lambda Function URL** + **router** (no API
-> Gateway), cada función usa el **LabRole** (sin `Policies:`), el stack es **`techmoda-ai`** y la región
-> **us-west-2**. Ver [../docs/SANDBOX-COMPAT.md](../docs/SANDBOX-COMPAT.md).
+> 🔌 El frente HTTP es una **Lambda Function URL** + **router** (no API Gateway), cada función lleva
+> sus `Policies:` acotadas y **SAM le crea el rol**, el stack es **`techmoda-ai`** y la región
+> **us-east-1**. Ver [../docs/SANDBOX-COMPAT.md](../docs/SANDBOX-COMPAT.md) y
+> [../docs/IAM.md](../docs/IAM.md).
 
 Este documento proporciona patrones de implementación y orientación para instructores. NO contiene soluciones completas para evitar la tentación de compartirlas con los estudiantes. En su lugar, ofrece:
 
@@ -693,13 +694,17 @@ Los estudiantes pueden notar que la primera solicitud después del despliegue es
 aws logs tail /aws/lambda/techmoda-ai-[FunctionName] --follow
 ```
 
-**403 Forbidden → Revisar el rol de la función (sandbox)**:
-Verificar que cada función use el LabRole y **no** un bloque `Policies:`:
+**403 Forbidden → Revisar los permisos de la función**:
+Verificar que declare la política correcta sobre la tabla correcta, y que **no** tenga además un
+`Role:` (con `Role`, SAM ignora `Policies` **en silencio**):
 ```yaml
-Role: !Ref LabRoleArn   # ← sandbox; NO agregar Policies: (mutuamente excluyentes)
+Policies:
+  - DynamoDBCrudPolicy:        # ReadPolicy si la función sólo consulta
+      TableName: !Ref ProductsTable
 ```
-> 📚 **Cuenta propia (material didáctico):** ahí sí se usaría mínimo privilegio, p. ej.
-> `Policies: [ { DynamoDBCrudPolicy: { TableName: !Ref ProductsTable } } ]`.
+> 🔍 Para ver el rol que SAM generó:
+> `aws lambda get-function-configuration --function-name <fn> --query Role --output text`
+> y después `aws iam list-role-policies --role-name <ese-rol>`.
 
 **502 Bad Gateway → Revisar Formato de Respuesta**:
 Asegurar que Lambda retorna:
@@ -713,7 +718,7 @@ Asegurar que Lambda retorna:
 
 ```bash
 # Establecer la Function URL del router (output ApiUrl; sin barra final)
-export API_URL="https://[fn-id].lambda-url.us-west-2.on.aws"
+export API_URL="https://[fn-id].lambda-url.us-east-1.on.aws"
 
 # Crear producto
 curl -X POST "${API_URL%/}/products" \
@@ -754,10 +759,10 @@ Al revisar el código de los estudiantes, buscar:
 
 ```bash
 # Ver recursos del stack
-aws cloudformation list-stack-resources --stack-name techmoda-ai --region us-west-2
+aws cloudformation list-stack-resources --stack-name techmoda-ai --region us-east-1
 
 # Obtener la Function URL (output ApiUrl)
-aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 --query "Stacks[0].Outputs"
+aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 --query "Stacks[0].Outputs"
 
 # Escanear tabla DynamoDB
 aws dynamodb scan --table-name techmoda-ai-Products
@@ -766,7 +771,7 @@ aws dynamodb scan --table-name techmoda-ai-Products
 aws logs tail /aws/lambda/techmoda-ai-ListItems --follow
 
 # Eliminar stack
-sam delete --stack-name techmoda-ai --region us-west-2
+sam delete --stack-name techmoda-ai --region us-east-1
 ```
 
 ---

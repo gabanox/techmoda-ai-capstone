@@ -22,9 +22,13 @@ import os
 import boto3
 
 PRODUCTS_TABLE = os.environ["PRODUCTS_TABLE"]
-# Verificá acceso al modelo en Bedrock > Model access (us-west-2). Para inference
-# profiles cross-region el id suele llevar prefijo "us." (p. ej. us.anthropic.claude-3-5-...).
-MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "anthropic.claude-3-haiku-20240307-v1:0")
+# Verificá acceso al modelo en Bedrock > Model access, en la región del deploy.
+# El ID es el de la integración `bedrock-runtime` (versionado, con sufijo -v1:0);
+# NO sirve el alias de la Claude API (`claude-haiku-4-5` a secas).
+# Con perfiles de inferencia cross-region el ID lleva prefijo "us."
+# (us.anthropic.claude-haiku-4-5-20251001-v1:0) y hay que permitir el ARN
+# inference-profile/* además de foundation-model/* (ver docs/IAM.md).
+MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "anthropic.claude-haiku-4-5-20251001-v1:0")
 MAX_TOKENS = int(os.environ.get("BEDROCK_MAX_TOKENS", "300"))
 TEMPERATURE = float(os.environ.get("BEDROCK_TEMPERATURE", "0.7"))
 
@@ -115,7 +119,7 @@ def lambda_handler(event, context):
             {
                 "error": "Fallo al invocar el modelo",
                 "detail": str(e),
-                "hint": "¿Habilitaste acceso al modelo en Bedrock > Model access (us-west-2)?",
+                "hint": "¿Habilitaste acceso al modelo en Bedrock > Model access (us-east-1)?",
             },
         )
 

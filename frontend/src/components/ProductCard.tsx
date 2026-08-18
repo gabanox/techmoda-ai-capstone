@@ -13,7 +13,7 @@ export function ProductCard({ product, onEdit, onDelete, isAdmin }: ProductCardP
     <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-105">
       <div className="aspect-square overflow-hidden bg-gray-100">
         <img
-          src={product.image_url}
+          src={product.imageUrl}
           alt={product.name}
           className="w-full h-full object-cover"
         />
@@ -48,7 +48,7 @@ export function ProductCard({ product, onEdit, onDelete, isAdmin }: ProductCardP
               Editar
             </button>
             <button
-              onClick={() => onDelete?.(product.product_id)}
+              onClick={() => onDelete?.(product.productId)}
               className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
             >
               Eliminar

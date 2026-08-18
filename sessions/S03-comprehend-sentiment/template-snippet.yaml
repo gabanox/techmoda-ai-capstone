@@ -1,7 +1,8 @@
 # ============================================================================
 # S3 · Comprehend DetectSentiment  —  pegar en template.yaml
 # ============================================================================
-# Patrón sandbox: Function URL propia + LabRole (sin API Gateway, sin Policies).
+# Patrón: Function URL propia (sin API Gateway) + `Policies:` de mínimo privilegio
+# (SAM crea el rol). Ver docs/IAM.md.
 # Ver docs/SANDBOX-COMPAT.md.
 # ----------------------------------------------------------------------------
 
@@ -13,7 +14,13 @@
       CodeUri: sessions/S03-comprehend-sentiment/functions/analyze-sentiment
       Handler: app.lambda_handler
       Runtime: python3.12
-      Role: !Ref LabRoleArn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+        - Statement:
+            - Effect: Allow
+              Action: comprehend:DetectSentiment
+              Resource: "*"
       FunctionUrlConfig:
         AuthType: NONE
         Cors:
@@ -30,5 +37,5 @@
 #   curl -X POST "$URL" -H 'Content-Type: application/json' \
 #        -d '{"text":"Me encantó la calidad de la tela"}'
 #
-# El LabRole ya permite comprehend:DetectSentiment/DetectDominantLanguage.
+# Permisos concedidos: comprehend:DetectSentiment (agregá DetectDominantLanguage si lo usás).
 # ----------------------------------------------------------------------------

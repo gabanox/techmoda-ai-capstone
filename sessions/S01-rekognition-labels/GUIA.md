@@ -1,15 +1,15 @@
-> ⚡ **Paso 0 — Bootstrap del entorno.** El sandbox de re/Start es efímero: si se
-> recicló desde tu última sesión, el stack y los datos ya no existen. Antes de
-> empezar, corré `bash scripts/bootstrap.sh` (~2-3 min) para dejar el entorno listo.
-> Es idempotente y seguro de correr siempre. Detalle en `SESSION-PLAN.md`.
+> ⚡ **Paso 0 — Bootstrap del entorno.** Si el stack no está desplegado (cuenta nueva,
+> sandbox reciclado, o venís de un cleanup), corré `bash scripts/bootstrap.sh` (~2-3 min)
+> para dejar el entorno listo. Es idempotente y seguro de correr siempre: si ya está
+> desplegado termina en segundos. Detalle en `SESSION-PLAN.md`.
 
 # S1 · Auto-etiquetado de imágenes de producto (Rekognition DetectLabels)
 
 **Duración:** ~60 min · **Servicio:** Amazon Rekognition · **Dominio AIF-C01:** **D1 — Fundamentals of AI and ML (20%)**
 
-> 🏖️ **Sandbox:** esta función se expone con su propia **Lambda Function URL** (no API Gateway) y usa el
-> **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). Su URL es el output
-> **`EnrichLabelsUrl`** del stack.
+> 🔌 **Cómo se expone:** esta función tiene su propia **Lambda Function URL** (no API Gateway) y un
+> **rol de mínimo privilegio que SAM le crea** a partir de sus `Policies:` — ver
+> [`docs/IAM.md`](../../docs/IAM.md). Su URL es el output **`EnrichLabelsUrl`** del stack.
 
 ---
 
@@ -31,7 +31,7 @@ campo `aiLabels`.
 - Al menos **un producto con una imagen real**. La `imageUrl` puede ser:
   - `s3://techmoda-ai-frontend/assets/vestido.jpg` (subí la foto a ese bucket), **o**
   - una URL pública `https://...jpg`.
-- Acceso a Rekognition en `us-west-2` (confirmado disponible en el sandbox).
+- Acceso a Rekognition en `us-east-1` (confirmado disponible en el sandbox).
 
 ```bash
 # Subir una foto de ejemplo al bucket de assets y apuntar el producto a ella:
@@ -63,7 +63,7 @@ moda. Rekognition tiene además `DetectModerationLabels` (lo vemos en S2), `Dete
 
 ### 1. Agregar la Lambda (con su Function URL) al `template.yaml`
 Abrí `sessions/S01-rekognition-labels/template-snippet.yaml` y:
-1. Copiá el recurso `EnrichLabelsFunction` dentro de `Resources:` en `template.yaml` (incluye `Role: !Ref LabRoleArn` y su `FunctionUrlConfig`).
+1. Copiá el recurso `EnrichLabelsFunction` dentro de `Resources:` en `template.yaml` (trae sus `Policies:` acotadas y su `FunctionUrlConfig`).
 2. Copiá el output `EnrichLabelsUrl` dentro de `Outputs:` para obtener su Function URL tras el deploy.
 
 > El código de la Lambda ya está en `functions/enrich-labels/app.py`. No tenés que escribirlo.
@@ -76,7 +76,7 @@ sam build && sam deploy
 ### 3. Ejecutar
 ```bash
 # URL = Function URL de esta función (output EnrichLabelsUrl); ${URL%/} quita la barra final.
-URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 \
   --query "Stacks[0].Outputs[?OutputKey=='EnrichLabelsUrl'].OutputValue" --output text)
 
 # Reemplazá PRODUCT_ID por el productId de un producto con imagen real.
@@ -100,7 +100,7 @@ Respuesta esperada (ejemplo):
 
 ### 4. Ver el enriquecimiento en DynamoDB
 ```bash
-aws dynamodb get-item --region us-west-2 \
+aws dynamodb get-item --region us-east-1 \
   --table-name techmoda-ai-Products \
   --key '{"productId":{"S":"PRODUCT_ID"}}' \
   --query 'Item.aiLabels'

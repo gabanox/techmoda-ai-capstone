@@ -1,7 +1,7 @@
-> ⚡ **Paso 0 — Bootstrap del entorno.** El sandbox de re/Start es efímero: si se
-> recicló desde tu última sesión, el stack y los datos ya no existen. Antes de
-> empezar, corré `bash scripts/bootstrap.sh` (~2-3 min) para dejar el entorno listo.
-> Es idempotente y seguro de correr siempre. Detalle en `SESSION-PLAN.md`.
+> ⚡ **Paso 0 — Bootstrap del entorno.** Si el stack no está desplegado (cuenta nueva,
+> sandbox reciclado, o venís de un cleanup), corré `bash scripts/bootstrap.sh` (~2-3 min)
+> para dejar el entorno listo. Es idempotente y seguro de correr siempre: si ya está
+> desplegado termina en segundos. Detalle en `SESSION-PLAN.md`.
 
 # S10 · IAM mínimo privilegio para IA, logging de invocación y control de costos
 
@@ -47,12 +47,14 @@ A lo largo del proyecto aplicamos un patrón consistente. Repasalo, porque **es 
 > `us-*`), usá `StringLike`/`ArnLike`, **nunca** `StringEquals`/`ArnEquals` — estos tratan el `*` como
 > literal y **rechazan todo** sin error al crear la policy.
 
-> 🔐 **Nota LabRole (fallback del sandbox):** el patrón anterior (SAM crea un rol acotado por Lambda) es
-> la mejor práctica y funciona en el sandbox re/Start. Si tu sandbox **bloqueara** la creación de roles
-> IAM, la alternativa es asignar `Role: arn:aws:iam::ACCOUNT:role/LabRole` a cada función — pero LabRole
-> es **amplio**, así que **perdés el mínimo privilegio**. En ese caso, documentá la política mínima que
-> *deberías* tener (los `Statement` de cada snippet **son** ese artefacto) como evidencia para D5, aunque
-> en runtime uses LabRole. Preferí siempre los roles acotados si el sandbox los permite.
+> 🔐 **Por qué este capstone no usa un rol compartido.** Una alternativa habitual —y lo que hacían las
+> versiones anteriores de este repo, ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md) §3— es
+> asignar a todas las funciones **un mismo rol preexistente y amplio** con `Role:`. Despliega en cuentas
+> que no permiten `iam:CreateRole`, pero **se pierde el mínimo privilegio**: cualquier Lambda del stack
+> puede hacer todo lo que el rol permite. Si algún día te toca ese escenario, documentá igual la política
+> mínima que *deberías* tener (los `Statement` de cada snippet **son** ese artefacto) como evidencia para
+> D5 — y recordá que `Role` y `Policies` son excluyentes en SAM: poner los dos ignora `Policies` **en
+> silencio**.
 
 ### 2. Logging de invocación (auditoría)
 - **CloudTrail** registra las **llamadas a la API** (quién invocó qué, cuándo) — gobernanza/seguridad.
@@ -78,7 +80,7 @@ A lo largo del proyecto aplicamos un patrón consistente. Repasalo, porque **es 
 3. **Logging de Bedrock:**
    ```bash
    bash sessions/S10-iam-logging-costos/enable-bedrock-logging.sh
-   aws bedrock get-model-invocation-logging-configuration --region us-west-2
+   aws bedrock get-model-invocation-logging-configuration --region us-east-1
    ```
 4. **Ver costos atribuidos:** activá los cost allocation tags en Billing → Cost Allocation Tags y revisá
    Cost Explorer filtrando por `Project=techmoda-ai-capstone`.
@@ -91,7 +93,7 @@ A lo largo del proyecto aplicamos un patrón consistente. Repasalo, porque **es 
 - [ ] Las funciones tienen los tags `Project`/`Module`.
 - [ ] `get-model-invocation-logging-configuration` muestra el logging habilitado.
 - [ ] Existe una alarma de billing (o un AWS Budget) con umbral.
-- [ ] Documentaste si usaste roles acotados (ideal) o el fallback LabRole.
+- [ ] Verificaste el rol que SAM le generó a una función: `aws lambda get-function-configuration --function-name techmoda-ai-EnrichLabels --query Role --output text` y después `aws iam list-role-policies --role-name <ese-rol>`.
 
 ---
 
@@ -113,6 +115,6 @@ en el log group evita acumulación. *Verificar precios de CloudWatch Logs/Alarms
 
 **Cleanup de S10:**
 ```bash
-aws bedrock delete-model-invocation-logging-configuration --region us-west-2
+aws bedrock delete-model-invocation-logging-configuration --region us-east-1
 ```
 Y quitá los recursos de gobernanza del `template.yaml` si revertís (o dejalos hasta S11).

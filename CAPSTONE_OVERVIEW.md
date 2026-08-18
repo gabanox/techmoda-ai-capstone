@@ -4,11 +4,11 @@
 
 El TechModa Serverless Capstone es un proyecto práctico donde construirás una API lista para producción para un catálogo de productos de e-commerce de moda utilizando tecnologías serverless de AWS. Este proyecto sirve como la culminación de tu bootcamp de Arquitectura Serverless de AWS, demostrando tu capacidad para diseñar, implementar, desplegar y operar aplicaciones serverless.
 
-> 🏖️ **Sandbox AWS re/Start (Vocareum):** el capstone se despliega con el **LabRole**, que no permite
-> API Gateway ni `iam:CreateRole`. El CRUD se expone con **una Lambda Function URL** servida por un
-> **router**, y cada función usa el LabRole. Donde este documento menciona API Gateway o privilegio
-> mínimo IAM, es **material didáctico** del patrón clásico; la realidad desplegada usa Function URLs.
-> Ver [docs/SANDBOX-COMPAT.md](docs/SANDBOX-COMPAT.md).
+> 🔌 **Lo que realmente se despliega:** el CRUD se expone con **una Lambda Function URL** servida por
+> un **router**, no con API Gateway. Y cada Lambda declara sus `Policies:` para que **SAM le cree un rol
+> de mínimo privilegio**. Donde este documento menciona **API Gateway**, es material didáctico del
+> patrón clásico — la realidad desplegada usa Function URLs. Ver
+> [docs/SANDBOX-COMPAT.md](docs/SANDBOX-COMPAT.md) y [docs/IAM.md](docs/IAM.md).
 
 ### Contexto de Negocio
 
@@ -94,7 +94,7 @@ Al completar este proyecto capstone, demostrarás dominio de:
 | **DynamoDB** | Base de datos NoSQL | Facturación PAY_PER_REQUEST, diseño de tabla única |
 | **CloudWatch** | Registro centralizado | Grupos de logs automáticos para cada función Lambda |
 | **X-Ray** | Rastreo distribuido | Habilitado para todas las funciones Lambda |
-| **IAM** | Seguridad y permisos | Sandbox: reusa el **LabRole** (sin `Policies:`). Material didáctico: mínimo privilegio por SAM |
+| **IAM** | Seguridad y permisos | **Un rol de mínimo privilegio por Lambda**, creado por SAM a partir de sus `Policies:` (ver `docs/IAM.md`) |
 | **CloudFormation** | Despliegue de infraestructura | Via abstracción de AWS SAM |
 
 ### Herramientas de Desarrollo
@@ -324,7 +324,7 @@ Tu capstone es exitoso cuando:
 | Desafío | Solución |
 |-----------|----------|
 | Errores de función Lambda | Verifica CloudWatch Logs para trazas de pila |
-| Permiso denegado de DynamoDB | Verifica que la función use `Role: !Ref LabRoleArn` (sandbox) |
+| Permiso denegado de DynamoDB | Verifica que la función tenga su `DynamoDBCrudPolicy`/`ReadPolicy` sobre la tabla correcta, y que **no** haya un `Role:` al lado (anula las `Policies` en silencio) |
 | Errores 404 en la Function URL | Confirma que las rutas en el router coinciden con la plantilla |
 | Fallos de despliegue | Revisa eventos de CloudFormation en consola |
 | Errores de timeout | Aumenta el timeout de Lambda u optimiza el código |

@@ -21,7 +21,7 @@ import boto3
 
 PRODUCTS_TABLE = os.environ["PRODUCTS_TABLE"]
 AUDIO_BUCKET = os.environ["AUDIO_BUCKET"]
-# Voces neuronales por idioma (verificar disponibilidad de la voz/engine en us-west-2).
+# Voces neuronales por idioma (verificar disponibilidad de la voz/engine en us-east-1).
 VOICES = {"es": "Lupe", "en": "Joanna"}
 
 polly = boto3.client("polly")

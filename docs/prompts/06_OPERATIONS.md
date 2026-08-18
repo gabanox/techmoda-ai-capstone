@@ -55,7 +55,7 @@ Stack name: techmoda-ai
 Please provide:
 1. Command to delete SAM stack (sam delete)
 2. Confirmation prompts I'll see
-3. What resources get deleted (Lambda + Function URLs, DynamoDB; note: LabRole is preexisting and is NOT deleted)
+3. What resources get deleted (Lambda + Function URLs, DynamoDB, and the per-function IAM execution roles the stack created)
 4. How to verify deletion completed
 5. How to check AWS CloudFormation console for DELETE_COMPLETE status
 6. Estimated time for full deletion
@@ -198,7 +198,7 @@ Please suggest:
 I need to delete ALL resources created for my TechModa capstone.
 
 Stack name: techmoda-ai
-Region: us-west-2
+Region: us-east-1
 
 Please provide step-by-step:
 1. Command to delete stack
@@ -221,7 +221,7 @@ Please provide commands to check:
 3. Lambda Function URLs (deleted with their functions)
 4. DynamoDB tables (should be none)
 5. CloudWatch Log Groups (may remain temporarily)
-6. Note: the preexisting LabRole is shared and is NOT deleted
+6. Note: each Lambda's execution role was created by the stack, so it is deleted with the stack
 ```
 
 ### Problemas de Eliminación Parcial

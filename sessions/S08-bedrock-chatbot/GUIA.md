@@ -1,8 +1,8 @@
-> ⚠️ **Pista B — Demo guiada del instructor.** Esta sesión usa Bedrock/Translate y
-> **NO corre en el sandbox AWS re/Start**: el `LabRole` deniega `bedrock:InvokeModel` /
-> `translate:TranslateText` y no es modificable. Se ejecuta en una cuenta AWS de Bootcamp
-> con Bedrock habilitado y un rol con esos permisos. Ver `sessions/README.md` (dos pistas)
-> y `docs/SANDBOX-COMPAT.md` (matriz de servicios).
+> 🔑 **Requisito externo — Bedrock Model access.** El rol de esta Lambda ya trae
+> `bedrock:InvokeModel` acotado por ARN de modelo, pero el permiso IAM **no alcanza**: hay que
+> habilitar el modelo en la consola (**Bedrock → Model access**), en **la región del deploy**
+> — es un setting por región. Si la llamada devuelve `AccessDeniedException`, ese es el primer
+> sospechoso, no las políticas IAM. Detalle en [`docs/IAM.md`](../../docs/IAM.md).
 
 # S8 · Asistente de compras (chatbot RAG + prompt engineering)
 
@@ -10,9 +10,9 @@
 
 > 🔥 **Sesión cumbre.** Junta todo lo generativo: prompt engineering (D2) + RAG (D3) = el **52%** del examen en una sola feature.
 
-> 🏖️ **Sandbox:** esta función se expone con su propia **Lambda Function URL** (no API Gateway) y usa el
-> **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). Su URL es el output
-> **`ShoppingAssistantUrl`** del stack.
+> 🔌 **Cómo se expone:** esta función tiene su propia **Lambda Function URL** (no API Gateway) y un
+> **rol de mínimo privilegio que SAM le crea** a partir de sus `Policies:` — ver
+> [`docs/IAM.md`](../../docs/IAM.md). Su URL es el output **`ShoppingAssistantUrl`** del stack.
 
 ---
 
@@ -30,7 +30,7 @@ Este es el patrón **RAG completo**: *Retrieval* (S7) + *Augmented Generation* (
 ## 🧩 Prerequisitos
 
 - **S7 completada y el índice construido** (`POST /search/index`). El asistente recupera sobre esos embeddings.
-- 🔑 **Acceso a dos modelos** en Bedrock (us-west-2): el de **embeddings** (Titan) y el de **generación** (Claude Haiku).
+- 🔑 **Acceso a dos modelos** en Bedrock (us-east-1): el de **embeddings** (Titan) y el de **generación** (Claude Haiku).
 
 ---
 
@@ -60,11 +60,11 @@ precios de hoy. Si le preguntás por productos, **alucinaría**. RAG resuelve es
 ## 🚶 Paso a paso
 
 1. Asegurate de tener el índice de S7 (`POST /search/index` vía la Function URL de `IndexEmbeddings`).
-2. Pegá `ShoppingAssistantFunction` (con `Role: !Ref LabRoleArn` + su `FunctionUrlConfig`) + el output `ShoppingAssistantUrl` desde el snippet.
+2. Pegá `ShoppingAssistantFunction` (trae sus `Policies:` — `DynamoDBReadPolicy`, porque sólo consulta — + su `FunctionUrlConfig`) + el output `ShoppingAssistantUrl` desde el snippet.
 3. `sam build && sam deploy`.
 4. Conversá (Function URL de esta función):
 ```bash
-URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2 \
+URL=$(aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1 \
   --query "Stacks[0].Outputs[?OutputKey=='ShoppingAssistantUrl'].OutputValue" --output text)
 curl -s -X POST "${URL%/}/assistant" \
   -H "Content-Type: application/json" \
@@ -75,7 +75,7 @@ Respuesta esperada:
 {
   "reply": "Para caminar cómodo te recomiendo los Tenis blancos minimalistas ($74.50): suela de goma y diseño limpio que combina con todo. ¿Querés que te muestre opciones para clima frío también?",
   "retrieved": [{"productId":"...","name":"Tenis blancos minimalistas"}],
-  "model": "anthropic.claude-3-haiku-20240307-v1:0",
+  "model": "anthropic.claude-haiku-4-5-20251001-v1:0",
   "usage": {"inputTokens": 210, "outputTokens": 58, "totalTokens": 268}
 }
 ```

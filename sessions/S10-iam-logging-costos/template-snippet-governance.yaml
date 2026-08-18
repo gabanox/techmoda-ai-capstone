@@ -4,9 +4,10 @@
 # Pegar en template.yaml. Demuestra atribucion de costos y observabilidad.
 
   # --- Alarma proactiva de costos (FinOps) ---
-  # Nota: las metricas de Billing viven SOLO en us-east-1. Si tu sandbox no permite
-  # crear alarmas cross-region, creala manualmente en la consola (us-east-1) o usá
-  # AWS Budgets. Aqui se muestra el patron.
+  # Nota: las metricas de Billing viven SOLO en us-east-1, que ya es la region del
+  # stack, asi que no hay problema de cross-region. Si tu sandbox no permite crear
+  # alarmas, creala manualmente en la consola o usá AWS Budgets. Aqui se muestra el
+  # patron.
   AiCostAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:

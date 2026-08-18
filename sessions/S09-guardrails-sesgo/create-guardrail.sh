@@ -3,11 +3,12 @@
 # Devuelve el guardrailId y guardrailArn. Inyectá el ID como BEDROCK_GUARDRAIL_ID
 # en las Lambdas S6/S8 (env var) y agregá el guardrailConfig a la llamada converse.
 #
-# Requiere permisos bedrock:CreateGuardrail (no incluidos en las Lambdas; se corre
-# una sola vez desde el IDE con LabRole o un rol admin del sandbox).
+# Requiere permisos bedrock:CreateGuardrail en TU identidad de la CLI (a propósito NO
+# están en el rol de ninguna Lambda: crear un guardrail es una tarea de administración,
+# de una sola vez, no algo que la app haga en runtime).
 set -euo pipefail
 
-REGION="${AWS_REGION:-us-west-2}"
+REGION="${AWS_REGION:-us-east-1}"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CFG="$DIR/guardrail-config.json"
 

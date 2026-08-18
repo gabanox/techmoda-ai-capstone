@@ -1,7 +1,8 @@
 # ============================================================================
 # S2 · Rekognition DetectModerationLabels + alt-text  —  pegar en template.yaml
 # ============================================================================
-# Patrón sandbox: Function URL propia + LabRole (sin API Gateway, sin Policies).
+# Patrón: Function URL propia (sin API Gateway) + `Policies:` de mínimo privilegio
+# (SAM crea el rol). Ver docs/IAM.md.
 # Ver docs/SANDBOX-COMPAT.md.
 # ----------------------------------------------------------------------------
 
@@ -13,7 +14,20 @@
       CodeUri: sessions/S02-moderation-alttext/functions/moderate-image
       Handler: app.lambda_handler
       Runtime: python3.12
-      Role: !Ref LabRoleArn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - rekognition:DetectModerationLabels
+                - rekognition:DetectLabels
+              Resource: "*"
+        # Si imageUrl es s3://, Rekognition lee el objeto con ESTE rol.
+        - Statement:
+            - Effect: Allow
+              Action: s3:GetObject
+              Resource: !Sub arn:${AWS::Partition}:s3:::${AWS::StackName}-*/*
       Environment:
         Variables:
           MODERATION_MIN_CONFIDENCE: "60"
@@ -32,5 +46,5 @@
 # Invocación (id por path o body):
 #   curl -X POST "${URL%/}/products/<PRODUCT_ID>/moderate"
 #
-# El LabRole ya permite rekognition:DetectModerationLabels/DetectLabels y s3:GetObject.
+# Permisos concedidos: rekognition:DetectModerationLabels + DetectLabels y s3:GetObject.
 # ----------------------------------------------------------------------------

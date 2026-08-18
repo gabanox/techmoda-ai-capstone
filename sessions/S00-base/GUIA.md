@@ -6,15 +6,16 @@
 
 ## 🎯 Objetivo
 
-Dejar corriendo, en tu cuenta sandbox **us-west-2**, la tienda TechModa serverless **sin IA todavía**:
+Dejar corriendo, en tu cuenta AWS **us-east-1**, la tienda TechModa serverless **sin IA todavía**:
 un **router CRUD** (Node.js) expuesto con **una Lambda Function URL** + DynamoDB + frontend React en
 S3/CloudFront. Este es el lienzo sobre el que las 11 sesiones siguientes irán pegando capacidades de
 IA, una por hora.
 
-> 🏖️ **Sandbox AWS re/Start:** el `LabRole` con el que despliega el sandbox **no permite API Gateway
-> ni crear roles IAM**. Por eso la API NO usa API Gateway sino **Lambda Function URLs**, y cada función
-> reusa el **LabRole**. Las 3 restricciones y el porqué del diseño están en
-> [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md).
+> 🔌 **Dos decisiones de arquitectura** que vas a ver en todo el capstone: la API **no usa API
+> Gateway** sino **Lambda Function URLs** (más simple de desplegar y de explicar), y cada Lambda
+> declara sus **`Policies:` acotadas** para que **SAM le cree un rol de mínimo privilegio**. El porqué
+> del diseño está en [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md); el modelo de permisos,
+> en [`docs/IAM.md`](../../docs/IAM.md).
 
 Al terminar S0 vas a poder **crear, listar, ver, editar y borrar productos** desde el navegador.
 
@@ -22,11 +23,19 @@ Al terminar S0 vas a poder **crear, listar, ver, editar y borrar productos** des
 
 ## 🧩 Prerequisitos
 
-- Cuenta sandbox **AWS re/Start (vocareum)** activa y el **VS Code IDE** del sandbox abierto.
-- En una terminal del IDE: `aws sts get-caller-identity` debe responder (estás autenticado como `LabRole`).
-- `sam --version`, `aws --version`, `node --version` (≥18), `python3 --version` (3.12) responden.
+- Una **cuenta AWS donde puedas crear roles IAM** (`iam:CreateRole`). El stack crea un rol de mínimo
+  privilegio por Lambda, así que una cuenta con IAM restringido **no puede desplegarlo** — ver
+  ⚠️ abajo.
+- `aws sts get-caller-identity` responde (estás autenticado).
+- `sam --version`, `aws --version`, `node --version` (≥22), `python3 --version` (**3.12**, tiene que
+  coincidir con el `Runtime` de las Lambdas de IA) responden.
+- Chequeo de un comando, antes de tocar AWS: `bash scripts/validate-all.sh --static`.
 
-> 📍 **Todo se ejecuta dentro del VS Code IDE del sandbox.** No necesitás credenciales en tu laptop.
+> ⚠️ **Si tu cuenta no permite crear roles** (caso típico: el `LabRole` del sandbox AWS re/Start /
+> Vocareum, que deniega `iam:CreateRole`), el deploy falla con
+> `is not authorized to perform: iam:CreateRole` y CloudFormation revierte el stack entero. No es un
+> error del template: es la cuenta. El contexto histórico y la variante que sí corría con `LabRole`
+> están en [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md) §3.
 
 ---
 
@@ -40,9 +49,10 @@ proyecto de IA esto es ideal porque:
 - **Escala solo.** Si 1.000 clientes piden traducciones a la vez, Lambda crea 1.000 ejecuciones; no aprovisionás nada.
 - **Aísla cada capacidad.** Cada feature de IA será **su propia Lambda** con su propia Function URL.
 
-Esa última idea es el patrón central del capstone: **una Lambda = un servicio de IA**. En una cuenta
-propia, además, le pondrías un **permiso IAM acotado** por función (mínimo privilegio); en el sandbox
-todas reusan el `LabRole` (que ya trae los permisos de IA) porque no se permite crear roles nuevos.
+Esa última idea es el patrón central del capstone: **una Lambda = un servicio de IA**. Y como cada
+función es su propia unidad de despliegue, también es su propia unidad de **permisos**: cada una lleva
+un **rol de mínimo privilegio** con lo justo para su tarea (leer la tabla, invocar *un* servicio). Eso
+es lo que evalúa el dominio D5 del examen, y lo vas a ver sesión por sesión.
 
 ---
 
@@ -51,7 +61,7 @@ todas reusan el `LabRole` (que ya trae los permisos de IA) porque no se permite 
 ### 1. Clonar y configurar
 ```bash
 git clone <este-repo> techmoda-ai-capstone && cd techmoda-ai-capstone
-cp samconfig.us-west-2.example samconfig.toml
+cp samconfig.us-east-1.example samconfig.toml
 ```
 
 ### 2. Construir
@@ -63,21 +73,23 @@ SAM empaqueta el router CRUD (Node.js) y valida el `template.yaml`.
 ### 3. Desplegar
 ```bash
 # atajo: bash scripts/deploy.sh
-sam deploy --stack-name techmoda-ai --region us-west-2 \
+sam deploy --stack-name techmoda-ai --region us-east-1 \
   --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
   --resolve-s3 --no-confirm-changeset
 ```
 `CAPABILITY_AUTO_EXPAND` es obligatorio (Transform SAM). En despliegues posteriores podés repetir el
-mismo comando (o `sam deploy` a secas si copiaste `samconfig.us-west-2.example` → `samconfig.toml`).
+mismo comando (o `sam deploy` a secas si copiaste `samconfig.us-east-1.example` → `samconfig.toml`).
 
-> 🔐 **Sobre IAM en el sandbox:** el `LabRole` **no permite `iam:CreateRole`**, así que cada Lambda
-> reusa ese rol preexistente (`Role: !Ref LabRoleArn` en el template) y **no** lleva bloque `Policies:`
-> (Role y Policies son mutuamente excluyentes en SAM). En una cuenta propia escribirías políticas de
-> mínimo privilegio por función — ver `docs/SANDBOX-COMPAT.md`.
+> 🔐 **Sobre IAM:** `CAPABILITY_IAM` no es decorativa — el stack **crea un rol por Lambda**. Abrí
+> `template.yaml` y mirá el bloque `Policies:` del `RouterFunction`: dice `DynamoDBCrudPolicy` sobre
+> `!Ref ProductsTable` y nada más. El router no puede tocar ninguna otra tabla ni ningún otro
+> servicio. **Nunca agregues `Role:` al lado de `Policies:`**: son mutuamente excluyentes en SAM y tus
+> `Policies` se ignoran **en silencio** (el deploy no falla, el permiso simplemente no queda).
+> Detalle y patrón a copiar: [`docs/IAM.md`](../../docs/IAM.md).
 
 ### 4. Anotar las salidas
 Al final del deploy, CloudFormation imprime:
-- `ApiUrl` → la URL base de tu API: una **Lambda Function URL** (`https://<id>.lambda-url.us-west-2.on.aws/`)
+- `ApiUrl` → la URL base de tu API: una **Lambda Function URL** (`https://<id>.lambda-url.us-east-1.on.aws/`)
 - `FrontendUrl` → la URL de CloudFront del catálogo
 - `ProductsTableName` → la tabla DynamoDB
 

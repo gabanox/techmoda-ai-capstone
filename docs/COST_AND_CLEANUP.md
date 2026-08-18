@@ -168,7 +168,7 @@ Las estimaciones anteriores asumen:
 Ejecuta la limpieza tan pronto hayas demostrado tu API funcionando:
 
 ```bash
-sam delete --stack-name techmoda-ai --region us-west-2
+sam delete --stack-name techmoda-ai --region us-east-1
 ```
 
 Esto previene cualquier cargo continuo, aunque serían mínimos.
@@ -221,12 +221,12 @@ Aunque este proyecto cuesta casi $0 durante el uso activo, los recursos de AWS p
 La forma más rápida y segura de eliminar todos los recursos:
 
 ```bash
-sam delete --stack-name techmoda-ai --region us-west-2
+sam delete --stack-name techmoda-ai --region us-east-1
 ```
 
 **Prompts interactivos**:
 ```
-Are you sure you want to delete the stack techmoda-ai in the region us-west-2 ? [y/N]: y
+Are you sure you want to delete the stack techmoda-ai in the region us-east-1 ? [y/N]: y
 Are you sure you want to delete the folder techmoda-ai in S3 which contains the artifacts? [y/N]: y
 ```
 
@@ -237,7 +237,7 @@ Are you sure you want to delete the folder techmoda-ai in S3 which contains the 
 - Grupos de Log de CloudWatch
 - Metadatos del stack CloudFormation
 - Bucket S3 de despliegue (artefactos)
-- *(El **LabRole** es preexistente y compartido — **NO** se elimina.)*
+- Los roles IAM de ejecución (uno por Lambda) — los creó el stack, se borran con el stack.
 
 **Duración**: 2-5 minutos
 
@@ -270,7 +270,7 @@ Después de ejecutar `sam delete`, verifica que todos los recursos se hayan elim
 ### 1. Verificar CloudFormation
 
 ```bash
-aws cloudformation describe-stacks --stack-name techmoda-ai --region us-west-2
+aws cloudformation describe-stacks --stack-name techmoda-ai --region us-east-1
 ```
 
 **Salida esperada**: Mensaje de error indicando que el stack no existe:
@@ -330,7 +330,7 @@ aws lambda list-functions --query "Functions[?contains(FunctionName, 'techmoda-a
 2. Elimina manualmente el recurso problemático en la Consola de AWS
 3. Reintenta la eliminación:
    ```bash
-   sam delete --stack-name techmoda-ai --region us-west-2 --no-prompts
+   sam delete --stack-name techmoda-ai --region us-east-1 --no-prompts
    ```
 
 ### Problema: "Stack cannot be deleted while in status DELETE_FAILED"
@@ -339,7 +339,7 @@ aws lambda list-functions --query "Functions[?contains(FunctionName, 'techmoda-a
 
 ```bash
 aws cloudformation delete-stack \
-  --stack-name techmoda-ai --region us-west-2 \
+  --stack-name techmoda-ai --region us-east-1 \
   --retain-resources [ResourceLogicalId]
 ```
 
@@ -354,7 +354,7 @@ Reemplaza `[ResourceLogicalId]` con el recurso que falló al eliminarse (de la p
 ```bash
 # Encontrar el nombre del bucket
 aws cloudformation describe-stacks \
-  --stack-name techmoda-ai --region us-west-2 \
+  --stack-name techmoda-ai --region us-east-1 \
   --query "Stacks[0].Parameters[?ParameterKey=='SAMDeploymentBucket'].ParameterValue" \
   --output text
 
@@ -362,17 +362,17 @@ aws cloudformation describe-stacks \
 aws s3 rm s3://YOUR_BUCKET_NAME --recursive
 
 # Reintentar eliminación
-sam delete --stack-name techmoda-ai --region us-west-2
+sam delete --stack-name techmoda-ai --region us-east-1
 ```
 
 ### Problema: Error de permisos durante la eliminación
 
 **Causa**: El rol de ejecución carece de permisos necesarios
 
-**Solución (sandbox AWS re/Start):** el deploy/cleanup lo ejecuta el **LabRole**, que ya permite
+**Solución:** tu identidad de deploy/cleanup necesita permitir
 `cloudformation:DeleteStack`, `lambda:DeleteFunction` (incl. `lambda:DeleteFunctionUrlConfig`) y
-`dynamodb:DeleteTable`. No se borran roles IAM (el LabRole es preexistente y compartido). Si ves un
-error de permisos, confirma que estás usando el LabRole del sandbox.
+`dynamodb:DeleteTable`, más `iam:DeleteRole`/`iam:DeleteRolePolicy` para los roles que creó el stack.
+Si ves un error de permisos, confirmá con `aws sts get-caller-identity` qué identidad estás usando.
 
 ## Lista de Verificación Post-Limpieza
 

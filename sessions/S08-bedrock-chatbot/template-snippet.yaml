@@ -3,7 +3,8 @@
 # ============================================================================
 # Reusa los embeddings de S7. Necesita InvokeModel sobre DOS modelos:
 # el de embeddings (retrieval) y el de generacion (chat).
-# Patrón sandbox: Function URL propia + LabRole (sin API Gateway, sin Policies).
+# Patrón: Function URL propia (sin API Gateway) + `Policies:` de mínimo privilegio
+# (SAM crea el rol). Ver docs/IAM.md.
 # Ver docs/SANDBOX-COMPAT.md.
 
   ShoppingAssistantFunction:
@@ -14,12 +15,22 @@
       CodeUri: sessions/S08-bedrock-chatbot/functions/shopping-assistant
       Handler: app.lambda_handler
       Runtime: python3.12
-      Role: !Ref LabRoleArn
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ProductsTable
+        # Bedrock SI admite ARN de recurso -> acotamos al modelo, no a bedrock:*.
+        # inference-profile cubre los IDs con prefijo "us." (perfiles cross-region).
+        - Statement:
+            - Effect: Allow
+              Action: bedrock:InvokeModel
+              Resource:
+                - !Sub arn:${AWS::Partition}:bedrock:*::foundation-model/*
+                - !Sub arn:${AWS::Partition}:bedrock:*:${AWS::AccountId}:inference-profile/*
       Timeout: 60
       Environment:
         Variables:
           EMBED_MODEL_ID: amazon.titan-embed-text-v2:0
-          BEDROCK_MODEL_ID: anthropic.claude-3-haiku-20240307-v1:0
+          BEDROCK_MODEL_ID: anthropic.claude-haiku-4-5-20251001-v1:0
           ASSISTANT_TOP_K: "3"
           BEDROCK_MAX_TOKENS: "400"
       FunctionUrlConfig:
@@ -38,6 +49,6 @@
 #   curl -X POST "$URL" -H 'Content-Type: application/json' \
 #        -d '{"message":"busco un abrigo para el invierno"}'
 #
-# El LabRole ya permite bedrock:InvokeModel (Titan embeddings + modelo de chat).
+# Permisos concedidos: bedrock:InvokeModel acotado por ARN (Titan embeddings + chat).
 # Corré primero el indexador de S7 (POST $INDEX_URL) para tener embeddings.
 # ----------------------------------------------------------------------------
