@@ -1,15 +1,15 @@
-> ⚡ **Paso 0 — Bootstrap del entorno.** El sandbox de re/Start es efímero: si se
-> recicló desde tu última sesión, el stack y los datos ya no existen. Antes de
-> empezar, corré `bash scripts/bootstrap.sh` (~2-3 min) para dejar el entorno listo.
-> Es idempotente y seguro de correr siempre. Detalle en `SESSION-PLAN.md`.
+> ⚡ **Paso 0 — Bootstrap del entorno.** Si el stack no está desplegado (cuenta nueva,
+> sandbox reciclado, o venís de un cleanup), corré `bash scripts/bootstrap.sh` (~2-3 min)
+> para dejar el entorno listo. Es idempotente y seguro de correr siempre: si ya está
+> desplegado termina en segundos. Detalle en `SESSION-PLAN.md`.
 
 # S5 · Descripción por voz / accesibilidad (Amazon Polly)
 
 **Duración:** ~60 min · **Servicio:** Amazon Polly · **Dominio AIF-C01:** **D1 (capacidad) + D4 (accesibilidad)**
 
-> 🏖️ **Sandbox:** esta función se expone con su propia **Lambda Function URL** (no API Gateway) y usa el
-> **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). Su URL es el output
-> **`SynthesizeVoiceUrl`** del stack.
+> 🔌 **Cómo se expone:** esta función tiene su propia **Lambda Function URL** (no API Gateway) y un
+> **rol de mínimo privilegio que SAM le crea** a partir de sus `Policies:` — ver
+> [`docs/IAM.md`](../../docs/IAM.md). Su URL es el output **`SynthesizeVoiceUrl`** del stack.
 
 ---
 
@@ -50,7 +50,7 @@ de ciclo de vida que **borra el audio a los 7 días** (FinOps).
 
 ## 🚶 Paso a paso
 
-1. Pegá `AudioBucket` + `SynthesizeVoiceFunction` (con `Role: !Ref LabRoleArn` + su `FunctionUrlConfig`) + el output `SynthesizeVoiceUrl` desde el snippet.
+1. Pegá `AudioBucket` + `SynthesizeVoiceFunction` (trae sus `Policies:` — incluido el `S3CrudPolicy` sobre el bucket nuevo — + su `FunctionUrlConfig`) + el output `SynthesizeVoiceUrl` desde el snippet.
 2. `sam build && sam deploy`.
 3. Generá audio en español (Function URL de esta función; el productId va en path o body):
 ```bash

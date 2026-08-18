@@ -76,7 +76,7 @@ Esto muestra:
 - Tabla DynamoDB (con todos los datos)
 - Bucket S3
 - Distribución CloudFront
-- *(El **LabRole** es preexistente y compartido — NO se elimina.)*
+- Los roles IAM de ejecución (uno por Lambda, creados por SAM) — se borran con el stack.
 
 ### ¿Falló la Eliminación?
 

@@ -6,10 +6,11 @@
 > y le agregamos, **una sesión de 1 hora a la vez**, capacidades de **IA preentrenada y generativa**
 > de AWS. Cada sesión es autocontenida: se despliega y se ve funcionar en ~60 minutos.
 
-> 🏖️ **Compatible con el sandbox AWS re/Start (Vocareum).** El rol de deploy (`LabRole`) no
-> permite API Gateway ni crear roles IAM, así que la API se expone con **Lambda Function URLs**
-> y cada función reusa el **LabRole**. Las 3 restricciones y el patrón están en
-> **[`docs/SANDBOX-COMPAT.md`](docs/SANDBOX-COMPAT.md)** — léelo antes de agregar funciones.
+> 🔌 **Dos decisiones de arquitectura.** (1) **Sin API Gateway**: la API se expone con **Lambda
+> Function URLs** — ver **[`docs/SANDBOX-COMPAT.md`](docs/SANDBOX-COMPAT.md)**. (2) **IAM de mínimo
+> privilegio por función**: cada Lambda declara sus `Policies:` y SAM le crea su rol — ver
+> **[`docs/IAM.md`](docs/IAM.md)**, léelo antes de agregar funciones. Necesitás una cuenta AWS donde
+> puedas **crear roles IAM** (`iam:CreateRole`).
 
 > 📄 La documentación del **capstone serverless base** (sin IA) se conserva en
 > [`README-BASE-SERVERLESS.md`](README-BASE-SERVERLESS.md).
@@ -103,31 +104,35 @@ el **2026-06-17**:
                      │                          ├─ generate-desc      → Bedrock
                      │                          ├─ semantic-search    → Bedrock (embeddings)
                      │                          └─ shopping-assistant → Bedrock (chat)
-                     │   (todas con Role: LabRole — sin crear roles IAM nuevos)
+                     │   (cada una con su rol de mínimo privilegio creado por SAM)
                      ▼
               ┌────────────────────────────┐
               │   DynamoDB  (Products)     │
               └────────────────────────────┘
 ```
 
-- **Base (S0):** **Lambda Function URL** (router CRUD Node.js) + DynamoDB + Frontend React, vía **AWS SAM**. Sin API Gateway (no permitido por el LabRole del sandbox).
+- **Base (S0):** **Lambda Function URL** (router CRUD Node.js) + DynamoDB + Frontend React, vía **AWS SAM**. Sin API Gateway.
 - **IA (S1–S8):** cada sesión agrega 1 Lambda **Python 3.12 + boto3** (con su propia Function URL) que llama a un servicio de IA administrado y **escribe el resultado de vuelta en DynamoDB** o lo retorna.
-- **IaC:** todo es **AWS SAM** (`template.yaml`). Cada sesión trae un `template-snippet.yaml` con el recurso nuevo (Function URL + `Role: !Ref LabRoleArn`), listo para pegar.
-- **Sandbox:** sin API Gateway y sin `iam:CreateRole` → ver **[`docs/SANDBOX-COMPAT.md`](docs/SANDBOX-COMPAT.md)**.
+- **IaC:** todo es **AWS SAM** (`template.yaml`). Cada sesión trae un `template-snippet.yaml` con el recurso nuevo (Function URL + `Policies:` acotadas), listo para pegar.
+- **IAM:** un rol de mínimo privilegio por función, creado por SAM → ver **[`docs/IAM.md`](docs/IAM.md)**.
 
 ---
 
 ## ✅ Prerequisitos
 
-1. **Cuenta sandbox de AWS re/Start (vocareum)** activa.
-   - Región de trabajo: **`us-east-1`** (Norte de Virginia).
-   - Rol disponible: **`LabRole`**. EC2 limitado a `t*.nano/micro/small/medium`, EBS gp ≤ 100 GB.
-2. **VS Code IDE del sandbox** desplegado (se aprovisiona aparte vía CloudFormation). Todas las sesiones se corren **dentro de ese IDE**.
-3. Herramientas (presentes en el IDE del sandbox): **AWS SAM CLI**, **AWS CLI v2**, **Node.js 18+**, **Python 3.12**, **git**.
-4. **Acceso a modelos de Bedrock** habilitado para S6–S8:
-   Consola → **Amazon Bedrock → Model access** → habilitar los modelos que uses (p. ej. Anthropic Claude y Amazon Titan Embeddings). **Verificar disponibilidad en `us-east-1`** antes de la sesión.
+1. **Una cuenta AWS donde puedas crear roles IAM** (`iam:CreateRole`).
+   - El stack crea un rol de ejecución de mínimo privilegio **por Lambda**; sin ese permiso el deploy
+     falla y CloudFormation revierte el stack entero. Ver [`docs/SANDBOX-COMPAT.md`](docs/SANDBOX-COMPAT.md) §2.
+   - Región de trabajo: **`us-east-1`** (Norte de Virginia). Podés cambiarla: nada está atado a la región.
+2. Herramientas: **AWS SAM CLI**, **AWS CLI v2**, **Node.js 22+**, **Python 3.12** (tiene que coincidir
+   con el `Runtime` de las Lambdas de IA), **git**. El devcontainer de este repo las trae fijadas.
+3. **Acceso a modelos de Bedrock** habilitado para S6–S9:
+   Consola → **Amazon Bedrock → Model access** → habilitar los modelos que uses (Anthropic Claude Haiku
+   y Amazon Titan Embeddings). Es un setting **por región**: habilitalo en la región del deploy.
 
-> **Servicios de IA confirmados disponibles en el sandbox:** Rekognition, Comprehend, Textract, Polly, Transcribe, Translate **y Bedrock**.
+> ✅ **Chequeo de un comando antes de tocar AWS:** `bash scripts/validate-all.sh --static`
+> (herramientas, los 3 templates, los 8 snippets, sintaxis, frontend y coherencia del repo).
+> Con el stack ya desplegado, `bash scripts/validate-all.sh` prueba además el CRUD y las 9 features de IA.
 
 ---
 
@@ -203,14 +208,13 @@ techmoda-ai-capstone/
 ├── frontend/                  # React + Vite (base S0)
 ├── scripts/                   # deploy / delete / logs / status
 ├── ai/
-│   ├── seed/                  # productos de ejemplo con imágenes para las sesiones IA
-│   └── shared/                # helpers reutilizables (respuestas HTTP, lectura DDB)
+│   └── seed/                  # productos de ejemplo con imágenes para las sesiones IA
 └── sessions/
     ├── S00-base/GUIA.md
     ├── S01-rekognition-labels/
     │   ├── GUIA.md
     │   ├── functions/enrich-labels/        # Lambda Python + boto3
-    │   └── template-snippet.yaml           # recurso + Function URL + Role: LabRole
+    │   └── template-snippet.yaml           # recurso + Function URL + Policies: acotadas
     ├── S02-... S08-...                      # mismo patrón
     └── S09 / S10 / S11                       # guía + scaffold/scripts
 ```

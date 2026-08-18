@@ -237,7 +237,7 @@ Are you sure you want to delete the folder techmoda-ai in S3 which contains the 
 - Grupos de Log de CloudWatch
 - Metadatos del stack CloudFormation
 - Bucket S3 de despliegue (artefactos)
-- *(El **LabRole** es preexistente y compartido — **NO** se elimina.)*
+- Los roles IAM de ejecución (uno por Lambda) — los creó el stack, se borran con el stack.
 
 **Duración**: 2-5 minutos
 
@@ -369,10 +369,10 @@ sam delete --stack-name techmoda-ai --region us-east-1
 
 **Causa**: El rol de ejecución carece de permisos necesarios
 
-**Solución (sandbox AWS re/Start):** el deploy/cleanup lo ejecuta el **LabRole**, que ya permite
+**Solución:** tu identidad de deploy/cleanup necesita permitir
 `cloudformation:DeleteStack`, `lambda:DeleteFunction` (incl. `lambda:DeleteFunctionUrlConfig`) y
-`dynamodb:DeleteTable`. No se borran roles IAM (el LabRole es preexistente y compartido). Si ves un
-error de permisos, confirma que estás usando el LabRole del sandbox.
+`dynamodb:DeleteTable`, más `iam:DeleteRole`/`iam:DeleteRolePolicy` para los roles que creó el stack.
+Si ves un error de permisos, confirmá con `aws sts get-caller-identity` qué identidad estás usando.
 
 ## Lista de Verificación Post-Limpieza
 

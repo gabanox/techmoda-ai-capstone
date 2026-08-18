@@ -1,8 +1,8 @@
-> ⚠️ **Pista B — Demo guiada del instructor.** Esta sesión usa Bedrock/Translate y
-> **NO corre en el sandbox AWS re/Start**: el `LabRole` deniega `bedrock:InvokeModel` /
-> `translate:TranslateText` y no es modificable. Se ejecuta en una cuenta AWS de Bootcamp
-> con Bedrock habilitado y un rol con esos permisos. Ver `sessions/README.md` (dos pistas)
-> y `docs/SANDBOX-COMPAT.md` (matriz de servicios).
+> 🔑 **Requisito externo — Bedrock Model access.** El rol de esta Lambda ya trae
+> `bedrock:InvokeModel` acotado por ARN de modelo, pero el permiso IAM **no alcanza**: hay que
+> habilitar el modelo en la consola (**Bedrock → Model access**), en **la región del deploy**
+> — es un setting por región. Si la llamada devuelve `AccessDeniedException`, ese es el primer
+> sospechoso, no las políticas IAM. Detalle en [`docs/IAM.md`](../../docs/IAM.md).
 
 # S6 · Generar descripciones de producto desde atributos (Amazon Bedrock)
 
@@ -10,9 +10,9 @@
 
 > 🔥 **Sesión clave.** D2 + D3 (generativa) = **52%** del examen. Acá entrás de lleno a foundation models.
 
-> 🏖️ **Sandbox:** esta función se expone con su propia **Lambda Function URL** (no API Gateway) y usa el
-> **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). Su URL es el output
-> **`GenerateDescriptionUrl`** del stack.
+> 🔌 **Cómo se expone:** esta función tiene su propia **Lambda Function URL** (no API Gateway) y un
+> **rol de mínimo privilegio que SAM le crea** a partir de sus `Policies:` — ver
+> [`docs/IAM.md`](../../docs/IAM.md). Su URL es el output **`GenerateDescriptionUrl`** del stack.
 
 ---
 
@@ -28,7 +28,7 @@ de marketing en español, con el tono que pidamos. Es el primer contacto con **g
 
 - **S0 desplegado.** Ideal haber corrido **S1** antes (las `aiLabels` enriquecen el prompt).
 - 🔑 **Acceso al modelo habilitado:** Consola → **Amazon Bedrock → Model access** → habilitar
-  *Anthropic Claude 3 Haiku* (o el modelo que uses) en **us-east-1**. Sin esto, la llamada falla con AccessDenied.
+  *Anthropic Claude Haiku 4.5* (o el modelo que uses) en **us-east-1**. Sin esto, la llamada falla con AccessDenied.
 
 ---
 
@@ -62,7 +62,7 @@ entrenar/alojar tus propios modelos**. Para "generar texto sin entrenar nada" �
 ## 🚶 Paso a paso
 
 1. Habilitá el acceso al modelo en la consola de Bedrock (ver prerequisitos).
-2. Pegá `GenerateDescriptionFunction` (con `Role: !Ref LabRoleArn` + su `FunctionUrlConfig`) + el output `GenerateDescriptionUrl` desde el snippet.
+2. Pegá `GenerateDescriptionFunction` (trae sus `Policies:` — `bedrock:InvokeModel` acotado por ARN de modelo — + su `FunctionUrlConfig`) + el output `GenerateDescriptionUrl` desde el snippet.
 3. `sam build && sam deploy`.
 4. Generá una descripción (Function URL de esta función; el productId va en path o body):
 ```bash
@@ -76,7 +76,7 @@ Respuesta esperada:
 ```json
 {
   "productId": "a1b2...",
-  "model": "anthropic.claude-3-haiku-20240307-v1:0",
+  "model": "anthropic.claude-haiku-4-5-20251001-v1:0",
   "tone": "elegante y aspiracional",
   "saved": true,
   "description": "Este vestido midi de gasa floral une fluidez y delicadeza...",
@@ -93,8 +93,8 @@ A diferencia de Rekognition/Comprehend, Bedrock permite acotar por **modelo espe
 
 ```yaml
 - bedrock:InvokeModel sobre:
-    arn:...:bedrock:us-*::foundation-model/anthropic.claude-3-haiku-20240307-v1:0
-    arn:...:bedrock:us-*:ACCOUNT:inference-profile/us.anthropic.claude-3-haiku-...
+    arn:...:bedrock:us-*::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0
+    arn:...:bedrock:us-*:ACCOUNT:inference-profile/us.anthropic.claude-haiku-4-5-20251001-v1:0
 ```
 - **No** damos `bedrock:*` ni `Resource: "*"`. Solo InvokeModel sobre el modelo que usamos.
 - **Region wildcard `us-*`** porque los *inference profiles* cross-region pueden ejecutar en varias

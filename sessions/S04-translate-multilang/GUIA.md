@@ -1,16 +1,14 @@
-> ⚠️ **Pista B — Demo guiada del instructor.** Esta sesión usa Bedrock/Translate y
-> **NO corre en el sandbox AWS re/Start**: el `LabRole` deniega `bedrock:InvokeModel` /
-> `translate:TranslateText` y no es modificable. Se ejecuta en una cuenta AWS de Bootcamp
-> con Bedrock habilitado y un rol con esos permisos. Ver `sessions/README.md` (dos pistas)
-> y `docs/SANDBOX-COMPAT.md` (matriz de servicios).
+> 🔑 **Permisos.** El rol de esta Lambda lo crea SAM con `translate:TranslateText` acotado por
+> acción (Translate no admite ARN de recurso) — ver [`docs/IAM.md`](../../docs/IAM.md).
+> Translate no necesita habilitar nada en consola: con el permiso IAM ya responde.
 
 # S4 · Catálogo multilingüe ES↔EN (Amazon Translate)
 
 **Duración:** ~60 min · **Servicio:** Amazon Translate · **Dominio AIF-C01:** **D1 — Fundamentals of AI and ML (20%)**
 
-> 🏖️ **Sandbox:** esta función se expone con su propia **Lambda Function URL** (no API Gateway) y usa el
-> **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). Su URL es el output
-> **`TranslateCatalogUrl`** del stack.
+> 🔌 **Cómo se expone:** esta función tiene su propia **Lambda Function URL** (no API Gateway) y un
+> **rol de mínimo privilegio que SAM le crea** a partir de sus `Policies:` — ver
+> [`docs/IAM.md`](../../docs/IAM.md). Su URL es el output **`TranslateCatalogUrl`** del stack.
 
 ---
 
@@ -47,7 +45,7 @@ Ideas que el examen evalúa:
 
 ## 🚶 Paso a paso
 
-1. Pegá `TranslateCatalogFunction` (con `Role: !Ref LabRoleArn` + su `FunctionUrlConfig`) y el output `TranslateCatalogUrl` desde el snippet.
+1. Pegá `TranslateCatalogFunction` (trae sus `Policies:` + su `FunctionUrlConfig`) y el output `TranslateCatalogUrl` desde el snippet.
 2. `sam build && sam deploy`.
 3. Traducí un producto al inglés (Function URL de esta función; el productId va en path o body):
 ```bash

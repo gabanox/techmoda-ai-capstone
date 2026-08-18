@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # ============================================================================
-# bootstrap.sh — Reconstruye el entorno de la PISTA A en el sandbox AWS re/Start.
+# bootstrap.sh — Reconstruye el entorno base del capstone de cero.
 #
-# Por qué existe: el sandbox de re/Start es EFÍMERO (la sesión de lab dura ~4 h y
-# la cuenta se recicla). Entre un día y otro, el stack y los datos desaparecen.
-# Este script deja el entorno EXACTAMENTE como debe estar para empezar cualquier
-# sesión, en ~2-3 min, sea cual sea la sesión del día. Es idempotente: corrércelo
-# 1 o N veces da el mismo resultado.
+# Por qué existe: si trabajás en un entorno efímero (un sandbox que se recicla) o
+# venís de un cleanup, el stack y los datos no existen. Este script deja el entorno
+# EXACTAMENTE como debe estar para empezar cualquier sesión, en ~2-3 min. Es
+# idempotente: corrércelo 1 o N veces da el mismo resultado (si ya está desplegado,
+# `sam deploy` no detecta cambios y termina en segundos).
 #
-# Uso (paso 0 de cada día / cada vez que el sandbox se recicló):
+# Uso (paso 0 de cada día / después de un cleanup):
 #   bash scripts/bootstrap.sh
 #
 # Variables opcionales: STACK_NAME (default techmoda-ai), AWS_REGION (default us-east-1)
@@ -19,8 +19,8 @@ REGION="${AWS_REGION:-us-east-1}"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$DIR"
 
-echo "▶ Bootstrap Pista A  ·  stack=$STACK  region=$REGION"
-echo "  (template.sandbox.yaml — sin CloudFront, levanta rápido)"
+echo "▶ Bootstrap  ·  stack=$STACK  region=$REGION"
+echo "  (template.sandbox.yaml — base + S1/S2/S3/S5, sin CloudFront: levanta rápido)"
 
 sam build -t template.sandbox.yaml >/dev/null
 sam deploy -t template.sandbox.yaml \
@@ -32,7 +32,7 @@ echo "▶ Re-sembrando productos de ejemplo…"
 STACK_NAME="$STACK" AWS_REGION="$REGION" bash ai/seed/seed-products.sh
 
 echo ""
-echo "✓ Entorno de la Pista A listo. Function URLs disponibles:"
+echo "✓ Entorno listo. Function URLs disponibles:"
 aws cloudformation describe-stacks --stack-name "$STACK" --region "$REGION" \
   --query "Stacks[0].Outputs[?contains(OutputKey,'Url')].[OutputKey,OutputValue]" \
   --output table

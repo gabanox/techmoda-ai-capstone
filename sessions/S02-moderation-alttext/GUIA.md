@@ -1,15 +1,15 @@
-> ⚡ **Paso 0 — Bootstrap del entorno.** El sandbox de re/Start es efímero: si se
-> recicló desde tu última sesión, el stack y los datos ya no existen. Antes de
-> empezar, corré `bash scripts/bootstrap.sh` (~2-3 min) para dejar el entorno listo.
-> Es idempotente y seguro de correr siempre. Detalle en `SESSION-PLAN.md`.
+> ⚡ **Paso 0 — Bootstrap del entorno.** Si el stack no está desplegado (cuenta nueva,
+> sandbox reciclado, o venís de un cleanup), corré `bash scripts/bootstrap.sh` (~2-3 min)
+> para dejar el entorno listo. Es idempotente y seguro de correr siempre: si ya está
+> desplegado termina en segundos. Detalle en `SESSION-PLAN.md`.
 
 # S2 · Moderación de imágenes + alt-text accesible (Rekognition DetectModerationLabels)
 
 **Duración:** ~60 min · **Servicio:** Amazon Rekognition · **Dominio AIF-C01:** **D4 — Responsible AI (14%)**
 
-> 🏖️ **Sandbox:** esta función se expone con su propia **Lambda Function URL** (no API Gateway) y usa el
-> **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). Su URL es el output
-> **`ModerateImageUrl`** del stack.
+> 🔌 **Cómo se expone:** esta función tiene su propia **Lambda Function URL** (no API Gateway) y un
+> **rol de mínimo privilegio que SAM le crea** a partir de sus `Policies:` — ver
+> [`docs/IAM.md`](../../docs/IAM.md). Su URL es el output **`ModerateImageUrl`** del stack.
 
 ---
 
@@ -59,7 +59,7 @@ imágenes, y aquí lo automatizamos.
 
 ## 🚶 Paso a paso
 
-1. Pegá `ModerateImageFunction` (con `Role: !Ref LabRoleArn` + su `FunctionUrlConfig`) y el output `ModerateImageUrl` desde `template-snippet.yaml`.
+1. Pegá `ModerateImageFunction` (trae sus `Policies:` + su `FunctionUrlConfig`) y el output `ModerateImageUrl` desde `template-snippet.yaml`.
 2. `sam build && sam deploy`.
 3. Ejecutá (usá la Function URL de esta función; el productId va en el path o en el body):
 ```bash

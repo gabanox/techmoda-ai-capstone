@@ -1,15 +1,15 @@
-> ⚡ **Paso 0 — Bootstrap del entorno.** El sandbox de re/Start es efímero: si se
-> recicló desde tu última sesión, el stack y los datos ya no existen. Antes de
-> empezar, corré `bash scripts/bootstrap.sh` (~2-3 min) para dejar el entorno listo.
-> Es idempotente y seguro de correr siempre. Detalle en `SESSION-PLAN.md`.
+> ⚡ **Paso 0 — Bootstrap del entorno.** Si el stack no está desplegado (cuenta nueva,
+> sandbox reciclado, o venís de un cleanup), corré `bash scripts/bootstrap.sh` (~2-3 min)
+> para dejar el entorno listo. Es idempotente y seguro de correr siempre: si ya está
+> desplegado termina en segundos. Detalle en `SESSION-PLAN.md`.
 
 # S3 · Sentimiento de reseñas (Amazon Comprehend)
 
 **Duración:** ~60 min · **Servicio:** Amazon Comprehend · **Dominio AIF-C01:** **D1 — Fundamentals of AI and ML (20%)**
 
-> 🏖️ **Sandbox:** esta función se expone con su propia **Lambda Function URL** (no API Gateway) y usa el
-> **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). Su URL es el output
-> **`AnalyzeSentimentUrl`** del stack.
+> 🔌 **Cómo se expone:** esta función tiene su propia **Lambda Function URL** (no API Gateway) y un
+> **rol de mínimo privilegio que SAM le crea** a partir de sus `Policies:` — ver
+> [`docs/IAM.md`](../../docs/IAM.md). Su URL es el output **`AnalyzeSentimentUrl`** del stack.
 
 ---
 
@@ -52,7 +52,7 @@ Flujo de esta sesión (y por qué importa para el examen):
 
 ## 🚶 Paso a paso
 
-1. Pegá `AnalyzeSentimentFunction` (con `Role: !Ref LabRoleArn` + su `FunctionUrlConfig`) y el output `AnalyzeSentimentUrl` desde `template-snippet.yaml`.
+1. Pegá `AnalyzeSentimentFunction` (trae sus `Policies:` + su `FunctionUrlConfig`) y el output `AnalyzeSentimentUrl` desde `template-snippet.yaml`.
 2. `sam build && sam deploy`.
 3. Obtené la Function URL de esta función y probá un texto suelto:
 ```bash

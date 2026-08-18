@@ -1,95 +1,128 @@
-# Commit: Migración de región `us-west-2` → `us-east-1`
+# Commit: hacer seguible el capstone tras el refactor de IAM
 
-**SHA**: `23fe2f5` · **Rama**: `feat/migrate-region-us-east-1` · **Estado**: Commiteado local (sin push)
+**Rama**: `feat/migrate-region-us-east-1` · **Estado**: commiteado + PR abierto
 
 ---
 
-## 1. Resumen (51 archivos, +153 −150)
+## 1. Qué pasó
 
-Migra la región de trabajo del capstone dentro del mismo sandbox re/Start (cuenta `879652687082`):
-149 ocurrencias de `us-west-2` en 50 archivos, más el rename de `samconfig.us-west-2.example`.
-`LabRoleArn` no cambia — IAM es global y el ARN no lleva región.
+El repo tenía un refactor grande **sin commitear**: LabRole → `Policies:` de mínimo privilegio por
+función, contrato de datos a camelCase, `docs/IAM.md`, `scripts/validate-all.sh`, devcontainer. Ese
+refactor cambió la **premisa** del proyecto (ahora requiere una cuenta con `iam:CreateRole`; ya no hay
+"Pista B" bloqueada) pero dejó toda la **prosa** describiendo el mundo anterior.
 
-**Commits de este pase**:
+Consecuencia concreta, verificada archivo por archivo: **un estudiante no podía seguir los pasos.**
 
-| SHA | Commit |
+| # | Qué encontraba el estudiante | Dónde |
+|---|---|---|
+| P0-1 | "Pegá el recurso, **incluye `Role: !Ref LabRoleArn`**" — línea que ya no existe en el snippet | 8 `GUIA.md` |
+| P0-2 | Prerequisito "cuenta sandbox re/Start, autenticado como `LabRole`" → ese deploy **falla** (`iam:CreateRole` denegado) y revierte el stack | `S00-base/GUIA.md` |
+| P0-3 | Dos model IDs de Bedrock, **los dos rotos**: `anthropic.claude-haiku-4-5` (alias de la Claude API, que `bedrock-runtime` rechaza) y `anthropic.claude-3-haiku-20240307-v1:0` (retirado el 2026-04-19) | `template.full.yaml`, snippets S06/S08, 2 `app.py` |
+| P1-4 | El doc citado como autoridad desde 40 archivos afirmaba lo contrario de `docs/IAM.md` | `docs/SANDBOX-COMPAT.md` |
+| P1-5 | 5 guías abrían con "**NO corre en el sandbox**" mientras `CLAUDE.md` decía "las 12 corren" | `sessions/README.md`, `SESSION-PLAN.md`, 5 `GUIA.md` |
+| P1-6 | `deploy-all.sh` **imprimía** "Function URLs + LabRole"; `samconfig.*.example` ofrecía un `LabRoleArn=` que ya no es parámetro de ningún template; `enable-bedrock-logging.sh` tenía un **default funcional** apuntando al LabRole | scripts y config |
+| P1-7 | `CLAUDE.md` se contradecía: §Arquitectura decía "SAM crea los roles", §Despliegue decía "`CAPABILITY_IAM` … aunque no se creen roles" | `CLAUDE.md` |
+| P2-8 | `validate-all.sh` daba **verde** con ~130 menciones de `LabRole` vivas en 39 archivos | `scripts/validate-all.sh` |
+
+**Por qué los gates no lo detectaron**: el linter validaba lo que el refactor **tocó**, no lo que el
+refactor **invalidó**. Todo lo roto estaba en prosa, y la prosa no tenía check.
+
+---
+
+## 2. Qué se arregló
+
+**Model IDs (P0-3)** — unificados en `anthropic.claude-haiku-4-5-20251001-v1:0` en los 5 lugares que
+tienen que coincidir. Verificado contra la doc oficial de modelos: estas Lambdas usan la integración
+**legacy** de Bedrock (`boto3` `bedrock-runtime`, `converse()`/`invoke_model()`), que exige el ID
+**versionado**; el alias de la Claude API no sirve ahí. Opus 5 / Sonnet 5 tampoco: en Bedrock se sirven
+por el endpoint Messages-API, no por `bedrock-runtime`.
+
+**`docs/SANDBOX-COMPAT.md` reescrito (P1-4)** — se **mantuvo el path** a propósito: con 40 referentes,
+borrarlo rompía más de lo que arreglaba. Ahora conserva lo que sigue siendo cierto (por qué no hay API
+Gateway, el router, el patrón de recurso, el gotcha de `Decimal`), delega los permisos a `docs/IAM.md`,
+y guarda la matriz IAM empírica del sandbox como **§3 Nota histórica** — es material didáctico honesto:
+explica de dónde vino el diseño.
+
+**Prerequisito explícito (P0-2)** — `S00-base/GUIA.md`, `README.md`, `QUICKSTART.md` y `CLAUDE.md`
+ahora piden una cuenta con `iam:CreateRole`, **con el síntoma exacto** si no lo tiene
+(`is not authorized to perform: iam:CreateRole` + rollback) y la aclaración de que es la cuenta, no el
+template.
+
+**Se retiró la estructura de dos pistas (P1-5)** — `sessions/README.md` reescrito (tabla de 12 sesiones
+con "Requiere" en vez de "Pista"), `SESSION-PLAN.md` re-planificado a 6 días todos hands-on, y los 5
+encabezados "NO corre en el sandbox" reemplazados por lo que de verdad hace falta: **Bedrock → Model
+access**, que es un setting **por región** y es el primer sospechoso de un `AccessDeniedException`.
+
+**`enable-bedrock-logging.sh`** — el default que apuntaba al LabRole se cambió por: detectar un rol de
+entrega propio, y si no existe, **imprimir los comandos para crearlo** (con el permiso acotado al
+prefijo del log group, no a `*`). Crear ese rol a mano es on-topic para S10, que es la sesión de
+gobernanza.
+
+**Las 8 guías de sesión** ahora describen lo que el snippet trae de verdad, y aprovechan el cambio para
+enseñar: S07-búsqueda y S08 llevan `DynamoDBReadPolicy` **y no `Crud`** porque sólo consultan — la
+diferencia entre "acotado" y "acotado de verdad".
+
+---
+
+## 3. El arreglo que evita la repetición (P2-8)
+
+`validate-all.sh` §6 pasó de 3 checks a 8. Los seis nuevos, **cada uno probado inyectando la violación
+y confirmando que falla**:
+
+| Check | Detecta |
 |---|---|
-| `534698c` | `docs(epcc): agregar CLAUDE.md y artefactos del flujo EPCC` |
-| `23fe2f5` | `refactor(region): migrar us-west-2 → us-east-1 en todo el repo` |
+| `Role:` en templates | El error que anula `Policies:` **en silencio** (deploy OK, permiso ausente) |
+| `Action: servicio:*` | Comodines de servicio. Ignora el `bedrock:*` de los **ARN** (comodín de región, legítimo) |
+| `LabRole` en docs | Prosa que promete el modelo IAM viejo. Con allowlist para las menciones históricas |
+| Model ID único | Los 5 lugares divergiendo entre sí |
+| Model ID versionado | El alias de la Claude API donde hace falta el de `bedrock-runtime` |
+| Scripts citados existen | Docs que mandan a correr un `scripts/*.sh` inexistente |
 
-**Distribución del cambio**: scripts ejecutables (6 defaults `AWS_REGION`), `samconfig` (rename + 8
-refs), frontend (placeholder, `.env.example`, fixture + assert), 3 templates SAM (solo comentarios),
-`docs/` (~45), 11 `GUIA.md` + `sessions/README.md`, `instructor/` (11), `ai/seed/`.
-
----
-
-## 2. Validación
-
-Corrida completa **sin credenciales AWS** (fases 2 y 3 del plan, que no tocan AWS):
-
-| Gate | Baseline (HEAD) | Post-migración | Veredicto |
-|---|---|---|---|
-| `vitest run` | 36 fail / 81 pass (117) | 36 fail / 81 pass (117) | ✅ cero regresiones |
-| `npm run typecheck` | 17 errores | 17 errores | ✅ cero regresiones |
-| `sam validate --lint` ×3 | — | OK / OK / OK | ✅ |
-| `bash -n` (15 scripts) | — | sintaxis válida | ✅ |
-| `us-west-2` residual | 167 | 0 fuera de `EPCC_PLAN.md` | ✅ |
-| `Oregón` residual | 2 | 0 fuera de `EPCC_PLAN.md` | ✅ |
-| Secretos en el diff | — | 0 | ✅ |
-
-**El baseline se midió, no se asumió**: `git stash push` de los 3 archivos de frontend que la
-migración toca → correr tests → `git stash pop`. Resultado idéntico, lo que prueba que los 36 fallos
-y los 17 errores de tipo son **preexistentes**, no introducidos aquí. Su causa raíz es el contrato
-roto snake_case ↔ camelCase documentado en `EPCC_EXPLORE.md` §5, más warnings de `act()` y `global`
-sin tipos de Node.
-
-⚠️ **Se commitea con tests en rojo, a conciencia.** El criterio aplicado no es "los tests pasan" sino
-"la migración no empeora nada", verificado contra baseline. Arreglar los 36 fallos es trabajo
-separado y de mayor alcance (implica decidir de qué lado se corrige el contrato).
+El check de docs es el que cierra el hueco de fondo: **la coherencia entre código y prosa ahora es un
+gate**, no un acto de disciplina.
 
 ---
 
-## 3. Cambios de criterio (no sustitución mecánica)
+## 4. Validación
 
-Cuatro casos donde un `sed` ciego habría producido texto falso o absurdo:
+| Gate | Resultado |
+|---|---|
+| `bash scripts/validate-all.sh --static` | ✅ **30 OK / 0 fallos** (era 25 OK con 130 menciones stale sin detectar) |
+| `sam validate --lint` ×3 templates | ✅ |
+| Splice de los 8 snippets en `template.yaml` + lint | ✅ (reproduce el paso del estudiante) |
+| `sam build -t template.sandbox.yaml` / `-t template.full.yaml` | ✅ / ✅ |
+| `npm run lint` / `typecheck` / `vitest run` | ✅ · ✅ · ✅ **117 tests** |
+| Los 6 checks nuevos, con la violación inyectada | ✅ los 6 fallan como deben |
 
-- **`Oregón` → `Norte de Virginia`** (`README.md:123`, `samconfig.*.example:6`). Oregón es us-west-2;
-  un sed dejaba `us-east-1 (Oregón)`. En el `samconfig` además se quitó "fija": la migración misma
-  demuestra que la región es una elección del proyecto, no un candado del sandbox.
-- **`docs/prompts/03_DEPLOYMENT.md`** — nota de mapeo *"donde veas X, interpretá Y"* que tenía
-  `us-east-1` de un lado y `us-west-2` del otro. Post-migración se volvía "donde veas us-east-1,
-  interpretá us-east-1". Se **quitó el término de ambas listas** en vez de sustituirlo.
-- **`sessions/README.md`** — el contraste sandbox vs. cuenta Bootcamp colapsaba. Reformulado para que
-  siga siendo cierto: Pista B no corre en el sandbox porque el `LabRole` deniega
-  `bedrock:InvokeModel` y `translate:TranslateText` **por acción, no por región**.
-- **Notas de la alarma de billing** (`template.sandbox.yaml`, `template.full.yaml`, `S10/GUIA.md`) —
-  decían "va en us-east-1, creala aparte", contradictorio ahora que el stack vive ahí. Reformuladas.
-  **No se agregó ningún recurso de alarma**: quedó fuera de alcance por decisión explícita.
+⚠️ **Límite honesto de este pase: no se probó nada contra AWS.** No hay credenciales en este entorno
+(`Partial credentials found in env, missing: AWS_SECRET_ACCESS_KEY`). Las secciones 7–10 de
+`validate-all.sh` — CRUD E2E y las 9 features de IA — **no corrieron**.
 
-**Preservado a propósito**: las URLs públicas `public-data-669070217575.s3.us-east-1.amazonaws.com`
-(bucket real ajeno al proyecto) y el fallback `us-east-1` de `fix-failed-delete.sh:123`.
+Eso deja **una afirmación central del refactor sin verificar**: que los roles que SAM genera alcancen
+en runtime. Las verificaciones de servicios de IA que registra `sessions/README.md` (2026-06-18) se
+hicieron cuando las Lambdas usaban un rol compartido y amplio; con roles acotados, un permiso de menos
+aparece **recién en la primera invocación**. Los candidatos más probables: `s3:GetObject` de S01/S02
+cuando `imageUrl` es `s3://`, el `S3CrudPolicy` del bucket de audio en S05, y el ARN
+`inference-profile/*` de Bedrock si se usa un ID con prefijo `us.`.
+
+Está anotado como tal en `sessions/README.md` y en `EPCC_EXPLORE.md`, y el comando que lo cierra es
+uno: `bash scripts/validate-all.sh` (modo completo) contra un stack desplegado.
 
 ---
 
-## 4. Cierre
+## 5. Cierre
 
-**PR**: no creado. Commits locales, sin push.
+**Commits** (dos, por tema):
 
-**Reversión**: el rename es un commit atómico → `git revert 23fe2f5` lo deshace entero. Caveat
-honesto: `CLAUDE.md` y `EPCC_EXPLORE.md` viajaron en `534698c` ya con `us-east-1` escrito, así que un
-revert de `23fe2f5` los dejaría inconsistentes con el resto. Son dos menciones; ajuste trivial.
+| Commit | Alcance |
+|---|---|
+| `refactor(iam)!` | Roles de mínimo privilegio por función, contrato camelCase, `stock` persistido, model IDs de Bedrock, devcontainer, `docs/IAM.md`, `scripts/validate-all.sh` |
+| `docs` | Alineación de las 39 fuentes de prosa + los 6 checks nuevos del linter |
 
-**Siguiente acción — deuda diferida (`EPCC_PLAN.md` fases 0, 1 y 4, ~2.5 h), requiere credenciales**:
+**Breaking change**: el proyecto **ya no despliega en el sandbox AWS re/Start** (el `LabRole` deniega
+`iam:CreateRole`). Es el precio deliberado del mínimo privilegio, y está documentado en
+`docs/SANDBOX-COMPAT.md` §2–§3 en vez de quedar como sorpresa en el primer deploy. La variante con
+LabRole vive en el historial de git.
 
-1. 🚦 **Gate**: validar que el sandbox permita `us-east-1` (`aws dynamodb list-tables`,
-   `lambda list-functions`, `s3 ls`, `cloudformation list-stacks`, todos `--region us-east-1`). Si un
-   SCP fija la región → `git revert 23fe2f5`.
-2. Borrar el stack en `us-west-2` hasta `DELETE_COMPLETE` — los buckets `${StackName}-frontend` y
-   `-audio` son de **nombre global** y colisionan. Luego `rm -rf .aws-sam`.
-3. `bootstrap.sh` → verificar Pista A end-to-end → `deploy-frontend.sh`.
-4. Rehabilitar **Model access de Bedrock en `us-east-1`** (es un setting por región) si se van a
-   demostrar S06–S09.
-
-**Deuda preexistente registrada, ortogonal a este cambio**: el contrato snake_case ↔ camelCase
-(`EPCC_EXPLORE.md` §5) y el model ID de Bedrock vencido (`claude-3-haiku-20240307`, retiro
-2026-04-19).
+**Siguiente acción**: correr `bash scripts/validate-all.sh` (modo completo) con credenciales, contra un
+stack desplegado en una cuenta con `iam:CreateRole` y Bedrock Model access habilitado.

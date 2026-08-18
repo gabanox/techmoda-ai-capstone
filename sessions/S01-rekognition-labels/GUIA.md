@@ -1,15 +1,15 @@
-> ⚡ **Paso 0 — Bootstrap del entorno.** El sandbox de re/Start es efímero: si se
-> recicló desde tu última sesión, el stack y los datos ya no existen. Antes de
-> empezar, corré `bash scripts/bootstrap.sh` (~2-3 min) para dejar el entorno listo.
-> Es idempotente y seguro de correr siempre. Detalle en `SESSION-PLAN.md`.
+> ⚡ **Paso 0 — Bootstrap del entorno.** Si el stack no está desplegado (cuenta nueva,
+> sandbox reciclado, o venís de un cleanup), corré `bash scripts/bootstrap.sh` (~2-3 min)
+> para dejar el entorno listo. Es idempotente y seguro de correr siempre: si ya está
+> desplegado termina en segundos. Detalle en `SESSION-PLAN.md`.
 
 # S1 · Auto-etiquetado de imágenes de producto (Rekognition DetectLabels)
 
 **Duración:** ~60 min · **Servicio:** Amazon Rekognition · **Dominio AIF-C01:** **D1 — Fundamentals of AI and ML (20%)**
 
-> 🏖️ **Sandbox:** esta función se expone con su propia **Lambda Function URL** (no API Gateway) y usa el
-> **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). Su URL es el output
-> **`EnrichLabelsUrl`** del stack.
+> 🔌 **Cómo se expone:** esta función tiene su propia **Lambda Function URL** (no API Gateway) y un
+> **rol de mínimo privilegio que SAM le crea** a partir de sus `Policies:` — ver
+> [`docs/IAM.md`](../../docs/IAM.md). Su URL es el output **`EnrichLabelsUrl`** del stack.
 
 ---
 
@@ -63,7 +63,7 @@ moda. Rekognition tiene además `DetectModerationLabels` (lo vemos en S2), `Dete
 
 ### 1. Agregar la Lambda (con su Function URL) al `template.yaml`
 Abrí `sessions/S01-rekognition-labels/template-snippet.yaml` y:
-1. Copiá el recurso `EnrichLabelsFunction` dentro de `Resources:` en `template.yaml` (incluye `Role: !Ref LabRoleArn` y su `FunctionUrlConfig`).
+1. Copiá el recurso `EnrichLabelsFunction` dentro de `Resources:` en `template.yaml` (trae sus `Policies:` acotadas y su `FunctionUrlConfig`).
 2. Copiá el output `EnrichLabelsUrl` dentro de `Outputs:` para obtener su Function URL tras el deploy.
 
 > El código de la Lambda ya está en `functions/enrich-labels/app.py`. No tenés que escribirlo.

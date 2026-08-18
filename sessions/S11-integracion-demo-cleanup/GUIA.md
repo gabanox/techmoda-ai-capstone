@@ -3,8 +3,8 @@
 **Duración:** ~60 min · **Servicio:** — (cierre) · **Dominio AIF-C01:** repaso de los 5 dominios
 **Estado:** 🟡 Guía detallada + scripts (`demo.sh` listo; `scripts/delete-all.sh` ya existe en el repo).
 
-> 🏖️ **Sandbox:** todas las features se exponen con **Lambda Function URLs** (no API Gateway) y usan el
-> **LabRole** — ver [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). El CRUD usa la Function URL
+> 🔌 **Cómo se expone todo:** cada feature tiene su **Lambda Function URL** (no API Gateway) y su propio
+> **rol de mínimo privilegio creado por SAM** — ver [`docs/IAM.md`](../../docs/IAM.md). El CRUD usa la Function URL
 > del **router** (output `ApiUrl`); cada función de IA tiene su propia Function URL (`EnrichLabelsUrl`,
 > `ModerateImageUrl`, `AnalyzeSentimentUrl`, `TranslateCatalogUrl`, `SynthesizeVoiceUrl`,
 > `GenerateDescriptionUrl`, `IndexEmbeddingsUrl`, `SemanticSearchUrl`, `ShoppingAssistantUrl`).

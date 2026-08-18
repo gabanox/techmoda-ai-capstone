@@ -14,8 +14,13 @@ editar guías o agregar sesiones; el código y los identificadores están en ing
 ## Comandos
 
 ```bash
-# Validar templates antes de comitear
+# Validación completa paso por paso (lo primero que hay que correr)
+bash scripts/validate-all.sh --static    # todo lo que no necesita AWS
+bash scripts/validate-all.sh             # + pruebas contra el stack desplegado
+
+# Validar templates suelto
 sam validate --lint -t template.yaml
+sam validate --lint -t template.sandbox.yaml
 sam validate --lint -t template.full.yaml
 
 # Observabilidad / estado
@@ -42,15 +47,18 @@ en S3/CloudFront. Las 8 features de IA (S1–S8) son Lambdas Python 3.12 + boto3
 propia Function URL, que llaman a un servicio de IA administrado y escriben el resultado de vuelta en
 DynamoDB.
 
-Dos decisiones dominan todo el diseño; **leé [`docs/SANDBOX-COMPAT.md`](docs/SANDBOX-COMPAT.md) antes
-de agregar cualquier función:**
+Dos decisiones dominan el diseño; **leé [`docs/IAM.md`](docs/IAM.md) antes de agregar cualquier
+función:**
 
-1. **Sin API Gateway ni `iam:CreateRole`.** El `LabRole` del sandbox Vocareum no los permite y un
-   `CREATE_FAILED` revierte el stack entero. Por eso: **Lambda Function URLs** (`AuthType: NONE`,
-   CORS `*`) y `Role: !Ref LabRoleArn` en **cada** función — nunca `Policies:` (mutuamente excluyentes
-   en SAM), y nunca `Role` en `Globals.Function` (SAM no lo soporta ahí).
-2. **El sandbox es efímero** (se recicla cada ~4 h). Ninguna sesión asume el estado de la anterior;
-   `scripts/bootstrap.sh` reconstruye todo en 2–3 min. Ver `SESSION-PLAN.md`.
+1. **IAM de mínimo privilegio por función.** Cada Lambda declara sus `Policies:` y **SAM le crea su
+   rol**. No hay rol preexistente ni account ID hardcodeado → el proyecto se despliega en cualquier
+   cuenta con `iam:CreateRole`. Nunca pongas `Role:` junto a `Policies:` — son mutuamente excluyentes
+   en SAM y tus `Policies` se ignoran en silencio.
+2. **Sin API Gateway.** El frente HTTP son **Lambda Function URLs** (`AuthType: NONE`, CORS `*`); el
+   CRUD usa un router con una sola URL. Es más simple de desplegar y de explicar.
+
+`scripts/bootstrap.sh` reconstruye el entorno completo (deploy + seed) en 2–3 min y es idempotente:
+útil para arrancar el día o después de un cleanup. Ver `SESSION-PLAN.md`.
 
 **El router (`functions/router/index.js`)** existe porque no hay API Gateway: se empaqueta con
 `CodeUri: functions/` + `Handler: router/index.handler`, así puede `require('../list-items')` y reusar
@@ -63,13 +71,14 @@ base URL el frontend (`frontend/src/lib/api.ts`) no cambia.
 | Template | Contenido | Cuándo |
 |---|---|---|
 | `template.yaml` | solo S0 (+ CloudFront) | ruta progresiva: pegar el `template-snippet.yaml` de cada sesión |
-| `template.sandbox.yaml` | Pista A sin CloudFront | lo que usa `bootstrap.sh` (levanta rápido) |
+| `template.sandbox.yaml` | base + S1/S2/S3/S5, sin CloudFront | lo que usa `bootstrap.sh` (levanta rápido) |
 | `template.full.yaml` | base + S1–S8 + gobernanza | demo o revisar el resultado final |
 
 ## Despliegue
 
-Todo corre **dentro del VS Code IDE del sandbox**, región **us-east-1**, stack **`techmoda-ai`**.
-Verificá primero que estás autenticado: `aws sts get-caller-identity` debe responder (como `LabRole`).
+Región **us-east-1**, stack **`techmoda-ai`**. Requiere una cuenta donde puedas **crear roles IAM**
+(`iam:CreateRole`): el stack crea uno de mínimo privilegio por Lambda. Verificá primero que estás
+autenticado (`aws sts get-caller-identity`) y corré `bash scripts/validate-all.sh --static`.
 
 ### Primer despliegue
 
@@ -93,11 +102,13 @@ sam deploy --stack-name techmoda-ai --region us-east-1 \
   --resolve-s3 --no-confirm-changeset
 ```
 
-`CAPABILITY_AUTO_EXPAND` es obligatoria (Transform SAM). `CAPABILITY_IAM` se mantiene por
-compatibilidad del changeset aunque no se creen roles (las funciones reusan el `LabRole`).
+Ninguna de las dos capabilities es opcional: `CAPABILITY_AUTO_EXPAND` por el Transform de SAM, y
+`CAPABILITY_IAM` porque **el stack crea roles** (uno de mínimo privilegio por función).
 
-Para desplegar en otra cuenta, sobreescribí el parámetro del rol:
-`--parameter-overrides LabRoleArn=arn:aws:iam::<acct>:role/LabRole`.
+Los templates **no declaran `Parameters:`** — no hay nada que sobreescribir con
+`--parameter-overrides`, y no hay account ID hardcodeado: el mismo template sirve en cualquier cuenta
+donde tengas `iam:CreateRole`. Si el deploy falla con `is not authorized to perform: iam:CreateRole`,
+el problema es la cuenta, no el template (ver `docs/SANDBOX-COMPAT.md` §2).
 
 Elegí el template según el caso (ver la tabla en Arquitectura). Con `template.full.yaml` o
 `template.sandbox.yaml` hay que pasar `-t` **tanto a `build` como a `deploy`**:
@@ -147,21 +158,19 @@ bash scripts/fix-failed-delete.sh   # si quedó en DELETE_FAILED por buckets S3 
 Regla FinOps del capstone: ningún recurso de IA queda encendido entre sesiones más de lo necesario.
 Cada `GUIA.md` trae su cleanup específico; detalles en `docs/COST_AND_CLEANUP.md`.
 
-## Dos pistas (importante)
+## Las 12 sesiones corren todas
 
-Verificado empíricamente en el sandbox (`docs/SANDBOX-COMPAT.md` tiene la matriz):
-
-- **Pista A — corre en el sandbox:** S00, S01/S02 (Rekognition), S03 (Comprehend), S05 (Polly), S10.
-- **Pista B — NO corre en el sandbox:** S04 (Translate), S06–S09 (Bedrock). El `LabRole` deniega
-  `translate:TranslateText` y `bedrock:InvokeModel` con `AccessDeniedException`, y el rol no es
-  modificable. Se demuestran en la cuenta Bootcamp. **No "arregles" esto agregando políticas IAM** —
-  es una limitación de la cuenta, documentada a propósito.
+Con roles propios de mínimo privilegio y una cuenta con permisos plenos, **las 12 sesiones son
+ejecutables** — ya no hay una "Pista B" que solo se pueda demostrar. Lo único que sigue siendo un
+requisito externo es habilitar **Bedrock → Model access** en la consola, en la región del deploy
+(es un setting por región), para S06–S09. Si S06–S09 dan `AccessDeniedException`, ese es el primer
+sospechoso, no las políticas IAM.
 
 ## Al agregar una sesión o función
 
-Checklist en `docs/SANDBOX-COMPAT.md` ("antes de mergear"). En resumen:
+Checklist en `docs/IAM.md`. En resumen:
 
-- `Role: !Ref LabRoleArn`, sin `Policies:`.
+- `Policies:` acotadas (por tabla, por bucket, por ARN de modelo, o por acción si el servicio no admite ARN). **Sin `Role:`**. Ver `docs/IAM.md`.
 - HTTP → `FunctionUrlConfig`; nunca `Events: Type: Api` ni `AWS::Serverless::Api`.
 - El handler saca sus parámetros de `rawPath` / `queryStringParameters` / body (no de
   `pathParameters`, que no existe en Function URLs).
@@ -177,11 +186,14 @@ Checklist en `docs/SANDBOX-COMPAT.md` ("antes de mergear"). En resumen:
 - Las Lambdas CRUD usan `nodejs22.x` (`nodejs18.x` está deprecada); las de IA, `python3.12`.
 - Los IDs de modelo Bedrock viven en variables de entorno (`BEDROCK_MODEL_ID`, `EMBED_MODEL_ID`) y S06
   usa la **Converse API**, que es agnóstica al proveedor → cambiar de modelo no requiere tocar código.
-  El default pineado (`anthropic.claude-3-haiku-20240307-v1:0`) es un ID de la integración legacy de
-  Bedrock y corresponde a Claude 3 Haiku, cuyo retiro estaba anunciado para 2026-04-19: si una demo
-  falla con 404 o "model not found", actualizá el ID antes de debuggear otra cosa. Con perfiles de
-  inferencia cross-region el ID lleva prefijo `us.` (ver el comentario en
-  `sessions/S06-bedrock-descripciones/functions/generate-description/app.py:26`).
-- `docs/ARCHITECTURE.md:753-759` ("Privilegio Mínimo IAM") quedó del capstone base y contradice la
-  realidad del LabRole descrita en las líneas 211-229 del mismo archivo.
-- `README.md` menciona `ai/shared/` (helpers reutilizables); ese directorio no existe — solo `ai/seed/`.
+  Estas Lambdas usan la integración **legacy** de Bedrock (`boto3` `bedrock-runtime`), que exige IDs
+  **versionados**: el default pineado es `anthropic.claude-haiku-4-5-20251001-v1:0`. El alias de la
+  Claude API (`claude-haiku-4-5` a secas) **no sirve acá** — `bedrock-runtime` lo rechaza. Con perfiles
+  de inferencia cross-region el ID lleva prefijo `us.` y hay que permitir el ARN `inference-profile/*`
+  además de `foundation-model/*` (ver `docs/IAM.md`). Si una demo falla con 404 / "model not found",
+  revisá el ID antes de debuggear otra cosa.
+- Los model IDs viven en **cinco** lugares que tienen que coincidir: `template.full.yaml`, el
+  `template-snippet.yaml` de S06 y de S08, y el default de cada `app.py`. `validate-all.sh` chequea
+  que no divergan.
+- `_response()` está duplicado en los 9 handlers de IA y el helper de extracción de id en 5. Es
+  **deliberado**: cada sesión tiene que poder leerse aislada. No lo factorices a un `ai/shared/`.

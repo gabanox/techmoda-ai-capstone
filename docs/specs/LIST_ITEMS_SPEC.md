@@ -1,7 +1,7 @@
 # Especificación de Función Lambda: ListItems
 
 > 🏖️ **Sandbox AWS re/Start:** se invoca vía la **Lambda Function URL del router** (no API Gateway).
-> El evento es **Function URL payload v2.0** y la función usa el **LabRole** (sin bloque `Policies:`).
+> El evento es **Function URL payload v2.0** y la función lleva sus **`Policies:` acotadas** (SAM le crea el rol).
 > Ver [../SANDBOX-COMPAT.md](../SANDBOX-COMPAT.md).
 
 ## Propósito
@@ -354,8 +354,9 @@ Environment:
 
 **Causa**: El rol de ejecución de Lambda carece de permisos DynamoDB
 
-**Solución (sandbox AWS re/Start):** confirma que la función use `Role: !Ref LabRoleArn` y **no** un
-bloque `Policies:` (mutuamente excluyentes). El LabRole ya permite `dynamodb:Scan`.
+**Solución:** confirma que la función declare `DynamoDBCrudPolicy`/`DynamoDBReadPolicy` sobre la tabla
+y que **no** tenga además un `Role:` — son mutuamente excluyentes en SAM y con `Role` las `Policies`
+se ignoran **en silencio**. Ver `docs/IAM.md`.
 
 > 📚 **Material didáctico (cuenta propia):** en una cuenta sin las restricciones del sandbox, SAM crea
 > un rol por función y se agrega la política de mínimo privilegio:

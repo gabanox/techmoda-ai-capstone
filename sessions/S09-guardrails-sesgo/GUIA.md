@@ -1,19 +1,19 @@
-> ⚠️ **Pista B — Demo guiada del instructor.** Esta sesión usa Bedrock/Translate y
-> **NO corre en el sandbox AWS re/Start**: el `LabRole` deniega `bedrock:InvokeModel` /
-> `translate:TranslateText` y no es modificable. Se ejecuta en una cuenta AWS de Bootcamp
-> con Bedrock habilitado y un rol con esos permisos. Ver `sessions/README.md` (dos pistas)
-> y `docs/SANDBOX-COMPAT.md` (matriz de servicios).
+> 🔑 **Requisito externo — Bedrock Model access.** El rol de esta Lambda ya trae
+> `bedrock:InvokeModel` acotado por ARN de modelo, pero el permiso IAM **no alcanza**: hay que
+> habilitar el modelo en la consola (**Bedrock → Model access**), en **la región del deploy**
+> — es un setting por región. Si la llamada devuelve `AccessDeniedException`, ese es el primer
+> sospechoso, no las políticas IAM. Detalle en [`docs/IAM.md`](../../docs/IAM.md).
 
 # S9 · Guardrails, sesgo y privacidad en las features de IA (Bedrock Guardrails)
 
 **Duración:** ~60 min · **Servicio:** Amazon Bedrock Guardrails · **Dominio AIF-C01:** **D4 — Responsible AI (14%)**
 **Estado:** 🟡 Guía detallada + scaffold (config + script listos; el cableado a converse lo completás en la sesión).
 
-> 🏖️ **Sandbox:** el guardrail protege la función del asistente de S8, que se expone con su propia
-> **Lambda Function URL** (no API Gateway) y usa el **LabRole** — ver
-> [`docs/SANDBOX-COMPAT.md`](../../docs/SANDBOX-COMPAT.md). En el sandbox el LabRole ya permite
-> `bedrock:ApplyGuardrail`; el bloque IAM de abajo es **material didáctico** del permiso mínimo para una
-> cuenta propia. Probás contra el output **`ShoppingAssistantUrl`** del stack.
+> 🔌 **Cómo se expone:** el guardrail protege la función del asistente de S8, que tiene su propia
+> **Lambda Function URL** (no API Gateway) y su **rol de mínimo privilegio creado por SAM** — ver
+> [`docs/IAM.md`](../../docs/IAM.md). El bloque IAM de abajo es el permiso mínimo que hay que agregarle
+> a ese rol (`bedrock:ApplyGuardrail`) para esta sesión. Probás contra el output
+> **`ShoppingAssistantUrl`** del stack.
 
 ---
 

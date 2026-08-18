@@ -1,12 +1,10 @@
 # Arquitectura Serverless de TechModa
 
-> 🏖️ **Compatibilidad sandbox AWS re/Start (Vocareum).** Este capstone se despliega con el
-> **LabRole** del sandbox, que **no permite API Gateway** ni `iam:CreateRole`. Por eso el CRUD
-> se expone con **una Lambda Function URL** servida por un **router** (`functions/router/index.js`),
-> y cada función reusa el **LabRole** preexistente en lugar de un rol generado por SAM. Los conceptos
-> de API Gateway y privilegio mínimo IAM que aparecen abajo se conservan como **material didáctico**;
-> la realidad desplegada usa Function URLs. Detalles completos en
-> [`SANDBOX-COMPAT.md`](SANDBOX-COMPAT.md).
+> 🔌 **Lo que realmente se despliega.** El CRUD se expone con **una Lambda Function URL** servida por
+> un **router** (`functions/router/index.js`), **no** con API Gateway. Donde este documento menciona
+> API Gateway, es **material didáctico** del patrón clásico. El modelo IAM sí es el que describe abajo:
+> **un rol de mínimo privilegio por función**, generado por SAM a partir de sus `Policies:`. Detalles en
+> [`SANDBOX-COMPAT.md`](SANDBOX-COMPAT.md) (por qué no hay API Gateway) y [`IAM.md`](IAM.md) (permisos).
 
 ## Diagrama de Arquitectura
 
@@ -126,11 +124,11 @@ El output del stack se llama `ApiUrl`. Cada función de IA (S1–S8) expone **su
 - **Tracing X-Ray**: Activo
 - **Variables de Entorno**: `PRODUCTS_TABLE` (inyectado por SAM)
 
-**Permisos IAM (sandbox)**:
-Cada función usa `Role: !Ref LabRoleArn` — el **LabRole** preexistente del sandbox
-(`arn:aws:iam::879652687082:role/LabRole`) — y **no** lleva bloque `Policies:` (en SAM `Role` y
-`Policies` son mutuamente excluyentes, y el LabRole no puede crear roles nuevos). El LabRole ya trae
-permisos amplios sobre DynamoDB y los servicios de IA.
+**Permisos IAM**:
+Cada función declara sus `Policies:` acotadas y **SAM le crea un rol de ejecución de mínimo
+privilegio**. No hay rol preexistente ni account ID hardcodeado. **Nunca** agregues `Role:` al lado de
+`Policies:`: en SAM son mutuamente excluyentes y las `Policies` se ignoran **en silencio**. La tabla
+completa de qué política lleva cada función está en [`IAM.md`](IAM.md).
 
 > 📚 **Material didáctico (cuenta propia):** en una cuenta sin las restricciones del sandbox sí
 > escribirías políticas de **privilegio mínimo** por función — ese es el patrón correcto a aprender:
@@ -212,21 +210,20 @@ Cada función Lambda crea automáticamente un grupo de logs:
 
 **Propósito**: Control de acceso siguiendo el principio de privilegio mínimo (concepto).
 
-**Roles de Ejecución Lambda (sandbox)**:
-En el sandbox, **cada función referencia el LabRole preexistente** (`Role: !Ref LabRoleArn`); SAM
-**no** crea un rol por función porque el LabRole no permite `iam:CreateRole`. El LabRole ya incluye
-escritura a CloudWatch Logs, X-Ray, DynamoDB y los servicios de IA administrados.
+**Roles de Ejecución Lambda**:
+**SAM crea un rol por función** a partir de su bloque `Policies:`, además de los permisos base de
+CloudWatch Logs y X-Ray. Ejemplo (ListItems):
 
-> 📚 **Material didáctico (cuenta propia):** lo correcto en una cuenta propia es que SAM cree un rol
-> de ejecución por función con privilegio mínimo. Ejemplo (ListItems):
-> ```yaml
-> Policies:
->   - DynamoDBReadPolicy:
->       TableName: !Ref ProductsTable
-> ```
-> Esto otorga solo `dynamodb:Scan` y `dynamodb:GetItem` en la tabla específica. En el sandbox este
-> bloque `Policies:` se elimina (mutuamente excluyente con `Role:`). Ver
-> [`SANDBOX-COMPAT.md`](SANDBOX-COMPAT.md) §2.
+```yaml
+Policies:
+  - DynamoDBReadPolicy:
+      TableName: !Ref ProductsTable
+```
+
+Eso otorga sólo lectura (`dynamodb:Scan`, `GetItem`, `Query`) **sobre esa tabla** y nada más. El
+criterio por servicio (cuándo acotar por ARN y cuándo por acción, porque la API no tiene recurso al
+que apuntar) está en [`IAM.md`](IAM.md). Requiere `iam:CreateRole` en la cuenta del deploy — ver
+[`SANDBOX-COMPAT.md`](SANDBOX-COMPAT.md) §2.
 
 ## Diagramas de Flujo de Datos
 

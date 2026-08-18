@@ -157,7 +157,7 @@ echo $PRODUCT_ID
 | Error | Causa Probable | Solución |
 |-------|--------------|----------|
 | 400 Bad Request | Falta `name` o `price` | Agregar campos requeridos al cuerpo JSON |
-| 403 Forbidden | Problema de permisos | Verificar que la función use `Role: !Ref LabRoleArn` (sandbox) |
+| 403 Forbidden | Problema de permisos | Verificar las `Policies:` de la función (y que no tenga `Role:`, que las anula en silencio) — ver `docs/IAM.md` |
 | 500 Internal Server Error | Error de ejecución Lambda | Revisar CloudWatch Logs |
 | Connection refused | URL de API incorrecta | Verificar la Lambda Function URL (.lambda-url.<region>.on.aws/) |
 
@@ -607,8 +607,10 @@ REPORT RequestId: abc-123-def  Duration: 150.00 ms  Billed Duration: 150 ms  Mem
 ### Problema: 403 Forbidden
 
 **Solución**: Problema de permisos
-- Verificar que la función use `Role: !Ref LabRoleArn` y **no** un bloque `Policies:` (sandbox)
-- Confirmar que el LabRole tenga los permisos necesarios sobre DynamoDB
+- Verificar que la función declare `Policies:` y **no** un `Role:` (son excluyentes en SAM: con `Role`,
+  tus `Policies` se ignoran **en silencio**)
+- Confirmar que la política apunte a la tabla correcta (`DynamoDBCrudPolicy` vs `DynamoDBReadPolicy`)
+- Ver el rol que SAM generó: `aws lambda get-function-configuration --function-name <fn> --query Role`
 - Re-desplegar con `sam build && sam deploy`
 
 ### Problema: 500 Internal Server Error
