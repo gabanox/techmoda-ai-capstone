@@ -1,8 +1,8 @@
 # ============================================================================
 # S5 · Amazon Polly + bucket de audio  —  pegar en template.yaml
 # ============================================================================
-# Agrega 1 bucket S3 (audio) y 1 Lambda con Function URL propia (patrón sandbox:
-# LabRole, sin API Gateway, sin Policies). Ver docs/SANDBOX-COMPAT.md.
+# Agrega 1 bucket S3 (audio) y 1 Lambda con Function URL propia. La función declara
+# sus `Policies:` y SAM le crea un rol de mínimo privilegio. Ver docs/IAM.md.
 
   AudioBucket:
     Type: AWS::S3::Bucket
@@ -28,7 +28,16 @@
       CodeUri: sessions/S05-polly-voice/functions/synthesize-voice
       Handler: app.lambda_handler
       Runtime: python3.12
-      Role: !Ref LabRoleArn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+        - Statement:
+            - Effect: Allow
+              Action: polly:SynthesizeSpeech
+              Resource: "*"
+        # Escribe el mp3 y firma la URL prefirmada con este rol -> Crud.
+        - S3CrudPolicy:
+            BucketName: !Ref AudioBucket
       Environment:
         Variables:
           AUDIO_BUCKET: !Ref AudioBucket
@@ -48,5 +57,5 @@
 #   curl -X POST "${URL%/}/products/<PRODUCT_ID>/voice" \
 #        -H 'Content-Type: application/json' -d '{"lang":"es"}'
 #
-# El LabRole ya permite polly:SynthesizeSpeech y s3:* sobre el bucket de audio.
+# Permisos concedidos: polly:SynthesizeSpeech y CRUD S3 solo sobre el bucket de audio.
 # ----------------------------------------------------------------------------

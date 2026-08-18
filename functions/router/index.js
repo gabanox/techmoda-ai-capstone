@@ -1,10 +1,10 @@
 /**
- * CRUD ROUTER FUNCTION  (compatible con el sandbox AWS re/Start)
+ * CRUD ROUTER FUNCTION
  *
  * Por qué existe:
- *   El LabRole del sandbox NO permite `apigateway:*` ni `iam:CreateRole`, así que
- *   NO podemos usar API Gateway (AWS::Serverless::Api). En su lugar exponemos UNA
- *   sola Lambda Function URL (AuthType NONE) y resolvemos el ruteo aquí dentro.
+ *   El capstone NO usa API Gateway (AWS::Serverless::Api): expone UNA sola Lambda
+ *   Function URL (AuthType NONE) y resuelve el ruteo aquí dentro. Es más simple de
+ *   desplegar y de explicar. Detalle en docs/SANDBOX-COMPAT.md.
  *
  * Reúsa la lógica de las 5 Lambdas CRUD existentes (functions/{list,create,get,
  * update,delete}-items). El paquete se despliega con CodeUri: functions/ y

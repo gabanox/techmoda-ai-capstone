@@ -2,8 +2,8 @@
 # S7 · Bedrock embeddings (busqueda semantica / RAG)  —  pegar en template.yaml
 # ============================================================================
 # Dos Lambdas: indexador (escribe embeddings) y buscador (lee y rankea).
-# Patrón sandbox: cada una con su Function URL + LabRole (sin API Gateway,
-# sin Policies). Ver docs/SANDBOX-COMPAT.md.
+# Cada una con su Function URL y sus `Policies:` de mínimo privilegio (SAM crea
+# el rol). semantic-search solo lee DynamoDB; index-embeddings escribe. Ver docs/IAM.md.
 
   IndexEmbeddingsFunction:
     Type: AWS::Serverless::Function
@@ -13,7 +13,17 @@
       CodeUri: sessions/S07-bedrock-rag-busqueda/functions/index-embeddings
       Handler: app.lambda_handler
       Runtime: python3.12
-      Role: !Ref LabRoleArn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+        # Bedrock SI admite ARN de recurso -> acotamos al modelo, no a bedrock:*.
+        # inference-profile cubre los IDs con prefijo "us." (perfiles cross-region).
+        - Statement:
+            - Effect: Allow
+              Action: bedrock:InvokeModel
+              Resource:
+                - !Sub arn:${AWS::Partition}:bedrock:*::foundation-model/*
+                - !Sub arn:${AWS::Partition}:bedrock:*:${AWS::AccountId}:inference-profile/*
       Timeout: 120   # recorre todo el catalogo
       Environment:
         Variables:
@@ -33,7 +43,17 @@
       CodeUri: sessions/S07-bedrock-rag-busqueda/functions/semantic-search
       Handler: app.lambda_handler
       Runtime: python3.12
-      Role: !Ref LabRoleArn
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ProductsTable
+        # Bedrock SI admite ARN de recurso -> acotamos al modelo, no a bedrock:*.
+        # inference-profile cubre los IDs con prefijo "us." (perfiles cross-region).
+        - Statement:
+            - Effect: Allow
+              Action: bedrock:InvokeModel
+              Resource:
+                - !Sub arn:${AWS::Partition}:bedrock:*::foundation-model/*
+                - !Sub arn:${AWS::Partition}:bedrock:*:${AWS::AccountId}:inference-profile/*
       Timeout: 60
       Environment:
         Variables:
@@ -59,6 +79,6 @@
 #   # 2) buscar (q como query string)
 #   curl "${SEARCH_URL%/}/search?q=algo+abrigado+para+el+frio"
 #
-# El LabRole ya permite bedrock:InvokeModel (Titan embeddings). Habilitá el
+# Permisos concedidos: bedrock:InvokeModel acotado por ARN de modelo. Habilitá el
 # modelo en Bedrock > Model access (us-east-1).
 # ----------------------------------------------------------------------------

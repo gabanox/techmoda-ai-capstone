@@ -15,6 +15,9 @@ samconfig.toml
 # IDE
 .vscode/
 .idea/
+
+# Claude Code (permisos locales de cada máquina)
+.claude/settings.local.json
 *.swp
 *.swo
 *~

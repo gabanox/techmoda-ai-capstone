@@ -52,7 +52,7 @@ export const api = {
   },
 
   // Create a new product
-  async createProduct(product: Omit<Product, 'product_id' | 'created_at' | 'updated_at'>): Promise<Product> {
+  async createProduct(product: Omit<Product, 'productId' | 'createdAt' | 'updatedAt'>): Promise<Product> {
     const response = await fetch(`${API_URL}/products`, {
       method: 'POST',
       headers: {
@@ -71,7 +71,7 @@ export const api = {
   // Update a product
   async updateProduct(
     productId: string,
-    updates: Partial<Omit<Product, 'product_id' | 'created_at' | 'updated_at'>>
+    updates: Partial<Omit<Product, 'productId' | 'createdAt' | 'updatedAt'>>
   ): Promise<Product> {
     const response = await fetch(`${API_URL}/products/${productId}`, {
       method: 'PUT',

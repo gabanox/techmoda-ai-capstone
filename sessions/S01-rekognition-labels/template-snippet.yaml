@@ -1,10 +1,10 @@
 # ============================================================================
 # S1 · Rekognition DetectLabels  —  pegar dentro de `Resources:` en template.yaml
 # ============================================================================
-# Patrón sandbox AWS re/Start (ver docs/SANDBOX-COMPAT.md):
+# Patrón (ver docs/IAM.md):
 #   - SIN API Gateway -> la función se expone con su propia Lambda Function URL.
-#   - SIN iam:CreateRole -> usa el LabRole (parámetro LabRoleArn del template).
-#     Por eso NO hay bloque `Policies:` (el LabRole ya trae los permisos de IA).
+#   - Declara sus `Policies:` -> SAM le crea un rol de mínimo privilegio.
+#     Rekognition se acota por ACCIÓN (las APIs Detect* no admiten ARN).
 # ----------------------------------------------------------------------------
 
   EnrichLabelsFunction:
@@ -15,7 +15,18 @@
       CodeUri: sessions/S01-rekognition-labels/functions/enrich-labels
       Handler: app.lambda_handler
       Runtime: python3.12          # override del Runtime global (nodejs22.x)
-      Role: !Ref LabRoleArn        # rol preexistente del sandbox (no se crea uno nuevo)
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+        - Statement:
+            - Effect: Allow
+              Action: rekognition:DetectLabels
+              Resource: "*"
+        # Si imageUrl es s3://, Rekognition lee el objeto con ESTE rol.
+        - Statement:
+            - Effect: Allow
+              Action: s3:GetObject
+              Resource: !Sub arn:${AWS::Partition}:s3:::${AWS::StackName}-*/*
       Environment:
         Variables:
           LABEL_MIN_CONFIDENCE: "80"
@@ -42,7 +53,7 @@
 #          --query "Stacks[0].Outputs[?OutputKey=='EnrichLabelsUrl'].OutputValue" --output text)
 #   curl -X POST "${URL%/}/products/<PRODUCT_ID>/labels"
 #
-# Nota de permisos: el LabRole ya permite rekognition:DetectLabels y s3:GetObject;
-# por eso no hace falta un bloque Policies de mínimo privilegio en el sandbox.
+# Nota de permisos: el bloque Policies de arriba concede exactamente
+# rekognition:DetectLabels + s3:GetObject sobre los buckets del stack. Nada más.
 # (En una cuenta propia sí lo acotarías por acción/ARN — ver historial git.)
 # ----------------------------------------------------------------------------
