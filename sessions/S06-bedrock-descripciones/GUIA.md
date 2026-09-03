@@ -76,7 +76,7 @@ Respuesta esperada:
 ```json
 {
   "productId": "a1b2...",
-  "model": "anthropic.claude-haiku-4-5-20251001-v1:0",
+  "model": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
   "tone": "elegante y aspiracional",
   "saved": true,
   "description": "Este vestido midi de gasa floral une fluidez y delicadeza...",

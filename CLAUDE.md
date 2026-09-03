@@ -187,13 +187,24 @@ Checklist en `docs/IAM.md`. En resumen:
 - Los IDs de modelo Bedrock viven en variables de entorno (`BEDROCK_MODEL_ID`, `EMBED_MODEL_ID`) y S06
   usa la **Converse API**, que es agnóstica al proveedor → cambiar de modelo no requiere tocar código.
   Estas Lambdas usan la integración **legacy** de Bedrock (`boto3` `bedrock-runtime`), que exige IDs
-  **versionados**: el default pineado es `anthropic.claude-haiku-4-5-20251001-v1:0`. El alias de la
-  Claude API (`claude-haiku-4-5` a secas) **no sirve acá** — `bedrock-runtime` lo rechaza. Con perfiles
-  de inferencia cross-region el ID lleva prefijo `us.` y hay que permitir el ARN `inference-profile/*`
-  además de `foundation-model/*` (ver `docs/IAM.md`). Si una demo falla con 404 / "model not found",
-  revisá el ID antes de debuggear otra cosa.
+  **versionados** y, para todo modelo Claude posterior a la familia 3.x, **con prefijo de perfil de
+  inferencia**: el default pineado es `us.anthropic.claude-haiku-4-5-20251001-v1:0`. Dos formas de
+  romperlo, y las dos ya nos pasaron:
+  - El alias de la Claude API (`claude-haiku-4-5` a secas) **no sirve acá** — `bedrock-runtime` lo
+    rechaza.
+  - El ID versionado **sin** el prefijo `us.` (`anthropic.claude-haiku-4-5-20251001-v1:0`) tampoco:
+    Haiku 4.5 no tiene on-demand throughput sobre el foundation model, solo vía perfil de inferencia.
+    Falla con `ValidationException: Invocation of model ID ... with on-demand throughput isn't
+    supported. Retry your request with the ID or ARN of an inference profile that contains this
+    model.` — es un error de **ID**, no de Model access; habilitar el modelo en la consola no lo
+    arregla. Rompió S06 para toda MXMEX35 el 2026-09-03.
+
+  Con prefijo de perfil hay que permitir el ARN `inference-profile/*` además de `foundation-model/*`
+  (ver `docs/IAM.md`) — y ojo: en el ARN `foundation-model/` el ID va **sin** el `us.`; el prefijo
+  solo aparece en el ARN `inference-profile/` y en el valor de `BEDROCK_MODEL_ID`. Si una demo falla
+  con 404 / "model not found" / `ValidationException`, revisá el ID antes de debuggear otra cosa.
 - Los model IDs viven en **cinco** lugares que tienen que coincidir: `template.full.yaml`, el
   `template-snippet.yaml` de S06 y de S08, y el default de cada `app.py`. `validate-all.sh` chequea
-  que no divergan.
+  que no divergan, que lleven sufijo `-vN:M` y que lleven prefijo de perfil de inferencia.
 - `_response()` está duplicado en los 9 handlers de IA y el helper de extracción de id en 5. Es
   **deliberado**: cada sesión tiene que poder leerse aislada. No lo factorices a un `ai/shared/`.
