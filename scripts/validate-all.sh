@@ -147,7 +147,7 @@ EOF
     || fallo "docs que todavía mandan usar LabRole" "$DOC_STALE"
 
   # Los model IDs de Bedrock viven en 5 lugares y tienen que coincidir.
-  IDS="$(grep -rhoI 'anthropic\.claude[A-Za-z0-9._:-]*' template.full.yaml \
+  IDS="$(grep -rhoIE '(us\.|global\.)?anthropic\.claude[A-Za-z0-9._:-]*' template.full.yaml \
           sessions/S06-*/template-snippet.yaml sessions/S08-*/template-snippet.yaml \
           sessions/S06-*/functions/*/app.py sessions/S08-*/functions/*/app.py 2>/dev/null \
         | sort -u)"
@@ -158,8 +158,16 @@ EOF
   # Claude API (anthropic.claude-haiku-4-5 a secas) da ValidationException.
   elif ! echo "$IDS" | grep -q -- '-v1:0$'; then
     fallo "el model ID no es de bedrock-runtime (falta -vN:M)" "$IDS — ver 'Gotchas' en CLAUDE.md"
+  # Todo Claude posterior a la familia 3.x es inference-profile-only: no tiene
+  # on-demand throughput sobre el foundation model. El ID versionado pero SIN
+  # prefijo de perfil pasa el chequeo de arriba y explota en runtime con
+  # "Invocation of model ID ... with on-demand throughput isn't supported".
+  # Rompió S06 para toda MXMEX35 el 2026-09-03.
+  elif echo "$IDS" | grep -qE '^anthropic\.claude-(haiku|sonnet|opus)-[4-9]' ; then
+    fallo "el model ID no lleva prefijo de perfil de inferencia (us./global.)" \
+          "$IDS — es inference-profile-only; usá us.$IDS. Ver 'Gotchas' en CLAUDE.md"
   else
-    pass "model ID de Bedrock único y versionado ($IDS)"
+    pass "model ID de Bedrock único, versionado y con perfil de inferencia ($IDS)"
   fi
 
   # El contrato de campos: el frontend debe usar camelCase como el backend.

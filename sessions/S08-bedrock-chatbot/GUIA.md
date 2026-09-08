@@ -75,7 +75,7 @@ Respuesta esperada:
 {
   "reply": "Para caminar cómodo te recomiendo los Tenis blancos minimalistas ($74.50): suela de goma y diseño limpio que combina con todo. ¿Querés que te muestre opciones para clima frío también?",
   "retrieved": [{"productId":"...","name":"Tenis blancos minimalistas"}],
-  "model": "anthropic.claude-haiku-4-5-20251001-v1:0",
+  "model": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
   "usage": {"inputTokens": 210, "outputTokens": 58, "totalTokens": 268}
 }
 ```

@@ -28,7 +28,7 @@
       Timeout: 60   # los modelos generativos pueden tardar varios segundos
       Environment:
         Variables:
-          BEDROCK_MODEL_ID: anthropic.claude-haiku-4-5-20251001-v1:0
+          BEDROCK_MODEL_ID: us.anthropic.claude-haiku-4-5-20251001-v1:0
           BEDROCK_MAX_TOKENS: "300"
           BEDROCK_TEMPERATURE: "0.7"
       FunctionUrlConfig:

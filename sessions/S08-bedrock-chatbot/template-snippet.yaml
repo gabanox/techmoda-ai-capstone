@@ -30,7 +30,7 @@
       Environment:
         Variables:
           EMBED_MODEL_ID: amazon.titan-embed-text-v2:0
-          BEDROCK_MODEL_ID: anthropic.claude-haiku-4-5-20251001-v1:0
+          BEDROCK_MODEL_ID: us.anthropic.claude-haiku-4-5-20251001-v1:0
           ASSISTANT_TOP_K: "3"
           BEDROCK_MAX_TOKENS: "400"
       FunctionUrlConfig:

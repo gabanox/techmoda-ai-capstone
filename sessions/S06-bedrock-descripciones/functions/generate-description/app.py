@@ -28,7 +28,7 @@ PRODUCTS_TABLE = os.environ["PRODUCTS_TABLE"]
 # Con perfiles de inferencia cross-region el ID lleva prefijo "us."
 # (us.anthropic.claude-haiku-4-5-20251001-v1:0) y hay que permitir el ARN
 # inference-profile/* además de foundation-model/* (ver docs/IAM.md).
-MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "anthropic.claude-haiku-4-5-20251001-v1:0")
+MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "us.anthropic.claude-haiku-4-5-20251001-v1:0")
 MAX_TOKENS = int(os.environ.get("BEDROCK_MAX_TOKENS", "300"))
 TEMPERATURE = float(os.environ.get("BEDROCK_TEMPERATURE", "0.7"))
 
